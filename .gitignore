@@ -5,6 +5,10 @@
 *.rbxmx
 sourcemap.json
 
+# Test bundles
+build/
+__pycache__/
+
 # Studio lock files
 *.rbxl.lock
 *.rbxlx.lock

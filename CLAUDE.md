@@ -41,8 +41,9 @@ AnimeLegends/
 │   ├── server/               # ServerScriptService.Server — lógica del servidor
 │   ├── client/               # StarterPlayer.StarterPlayerScripts.Client — UI, efectos, control
 │   └── shared/               # ReplicatedStorage.Shared — módulos compartidos
-│       ├── Config/           # Balance: rarezas, daños, cooldowns, precios
-│       └── Data/             # Datos de personajes, enemigos e islas
+│       ├── Formulas.luau     # Valores derivados: daño, vida, Yenes, costos
+│       ├── Config/           # Constantes: Balance, Rarities, Raids, Boosts
+│       └── Data/             # Contenido: Islands, Characters
 ├── docs/                     # Diseño, decisiones de arquitectura
 └── tests/                    # Pruebas
 ```
@@ -52,7 +53,9 @@ AnimeLegends/
 - **Instalar herramientas:** `rokit install` (instala la versión de Rojo fijada en `rokit.toml`).
 - **Ejecutar en desarrollo:** `rojo serve`, y en Roblox Studio conectar desde el plugin de Rojo (pestaña Plugins → Rojo → Connect).
 - **Build / exportar:** `rojo build -o AnimeLegends.rbxlx` (los `.rbxl`/`.rbxlx` están en `.gitignore`).
-- **Pruebas:** TBD.
+- **Pruebas:** `python tests/run.py` ejecuta todos los `tests/*.spec.luau`. Requiere Python y el CLI de Luau (`luau`, de github.com/luau-lang/luau/releases; si no está en el PATH, indicar su ruta en la variable `LUAU`). `tests/bundle.py` empaqueta `src/shared` y `src/server` con una imitación de `script` para que los `require` por instancia funcionen fuera de Studio; solo sirve para módulos puros, sin servicios de Roblox.
+  - `balance.spec.luau`: `Formulas` reproduce las tablas de `docs/balance.md`. Si se cambia el balance, actualizar ambos.
+  - `player-record.spec.luau`: datos iniciales, reconciliación, migraciones y bloqueo de sesión.
 
 ## 5. Convenciones de código
 
@@ -78,8 +81,9 @@ El diseño detallado (islas, personajes, probabilidades, pity) está en `docs/ga
 - **Escala:** todo (daño, vida, Yenes, costos) se multiplica ×6 por isla.
 - **Raids:** lugar común con portal en Nameku, solo o en grupo (máximo 20 jugadores), 20 oleadas (mini jefe en la 10, jefe final en la 20) y 30 minutos de límite. Tres dificultades desbloqueadas desde el inicio, con más vida y mejores recompensas cuanto más difíciles. Espera independiente: Fácil 1 h, Medio 1 h 30 min, Difícil 2 h. No escalan con los jugadores. Cada enemigo da Gemas y Yenes según su tipo.
 - **Pity:** contadores por isla, uno por rareza; cada uno se reinicia al obtener esa rareza.
-- **Guardado:** DataStore para todo el progreso del jugador.
-- **Fuente de verdad de datos:** los personajes, enemigos e islas viven en `src/shared/Data/` como tablas Luau, para que el balance se ajuste en un solo lugar.
+- **Guardado:** `src/server/Services/DataService.luau` (DataStore con bloqueo de sesión, autoguardado cada 2 min, guardado al salir y al cerrar el servidor). La forma de los datos, los valores iniciales y las migraciones están en `src/server/Data/PlayerRecord.luau`. Al añadir un campo, ponerlo en `newData()`; la reconciliación lo añade a las partidas existentes. Si se renombra o cambia de forma un campo, subir `CurrentVersion` y añadir una migración.
+- **Acceso a datos:** los demás servicios usan `DataService.getData`/`waitForData` y `addCurrency`/`spendCurrency`. Yenes y Gemas se replican al cliente como atributos del jugador (`Yen`, `Gems`).
+- **Fuente de verdad de datos:** las constantes viven en `src/shared/Config/` y el contenido (islas, personajes) en `src/shared/Data/`. Los valores derivados (daño, vida, Yenes, costos) se calculan siempre con `Shared.Formulas`; nunca escribir esos números a mano en otro sitio.
 - **Lógica sensible en el servidor:** tiradas del gacha, daño, monedas y pity se calculan en el servidor; el cliente solo envía peticiones y muestra resultados.
 
 ## 7. Reglas de trabajo para Claude

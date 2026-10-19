@@ -35,6 +35,20 @@ Cada isla tiene un personaje por rareza. Los nombres finales del juego llevarán
 | Mítico | Vegeta | Itachi | Julius | Levi | Shigaraki | Akaza |
 | Secreto | Goku SSJ1 | Naruto 4 Tails | Asta Devil Union | Eren | All Might | Rengoku |
 
+### Nombres en el juego (provisionales)
+
+Variaciones usadas en `src/shared/Data/Characters.luau`. Se pueden cambiar libremente: el `id` interno usa el nombre original.
+
+| Rareza | Nameku | Kono | Clover Kingdom | Titan Village | Hero Academy | Demon Corps |
+|---|---|---|---|---|---|---|
+| Común | Kurilin | Sakara | Noella | Conny | Mineto | Zenitzu |
+| Poco común | Yamucha | Yamado | Magno | Armen | Urarako | Inozuke |
+| Raro | Pikkolo | Shikamarou | Charmi | Hanjie | Shotto | Nezuco |
+| Épico | Freezor | Sazuke | Fuegolion | Zeek | Dekku | Tanjiru |
+| Legendario | Gohen | Kakashy | Yamy | Mikaza | Hawkz | Tomiokka |
+| Mítico | Vejita | Itashi | Julios | Levy | Shigaraky | Akazza |
+| Secreto | Gokuh SSJ1 | Narutto 4 Tails | Azta Devil Union | Erem | All Mighty | Rengokku |
+
 ## Gacha
 
 Probabilidades (suman 100%):
@@ -151,4 +165,8 @@ Pendiente de definir:
 
 ## Guardado
 
-- Persistencia con DataStore: monedas, inventario, personajes equipados, islas desbloqueadas, contadores de pity y mejoras de inventario.
+- Persistencia con DataStore: monedas, inventario, personajes equipados, islas desbloqueadas, contadores de pity, mejoras de inventario, boosts y progreso de Raids.
+- **Jugador nuevo:** empieza con 0 Yenes, 0 Gemas y Kurilin (Común de Nameku) equipado, para poder atacar desde el primer momento.
+- **Boosts activos:** su tiempo solo corre mientras el jugador está conectado.
+- **Esperas de Raid:** corren en tiempo real, también con el jugador desconectado.
+- **Bloqueo de sesión:** si los datos de un jugador están abiertos en otro servidor, se reintenta la carga; si no se consigue, se expulsa al jugador con un mensaje para evitar pérdida de datos. En Studio sin acceso a la API se juega con datos temporales que no se guardan.

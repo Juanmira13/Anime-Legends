@@ -76,7 +76,7 @@ Empieza con 50 personajes. Cada compra añade +10 espacios y cuesta ×1.5 la ant
 |---|---|---|
 | 1 | 60 | 10K |
 | 2 | 70 | 15K |
-| 3 | 80 | 22K |
+| 3 | 80 | 23K |
 | 4 | 90 | 34K |
 | 5 | 100 | 51K |
 | 6 | 110 | 76K |
