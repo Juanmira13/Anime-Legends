@@ -8,18 +8,9 @@ local TweenService = game:GetService("TweenService")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Characters = require(Shared.Data.Characters)
 local Rarities = require(Shared.Config.Rarities)
+local Theme = require(script.Parent.Parent.UI.Theme)
 
 local POPUP_TIME = 2.5
-
-local RARITY_COLORS: { [string]: Color3 } = {
-	Common = Color3.fromRGB(200, 200, 200),
-	Uncommon = Color3.fromRGB(110, 210, 110),
-	Rare = Color3.fromRGB(80, 160, 255),
-	Epic = Color3.fromRGB(180, 90, 255),
-	Legendary = Color3.fromRGB(255, 190, 40),
-	Mythic = Color3.fromRGB(255, 70, 70),
-	Secret = Color3.fromRGB(20, 20, 20),
-}
 
 -- Silent reasons are not shown (spam guard, data still loading).
 local FAILURE_MESSAGES: { [string]: string } = {
@@ -45,7 +36,7 @@ local function createPopup(): TextLabel
 	label.AnchorPoint = Vector2.new(0.5, 0)
 	label.Position = UDim2.new(0.5, 0, 0.12, 0)
 	label.Size = UDim2.fromOffset(420, 56)
-	label.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+	label.BackgroundColor3 = Theme.Background
 	label.BackgroundTransparency = 0.15
 	label.Font = Enum.Font.GothamBold
 	label.TextScaled = true
@@ -93,7 +84,7 @@ local function onResult(result: any)
 	if result.ok then
 		local character = Characters.get(result.characterId)
 		local rarity = Rarities.get(result.rarity)
-		local color = RARITY_COLORS[rarity.id] or Color3.new(1, 1, 1)
+		local color = Theme.rarityColor(rarity.id)
 		-- Secret is drawn dark, so make its text readable with a white outline.
 		show(`¡{character.displayName}! ({rarity.displayName})`, color)
 		if rarity.id == "Secret" then
@@ -105,7 +96,7 @@ local function onResult(result: any)
 		local message = FAILURE_MESSAGES[result.reason]
 		if message then
 			popup.TextStrokeColor3 = Color3.new(0, 0, 0)
-			show(message, Color3.fromRGB(255, 120, 120))
+			show(message, Theme.Error)
 		end
 	end
 end

@@ -1,5 +1,5 @@
 --!strict
--- Creates the RemoteEvents the client listens to, under ReplicatedStorage.Remotes.
+-- Creates the remotes shared with the client, under ReplicatedStorage.Remotes.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -24,6 +24,17 @@ function Remotes.event(name: string): RemoteEvent
 		return existing
 	end
 	local remote = Instance.new("RemoteEvent")
+	remote.Name = name
+	remote.Parent = folder
+	return remote
+end
+
+function Remotes.func(name: string): RemoteFunction
+	local existing = folder:FindFirstChild(name)
+	if existing and existing:IsA("RemoteFunction") then
+		return existing
+	end
+	local remote = Instance.new("RemoteFunction")
 	remote.Name = name
 	remote.Parent = folder
 	return remote

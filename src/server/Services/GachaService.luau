@@ -18,6 +18,7 @@ local Server = script.Parent.Parent
 local GachaRoll = require(Server.Gacha.GachaRoll)
 local Remotes = require(Server.Remotes)
 local DataService = require(script.Parent.DataService)
+local InventoryService = require(script.Parent.InventoryService)
 
 export type RollResult = {
 	ok: boolean,
@@ -36,14 +37,6 @@ local resultRemote = Remotes.event("GachaResult")
 
 local GachaService = {}
 
-local function countOwned(data: DataService.Data): number
-	local count = 0
-	for _ in data.Characters do
-		count += 1
-	end
-	return count
-end
-
 function GachaService.roll(player: Player, islandId: string): RollResult
 	local data = DataService.getData(player)
 	if data == nil then
@@ -59,7 +52,7 @@ function GachaService.roll(player: Player, islandId: string): RollResult
 	if not data.UnlockedIslands[islandId] then
 		return { ok = false, reason = "IslandLocked" }
 	end
-	if countOwned(data) >= Formulas.inventorySlots(data.InventoryUpgrades) then
+	if not InventoryService.hasSpace(player) then
 		return { ok = false, reason = "InventoryFull" }
 	end
 	if not DataService.spendCurrency(player, "Yen", Formulas.gachaCost(islandId)) then
@@ -76,10 +69,7 @@ function GachaService.roll(player: Player, islandId: string): RollResult
 		return random:NextNumber()
 	end)
 	local character = Characters.forIslandAndRarity(islandId, rarity)
-
-	local uid = tostring(data.NextCharacterUid)
-	data.NextCharacterUid += 1
-	data.Characters[uid] = { id = character.id }
+	InventoryService.addCharacter(player, character.id)
 
 	return { ok = true, characterId = character.id, rarity = rarity }
 end

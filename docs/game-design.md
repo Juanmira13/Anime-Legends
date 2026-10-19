@@ -99,6 +99,11 @@ Reglas del pity:
 
 - Capacidad inicial: 50 personajes.
 - Se amplía comprando espacio con Yenes, con un costo que sube proporcionalmente.
+- Se abre con el botón "Inventario". Muestra los personajes ordenados: equipados primero, luego por rareza y daño.
+- Tocar un personaje lo equipa o desequipa. "Equipar mejores" equipa los de más daño por segundo en todas las ranuras.
+- Se pueden tener copias repetidas del mismo personaje, y también equiparlas a la vez.
+- **Eliminar:** botón de papelera con confirmación (pulsar dos veces). No se puede eliminar un personaje equipado ni el último que queda. Por ahora no da recompensa.
+- Con el inventario lleno no se puede tirar en el gacha.
 
 ## Economía
 
