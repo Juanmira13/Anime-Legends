@@ -39,9 +39,17 @@ AnimeLegends/
 ├── rokit.toml                # Versiones fijadas de las herramientas
 ├── src/
 │   ├── server/               # ServerScriptService.Server — lógica del servidor
+│   │   ├── Main.server.luau  # Arranca los servicios en orden
+│   │   ├── Services/         # DataService, EnemyService, CombatService
+│   │   ├── Data/             # PlayerRecord (forma de los datos guardados)
+│   │   ├── Combat/           # Lógica pura de combate (AttackClock)
+│   │   └── Dev/              # Ayudas solo para Studio (TestArena)
 │   ├── client/               # StarterPlayer.StarterPlayerScripts.Client — UI, efectos, control
+│   │   ├── Main.client.luau  # Arranca los controladores
+│   │   └── Controllers/      # EnemyController (barras de vida, resaltado del objetivo)
 │   └── shared/               # ReplicatedStorage.Shared — módulos compartidos
 │       ├── Formulas.luau     # Valores derivados: daño, vida, Yenes, costos
+│       ├── Format.luau       # Formato de números para la UI (1.5K, 2.3M)
 │       ├── Config/           # Constantes: Balance, Rarities, Raids, Boosts
 │       └── Data/             # Contenido: Islands, Characters
 ├── docs/                     # Diseño, decisiones de arquitectura
@@ -56,6 +64,8 @@ AnimeLegends/
 - **Pruebas:** `python tests/run.py` ejecuta todos los `tests/*.spec.luau`. Requiere Python y el CLI de Luau (`luau`, de github.com/luau-lang/luau/releases; si no está en el PATH, indicar su ruta en la variable `LUAU`). `tests/bundle.py` empaqueta `src/shared` y `src/server` con una imitación de `script` para que los `require` por instancia funcionen fuera de Studio; solo sirve para módulos puros, sin servicios de Roblox.
   - `balance.spec.luau`: `Formulas` reproduce las tablas de `docs/balance.md`. Si se cambia el balance, actualizar ambos.
   - `player-record.spec.luau`: datos iniciales, reconciliación, migraciones y bloqueo de sesión.
+  - `combat.spec.luau`: tiempos de ataque, recompensas y formato de números.
+- **Revisión de tipos (incluye código con APIs de Roblox):** `rojo sourcemap default.project.json -o sourcemap.json` y luego `luau-lsp analyze --platform=roblox --definitions=globalTypes.d.luau --sourcemap=sourcemap.json src`. `luau-lsp` y `globalTypes.d.luau` vienen de github.com/JohnnyMorganz/luau-lsp. Debe terminar sin errores.
 
 ## 5. Convenciones de código
 
@@ -82,6 +92,8 @@ El diseño detallado (islas, personajes, probabilidades, pity) está en `docs/ga
 - **Raids:** lugar común con portal en Nameku, solo o en grupo (máximo 20 jugadores), 20 oleadas (mini jefe en la 10, jefe final en la 20) y 30 minutos de límite. Tres dificultades desbloqueadas desde el inicio, con más vida y mejores recompensas cuanto más difíciles. Espera independiente: Fácil 1 h, Medio 1 h 30 min, Difícil 2 h. No escalan con los jugadores. Cada enemigo da Gemas y Yenes según su tipo.
 - **Pity:** contadores por isla, uno por rareza; cada uno se reinicia al obtener esa rareza.
 - **Guardado:** `src/server/Services/DataService.luau` (DataStore con bloqueo de sesión, autoguardado cada 2 min, guardado al salir y al cerrar el servidor). La forma de los datos, los valores iniciales y las migraciones están en `src/server/Data/PlayerRecord.luau`. Al añadir un campo, ponerlo en `newData()`; la reconciliación lo añade a las partidas existentes. Si se renombra o cambia de forma un campo, subir `CurrentVersion` y añadir una migración.
+- **Enemigos en el mapa:** cada punto de spawn es una Part con la etiqueta `EnemySpawn` y los atributos `Island` (id de isla) y `Rank` (`Easy`, `Medium`, `Hard`, `Boss`). El modelo se toma de `ServerStorage.EnemyModels.<Island>.<Rank>` (Model con PrimaryPart) o se usa un bloque provisional. El servidor pone en el modelo los atributos `EnemyId`, `DisplayName`, `Health` y `MaxHealth`; el cliente dibuja la barra con ellos.
+- **Combate:** el jugador hace clic en un enemigo (ClickDetector) y el servidor lo fija como objetivo si la isla está desbloqueada. Los personajes equipados golpean según su cooldown mientras el jugador esté a menos de `Balance.Combat.range`. El objetivo se replica en el atributo `TargetEnemyId` del jugador.
 - **Acceso a datos:** los demás servicios usan `DataService.getData`/`waitForData` y `addCurrency`/`spendCurrency`. Yenes y Gemas se replican al cliente como atributos del jugador (`Yen`, `Gems`).
 - **Fuente de verdad de datos:** las constantes viven en `src/shared/Config/` y el contenido (islas, personajes) en `src/shared/Data/`. Los valores derivados (daño, vida, Yenes, costos) se calculan siempre con `Shared.Formulas`; nunca escribir esos números a mano en otro sitio.
 - **Lógica sensible en el servidor:** tiradas del gacha, daño, monedas y pity se calculan en el servidor; el cliente solo envía peticiones y muestra resultados.

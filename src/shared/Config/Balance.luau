@@ -56,6 +56,22 @@ local Balance = {
 		startingSlots = 3,
 		maxSlots = 6,
 	},
+
+	Combat = {
+		-- Max distance in studs between the player and their target.
+		range = 60,
+	},
 }
+
+local ranksById: { [string]: EnemyRank } = {}
+for _, rank in Balance.EnemyRanks do
+	ranksById[rank.id] = rank
+end
+
+function Balance.getEnemyRank(id: string): EnemyRank
+	local rank = ranksById[id]
+	assert(rank, `Unknown enemy rank: {id}`)
+	return rank
+end
 
 return Balance

@@ -4,21 +4,13 @@
 
 local Shared = script.Parent
 local Balance = require(Shared.Config.Balance)
+local Boosts = require(Shared.Config.Boosts)
 local Rarities = require(Shared.Config.Rarities)
 local Raids = require(Shared.Config.Raids)
 local Islands = require(Shared.Data.Islands)
 local Characters = require(Shared.Data.Characters)
 
-local enemyRanksById: { [string]: Balance.EnemyRank } = {}
-for _, rank in Balance.EnemyRanks do
-	enemyRanksById[rank.id] = rank
-end
-
-local function getEnemyRank(id: string): Balance.EnemyRank
-	local rank = enemyRanksById[id]
-	assert(rank, `Unknown enemy rank: {id}`)
-	return rank
-end
+local getEnemyRank = Balance.getEnemyRank
 
 local Formulas = {}
 
@@ -59,6 +51,15 @@ end
 
 function Formulas.enemyYen(islandId: string, rankId: string): number
 	return Formulas.niceRound(getEnemyRank(rankId).yen * Formulas.islandScale(islandId))
+end
+
+-- Yen a player gets for defeating an enemy, with the Money boost applied if active.
+function Formulas.killReward(islandId: string, rankId: string, moneyBoostActive: boolean): number
+	local yen = Formulas.enemyYen(islandId, rankId)
+	if moneyBoostActive then
+		yen *= Boosts.get("Money").multiplier
+	end
+	return yen
 end
 
 function Formulas.enemyRespawnTime(rankId: string): number

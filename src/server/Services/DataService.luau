@@ -9,7 +9,7 @@ local RunService = game:GetService("RunService")
 
 local PlayerRecord = require(script.Parent.Parent.Data.PlayerRecord)
 
-type Data = PlayerRecord.Data
+export type Data = PlayerRecord.Data
 type Currency = "Yen" | "Gems"
 
 type Session = {

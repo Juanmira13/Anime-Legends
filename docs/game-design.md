@@ -81,7 +81,10 @@ Reglas del pity:
 
 ## Combate
 
-- El jugador elige el objetivo.
+- El jugador elige el objetivo haciendo clic en un enemigo. Sus personajes equipados lo atacan automáticamente mientras esté a menos de 60 studs; si se aleja más, pierde el objetivo.
+- El primer golpe de cada personaje es inmediato; después golpea cada vez que termina su cooldown. Desequipar y volver a equipar no reinicia el cooldown.
+- Todos los jugadores que golpearon a un enemigo reciben la recompensa completa de Yenes cuando muere.
+- Solo se puede atacar a enemigos de islas desbloqueadas.
 - Cada personaje tiene daño (según su rareza) y un cooldown entre golpes. Valores: pendientes.
 - Personajes equipados: 3 al inicio, hasta 6 con las ranuras extra de los logros de Raid (ver sección Raids).
 
