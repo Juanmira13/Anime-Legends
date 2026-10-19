@@ -27,6 +27,7 @@ local Raids = require(Shared.Config.Raids)
 local Server = script.Parent.Parent
 local RaidOps = require(Server.Raids.RaidOps)
 local Remotes = require(Server.Remotes)
+local BoostService = require(script.Parent.BoostService)
 local DataService = require(script.Parent.DataService)
 local EnemyService = require(script.Parent.EnemyService)
 local InventoryService = require(script.Parent.InventoryService)
@@ -266,7 +267,7 @@ local function onRaidEnemyDied(enemy: Enemy)
 			return random:NextNumber()
 		end)
 		if boostId then
-			data.Boosts.Owned[boostId] = (data.Boosts.Owned[boostId] or 0) + 1
+			BoostService.grant(player, boostId)
 			send(player, { kind = "BoostDrop", boost = boostId })
 		end
 	end

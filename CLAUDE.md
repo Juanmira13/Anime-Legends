@@ -41,18 +41,19 @@ AnimeLegends/
 │   ├── server/               # ServerScriptService.Server — lógica del servidor
 │   │   ├── Main.server.luau  # Arranca los servicios en orden
 │   │   ├── Remotes.luau      # Crea los RemoteEvents en ReplicatedStorage.Remotes
-│   │   ├── Services/         # Data, Enemy, Combat, Gacha, Inventory, Portal, Raid (…Service)
+│   │   ├── Services/         # Data, Enemy, Combat, Gacha, Inventory, Portal, Raid, Boost (…Service)
 │   │   ├── Data/             # PlayerRecord (forma de los datos guardados)
 │   │   ├── Combat/           # Lógica pura de combate (AttackClock)
 │   │   ├── Gacha/            # Lógica pura del gacha (GachaRoll)
 │   │   ├── Inventory/        # Lógica pura del inventario (InventoryOps)
 │   │   ├── Portals/          # Lógica pura de desbloqueo y viaje (PortalOps)
 │   │   ├── Raids/            # Lógica pura de Raids (RaidOps)
+│   │   ├── Boosts/           # Lógica pura de boosts (BoostOps)
 │   │   └── Dev/              # Ayudas solo para Studio (TestArena; DevCheats es temporal)
 │   ├── client/               # StarterPlayer.StarterPlayerScripts.Client — UI, efectos, control
 │   │   ├── Main.client.luau  # Arranca los controladores
 │   │   ├── UI/               # Theme (colores y constructores), Notify (avisos en pantalla)
-│   │   └── Controllers/      # Hud, Enemy (barras de vida), Gacha, Inventory (panel), Portal, Raid
+│   │   └── Controllers/      # Hud, Enemy (barras de vida), Gacha, Inventory (panel), Portal, Raid, Boost
 │   └── shared/               # ReplicatedStorage.Shared — módulos compartidos
 │       ├── Formulas.luau     # Valores derivados: daño, vida, Yenes, costos
 │       ├── Format.luau       # Formato de números para la UI (1.5K, 2.3M)
@@ -75,6 +76,7 @@ AnimeLegends/
   - `inventory.spec.luau`: añadir, equipar, desequipar, eliminar, "Equipar mejores" y ampliaciones.
   - `portal.spec.luau`: orden de desbloqueo, viajes e isla de aparición.
   - `raid.spec.luau`: esperas, completados y logros de ranuras, recompensas, drops de boosts y oleadas.
+  - `boost.spec.luau`: conceder, activar (acumula duración) y descontar tiempo.
 - **Revisión de tipos (incluye código con APIs de Roblox):** `rojo sourcemap default.project.json -o sourcemap.json` y luego `luau-lsp analyze --platform=roblox --definitions=globalTypes.d.luau --sourcemap=sourcemap.json src`. `luau-lsp` y `globalTypes.d.luau` vienen de github.com/JohnnyMorganz/luau-lsp. Debe terminar sin errores.
 
 ## 5. Convenciones de código
@@ -122,6 +124,7 @@ El diseño detallado (islas, personajes, probabilidades, pity) está en `docs/ga
 - **Enemigos en el mapa:** cada punto de spawn es una Part con la etiqueta `EnemySpawn` y los atributos `Island` (id de isla) y `Rank` (`Easy`, `Medium`, `Hard`, `Boss`). El modelo se toma de `ServerStorage.EnemyModels.<Island>.<Rank>` (Model con PrimaryPart) o se usa un bloque provisional. El servidor pone en el modelo los atributos `EnemyId`, `DisplayName`, `Health` y `MaxHealth`; el cliente dibuja la barra con ellos.
 - **Combate:** el jugador hace clic en un enemigo (ClickDetector) y el servidor lo fija como objetivo si la isla está desbloqueada. Los personajes equipados golpean según su cooldown mientras el jugador esté a menos de `Balance.Combat.range`. El objetivo se replica en el atributo `TargetEnemyId` del jugador.
 - **Gacha en el mapa:** cada máquina es una Part con la etiqueta `GachaStand` y el atributo `Island`. El servidor le añade un ProximityPrompt; al activarlo valida (isla desbloqueada, espacio en inventario, Yenes), tira con `GachaRoll` y envía el resultado por `Remotes.GachaResult`.
+- **Boosts:** `BoostService` activa boosts, los vende por Gemas y descuenta el tiempo cada segundo solo para jugadores conectados. Cualquier sistema que dé boosts usa `BoostService.grant`. Se replican como atributos `BoostOwned_<Id>` y `BoostTime_<Id>`. Los efectos se leen de `data.Boosts.Remaining.<Id> > 0` donde se calcula cada recompensa.
 - **Inventario:** toda la lógica está en `InventoryOps` (pura). Los cambios en personajes siempre pasan por `InventoryService` (por ejemplo `addCharacter`), que envía el estado al cliente por `Remotes.InventoryChanged`. El cliente pide acciones por `Remotes.InventoryAction` y recibe el resultado más un snapshot.
 - **Remotes:** los crea el servidor con `Remotes.event(name)`; el cliente los espera con `ReplicatedStorage.Remotes:WaitForChild(name)`. Nunca confiar en datos del cliente sin validarlos en el servidor.
 - **Acceso a datos:** los demás servicios usan `DataService.getData`/`waitForData` y `addCurrency`/`spendCurrency`. Yenes y Gemas se replican al cliente como atributos del jugador (`Yen`, `Gems`).
@@ -152,7 +155,7 @@ El diseño detallado (islas, personajes, probabilidades, pity) está en `docs/ga
 - [x] Pity por isla; se reinicia al obtener esa rareza.
 - [x] Valores iniciales de balance propuestos en `docs/balance.md` (pendientes de probar y ajustar).
 - [x] Boosts: Suerte, Dinero y Gemas, 15 min, drop en Raids o compra con Gemas.
-- [ ] Antes de publicar: eliminar `src/server/Dev/DevCheats.luau` y su llamada en `Main.server.luau` (atajo temporal de Studio: da Yenes y acorta los Raids a las oleadas 1, 10 y 20).
+- [ ] Antes de publicar: eliminar `src/server/Dev/DevCheats.luau` y su llamada en `Main.server.luau` (atajo temporal de Studio: da Yenes y Gemas, y acorta los Raids a las oleadas 1, 10 y 20).
 - [x] Diseño del MVP cerrado. En el MVP las Gemas solo se usan para comprar boosts.
 - [x] Raids entran en el MVP; Mazmorras quedan fuera.
 - [x] Diseño de Raids: acceso, jugadores, formato y recompensas.

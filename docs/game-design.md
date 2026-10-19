@@ -110,6 +110,9 @@ Reglas del pity:
 - **Yenes (principal):** se obtienen derrotando enemigos. Se gastan en gacha, portales y espacio de inventario.
 - **Gemas (secundaria):** se obtienen en Raids. Se gastan en boosts en la tienda; otros usos: pendiente.
 - **Boosts:** Suerte, Dinero y Gemas, de 15 minutos. Se obtienen como drop de enemigos en los Raids o comprándolos con Gemas en la tienda.
+  - Se gestionan desde el botón "Boosts": muestra cuántos tienes de cada uno, el tiempo activo, y los botones Activar y Comprar.
+  - Los boosts activos aparecen con su tiempo restante debajo de los Yenes y Gemas.
+  - Activar un boost que ya está activo suma 15 minutos más.
 
 ## Raids (MVP)
 
