@@ -85,6 +85,15 @@ local function pushSnapshot(player: Player, data: Data)
 	changedRemote:FireClient(player, InventoryOps.snapshot(data))
 end
 
+-- Re-sends the inventory to the client after a change made elsewhere
+-- (e.g. a raid achievement that adds an equip slot).
+function InventoryService.refresh(player: Player)
+	local data = DataService.getData(player)
+	if data then
+		pushSnapshot(player, data)
+	end
+end
+
 function InventoryService.hasSpace(player: Player): boolean
 	local data = DataService.getData(player)
 	return data ~= nil and InventoryOps.hasSpace(data)

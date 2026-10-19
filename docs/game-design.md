@@ -165,10 +165,15 @@ Cada enemigo del Raid da Gemas y Yenes. La cantidad sube según el tipo:
 
 Los enemigos del Raid también pueden soltar boosts (Suerte, Dinero o Gemas, 15 minutos). También se compran con Gemas en la tienda. Probabilidades y precios en `docs/balance.md`.
 
-Supuestos (a confirmar):
-- **Fallo:** si se acaba el tiempo, los jugadores conservan lo ganado con los enemigos derrotados, pero no reciben la recompensa del jefe final.
-- **Entrada en grupo:** al entrar, el jugador espera unos segundos en una sala para que otros se unan antes de empezar.
-- **Recompensa en grupo:** cada jugador recibe la recompensa completa de cada enemigo, sin repartirla.
+Funcionamiento:
+- **Lobby:** el portal de Raids de Nameku lleva al lobby, con una plataforma por dificultad y un portal de vuelta a Nameku.
+- **Fila:** usar una plataforma pone al jugador en la fila de esa dificultad (usarla otra vez lo saca). El Raid empieza 15 segundos después de que entra el primero, con todos los de la fila (máximo 20). La espera de la dificultad empieza a contar en ese momento.
+- **Arena:** cada grupo juega en su propia arena, así que varios grupos pueden hacer Raids a la vez.
+- **Oleadas:** la siguiente aparece 3 segundos después de derrotar a todos los enemigos de la actual.
+- **Recompensa en grupo:** cada jugador del Raid recibe la recompensa completa de cada enemigo que muere, sin repartirla, y tira su propio drop de boost.
+- **Fallo:** si se acaba el tiempo, los jugadores conservan lo ganado con los enemigos derrotados, pero el Raid no cuenta como completado.
+- **Salir:** desconectarse o reaparecer (por ejemplo, reiniciar el personaje) saca al jugador del Raid. Si no queda nadie, el Raid termina.
+- Al terminar (completado o fallido), los jugadores vuelven al lobby.
 
 Pendiente de definir:
 - Valores numéricos de vida de enemigos y recompensas por dificultad.

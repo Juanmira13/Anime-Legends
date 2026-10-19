@@ -1,7 +1,8 @@
 --!strict
 -- Studio-only test world. When the place has no island arrival points yet,
 -- builds the first two islands side by side on the baseplate, each with an
--- arrival point, enemy spawns, a gacha stand and portals between them.
+-- arrival point, enemy spawns, a gacha stand and portals between them, plus a
+-- raid portal on the first island and the raid lobby.
 
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -26,6 +27,14 @@ local ENEMIES = {
 }
 local ENEMY_SPACING = 14
 local ENEMY_DISTANCE = 30
+
+local RAID_COLOR = Color3.fromRGB(170, 80, 255)
+local RAID_LOBBY_ORIGIN = Vector3.new(-400, 0, 0)
+local RAID_PADS = {
+	{ difficulty = "Easy", color = Color3.fromRGB(110, 200, 110) },
+	{ difficulty = "Medium", color = Color3.fromRGB(230, 200, 80) },
+	{ difficulty = "Hard", color = Color3.fromRGB(220, 60, 60) },
+}
 
 local TestArena = {}
 
@@ -76,15 +85,15 @@ local function buildGacha(islandId: string, origin: Vector3, color: Color3, pare
 end
 
 -- A portal is a pad on the ground (holds the prompt) under a column of light.
-local function buildPortal(targetId: string, position: Vector3, color: Color3, parent: Instance)
+local function buildPortal(name: string, tag: string, attributes: { [string]: any }, position: Vector3, color: Color3, parent: Instance)
 	local pad = Instance.new("Part")
-	pad.Name = `Portal_{targetId}`
+	pad.Name = name
 	pad.Shape = Enum.PartType.Cylinder
 	pad.Size = Vector3.new(1, 10, 10)
 	pad.CFrame = CFrame.new(position + Vector3.new(0, 0.5, 0)) * CFrame.Angles(0, 0, math.rad(90))
 	pad.Color = color
 	pad.Material = Enum.Material.Neon
-	tagged(pad, "Portal", { TargetIsland = targetId }, parent)
+	tagged(pad, tag, attributes, parent)
 
 	local beam = Instance.new("Part")
 	beam.Name = "LightBeam"
@@ -116,14 +125,40 @@ local function buildIsland(index: number, folder: Folder)
 	buildEnemies(entry.island, entry.origin, islandFolder)
 	buildGacha(entry.island, entry.origin, entry.color, islandFolder)
 
+	local function islandPortal(target, offset: Vector3)
+		buildPortal(`Portal_{target.island}`, "Portal", { TargetIsland = target.island }, entry.origin + offset, target.color, islandFolder)
+	end
 	local nextEntry = LAYOUT[index + 1]
 	if nextEntry then
-		buildPortal(nextEntry.island, entry.origin + Vector3.new(-20, 0, 0), nextEntry.color, islandFolder)
+		islandPortal(nextEntry, Vector3.new(-20, 0, 0))
 	end
 	local previousEntry = LAYOUT[index - 1]
 	if previousEntry then
-		buildPortal(previousEntry.island, entry.origin + Vector3.new(-20, 0, 14), previousEntry.color, islandFolder)
+		islandPortal(previousEntry, Vector3.new(-20, 0, 14))
 	end
+	if index == 1 then
+		buildPortal("RaidPortal", "RaidPortal", {}, entry.origin + Vector3.new(-20, 0, -14), RAID_COLOR, islandFolder)
+	end
+end
+
+-- Raid lobby: arrival point, one pad per difficulty and a portal back to the first island.
+local function buildRaidLobby(folder: Folder)
+	local lobbyFolder = Instance.new("Folder")
+	lobbyFolder.Name = "RaidLobby"
+	lobbyFolder.Parent = folder
+
+	tagged(marker("Arrival", RAID_LOBBY_ORIGIN + Vector3.new(0, 0.5, 12)), "RaidLobbySpawn", {}, lobbyFolder)
+	for index, pad in RAID_PADS do
+		local part = Instance.new("Part")
+		part.Name = `RaidPad_{pad.difficulty}`
+		part.Size = Vector3.new(10, 1, 10)
+		part.Position = RAID_LOBBY_ORIGIN + Vector3.new((index - 2) * 18, 0.5, -10)
+		part.Color = pad.color
+		part.Material = Enum.Material.Neon
+		tagged(part, "RaidPad", { Difficulty = pad.difficulty }, lobbyFolder)
+	end
+	local first = LAYOUT[1]
+	buildPortal(`Portal_{first.island}`, "Portal", { TargetIsland = first.island }, RAID_LOBBY_ORIGIN + Vector3.new(-30, 0, 12), first.color, lobbyFolder)
 end
 
 function TestArena.buildIfNeeded()
@@ -136,11 +171,12 @@ function TestArena.buildIfNeeded()
 	for index in LAYOUT do
 		buildIsland(index, folder)
 	end
+	buildRaidLobby(folder)
 	local names = {}
 	for _, entry in LAYOUT do
 		table.insert(names, Islands.get(entry.island).displayName)
 	end
-	print(`[TestArena] No islands found; built a test world: {table.concat(names, ", ")}.`)
+	print(`[TestArena] No islands found; built a test world: {table.concat(names, ", ")} and the raid lobby.`)
 end
 
 return TestArena

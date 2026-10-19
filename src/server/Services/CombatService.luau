@@ -1,7 +1,8 @@
 --!strict
 -- Player-chosen targets and automatic attacks from equipped characters.
 -- Clicking an enemy selects it; equipped characters hit it on their cooldowns
--- while the player stays in range. Everyone who hit an enemy gets its yen.
+-- while the player stays in range. Everyone who hit an island enemy gets its
+-- yen (raid rewards are handled by RaidService).
 -- The current target id is replicated as the player attribute "TargetEnemyId".
 
 local Players = game:GetService("Players")
@@ -64,25 +65,42 @@ local function getAttackers(data: DataService.Data): ({ AttackClock.Attacker }, 
 	return attackers, characterIds
 end
 
+-- Island enemies need the island unlocked; raid enemies need the player in that raid.
+local function canAttack(player: Player, data: DataService.Data, enemy: EnemyService.Enemy): boolean
+	if enemy.island then
+		return data.UnlockedIslands[enemy.island] == true
+	end
+	if enemy.raidSessionId then
+		return player:GetAttribute("RaidSessionId") == enemy.raidSessionId
+	end
+	return false
+end
+
 local function onEnemyClicked(player: Player, enemy: EnemyService.Enemy)
 	local data = DataService.getData(player)
-	if data == nil or not data.UnlockedIslands[enemy.island] then
+	if data == nil or not canAttack(player, data, enemy) then
 		return
 	end
 	setTarget(player, enemy)
 end
 
 local function onEnemyDied(enemy: EnemyService.Enemy)
+	for player, state in states do
+		if state.target == enemy then
+			setTarget(player, nil)
+		end
+	end
+
+	-- Raid enemies are rewarded by RaidService.
+	local island, rank = enemy.island, enemy.rank
+	if island == nil or rank == nil then
+		return
+	end
 	for player in enemy.damagers do
 		local data = DataService.getData(player)
 		if data then
 			local moneyBoostActive = data.Boosts.Remaining.Money > 0
-			DataService.addCurrency(player, "Yen", Formulas.killReward(enemy.island, enemy.rank, moneyBoostActive))
-		end
-	end
-	for player, state in states do
-		if state.target == enemy then
-			setTarget(player, nil)
+			DataService.addCurrency(player, "Yen", Formulas.killReward(island, rank, moneyBoostActive))
 		end
 	end
 end

@@ -41,17 +41,18 @@ AnimeLegends/
 │   ├── server/               # ServerScriptService.Server — lógica del servidor
 │   │   ├── Main.server.luau  # Arranca los servicios en orden
 │   │   ├── Remotes.luau      # Crea los RemoteEvents en ReplicatedStorage.Remotes
-│   │   ├── Services/         # Data, Enemy, Combat, Gacha, Inventory, Portal (…Service)
+│   │   ├── Services/         # Data, Enemy, Combat, Gacha, Inventory, Portal, Raid (…Service)
 │   │   ├── Data/             # PlayerRecord (forma de los datos guardados)
 │   │   ├── Combat/           # Lógica pura de combate (AttackClock)
 │   │   ├── Gacha/            # Lógica pura del gacha (GachaRoll)
 │   │   ├── Inventory/        # Lógica pura del inventario (InventoryOps)
 │   │   ├── Portals/          # Lógica pura de desbloqueo y viaje (PortalOps)
+│   │   ├── Raids/            # Lógica pura de Raids (RaidOps)
 │   │   └── Dev/              # Ayudas solo para Studio (TestArena; DevCheats es temporal)
 │   ├── client/               # StarterPlayer.StarterPlayerScripts.Client — UI, efectos, control
 │   │   ├── Main.client.luau  # Arranca los controladores
 │   │   ├── UI/               # Theme (colores y constructores), Notify (avisos en pantalla)
-│   │   └── Controllers/      # Hud, Enemy (barras de vida), Gacha, Inventory (panel), Portal
+│   │   └── Controllers/      # Hud, Enemy (barras de vida), Gacha, Inventory (panel), Portal, Raid
 │   └── shared/               # ReplicatedStorage.Shared — módulos compartidos
 │       ├── Formulas.luau     # Valores derivados: daño, vida, Yenes, costos
 │       ├── Format.luau       # Formato de números para la UI (1.5K, 2.3M)
@@ -73,6 +74,7 @@ AnimeLegends/
   - `gacha.spec.luau`: probabilidades, Boost de Suerte, pity y distribución de tiradas.
   - `inventory.spec.luau`: añadir, equipar, desequipar, eliminar, "Equipar mejores" y ampliaciones.
   - `portal.spec.luau`: orden de desbloqueo, viajes e isla de aparición.
+  - `raid.spec.luau`: esperas, completados y logros de ranuras, recompensas, drops de boosts y oleadas.
 - **Revisión de tipos (incluye código con APIs de Roblox):** `rojo sourcemap default.project.json -o sourcemap.json` y luego `luau-lsp analyze --platform=roblox --definitions=globalTypes.d.luau --sourcemap=sourcemap.json src`. `luau-lsp` y `globalTypes.d.luau` vienen de github.com/JohnnyMorganz/luau-lsp. Debe terminar sin errores.
 
 ## 5. Convenciones de código
@@ -108,8 +110,14 @@ El diseño detallado (islas, personajes, probabilidades, pity) está en `docs/ga
   | `EnemySpawn` | `Island`, `Rank` | Punto de aparición de un enemigo |
   | `GachaStand` | `Island` | Máquina de gacha |
   | `Portal` | `TargetIsland` | Portal hacia otra isla (la Part base; el haz de luz es decorativo) |
+  | `RaidPortal` | — | Portal hacia el lobby de Raids (en Nameku) |
+  | `RaidLobbySpawn` | — | Punto de llegada al lobby de Raids |
+  | `RaidPad` | `Difficulty` (`Easy`, `Medium`, `Hard`) | Plataforma para entrar a la fila de un Raid |
 
-  En Studio, si no hay ningún `IslandSpawn`, `Dev/TestArena` construye un mundo de prueba con Nameku y Kono.
+  Modelos opcionales en `ServerStorage`: `EnemyModels.<Isla>.<Rango>` y `EnemyModels.Raid.<Tipo>` (Model con PrimaryPart) para enemigos, y `RaidArena` (Model con PrimaryPart, una Part `PlayerSpawn` y una carpeta `EnemySpawns` de Parts) para la arena de Raid. Sin ellos se usan bloques y una plataforma generada.
+
+  En Studio, si no hay ningún `IslandSpawn`, `Dev/TestArena` construye un mundo de prueba con Nameku, Kono y el lobby de Raids.
+- **Raids:** `RaidService` gestiona filas (empiezan 15 s después del primer jugador), una arena por grupo creada en el aire (`y = 1500`), oleadas, recompensas por enemigo para todos los jugadores del Raid y logros. El estado se replica en atributos del jugador (`RaidQueue`, `RaidSessionId`, `RaidWave`, `RaidEndsAt`, `RaidReady_<Dificultad>`); los tiempos son unix (comparar con `workspace:GetServerTimeNow()`). Las recompensas de enemigos de Raid las da `RaidService`, no `CombatService`.
 - **Portales:** desbloquean islas en orden pagando `Formulas.portalCost` y llevan al `IslandSpawn` de la isla. Las islas desbloqueadas se replican como atributos `Unlocked_<IslandId>` del jugador. Al entrar o reaparecer, el jugador aparece en `LastIsland`.
 - **Enemigos en el mapa:** cada punto de spawn es una Part con la etiqueta `EnemySpawn` y los atributos `Island` (id de isla) y `Rank` (`Easy`, `Medium`, `Hard`, `Boss`). El modelo se toma de `ServerStorage.EnemyModels.<Island>.<Rank>` (Model con PrimaryPart) o se usa un bloque provisional. El servidor pone en el modelo los atributos `EnemyId`, `DisplayName`, `Health` y `MaxHealth`; el cliente dibuja la barra con ellos.
 - **Combate:** el jugador hace clic en un enemigo (ClickDetector) y el servidor lo fija como objetivo si la isla está desbloqueada. Los personajes equipados golpean según su cooldown mientras el jugador esté a menos de `Balance.Combat.range`. El objetivo se replica en el atributo `TargetEnemyId` del jugador.
@@ -144,7 +152,7 @@ El diseño detallado (islas, personajes, probabilidades, pity) está en `docs/ga
 - [x] Pity por isla; se reinicia al obtener esa rareza.
 - [x] Valores iniciales de balance propuestos en `docs/balance.md` (pendientes de probar y ajustar).
 - [x] Boosts: Suerte, Dinero y Gemas, 15 min, drop en Raids o compra con Gemas.
-- [ ] Antes de publicar: eliminar `src/server/Dev/DevCheats.luau` y su llamada en `Main.server.luau` (atajo temporal que da Yenes en Studio).
+- [ ] Antes de publicar: eliminar `src/server/Dev/DevCheats.luau` y su llamada en `Main.server.luau` (atajo temporal de Studio: da Yenes y acorta los Raids a las oleadas 1, 10 y 20).
 - [x] Diseño del MVP cerrado. En el MVP las Gemas solo se usan para comprar boosts.
 - [x] Raids entran en el MVP; Mazmorras quedan fuera.
 - [x] Diseño de Raids: acceso, jugadores, formato y recompensas.

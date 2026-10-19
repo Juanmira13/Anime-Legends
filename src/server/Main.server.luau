@@ -7,6 +7,7 @@ local CombatService = require(Services.CombatService)
 local GachaService = require(Services.GachaService)
 local InventoryService = require(Services.InventoryService)
 local PortalService = require(Services.PortalService)
+local RaidService = require(Services.RaidService)
 local TestArena = require(script.Parent.Dev.TestArena)
 local DevCheats = require(script.Parent.Dev.DevCheats) -- TEMPORARY: remove before release
 
@@ -14,6 +15,7 @@ DevCheats.start() -- connect before players load
 InventoryService.start() -- connect before players load so it sends their first snapshot
 TestArena.buildIfNeeded() -- before PortalService so arrival points exist when players load
 PortalService.start() -- connect before players load to place them on their last island
+RaidService.start() -- connect before players load to replicate raid cooldowns
 DataService.start()
 EnemyService.start()
 CombatService.start()
