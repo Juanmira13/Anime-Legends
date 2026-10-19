@@ -41,16 +41,17 @@ AnimeLegends/
 │   ├── server/               # ServerScriptService.Server — lógica del servidor
 │   │   ├── Main.server.luau  # Arranca los servicios en orden
 │   │   ├── Remotes.luau      # Crea los RemoteEvents en ReplicatedStorage.Remotes
-│   │   ├── Services/         # DataService, EnemyService, CombatService, GachaService, InventoryService
+│   │   ├── Services/         # Data, Enemy, Combat, Gacha, Inventory, Portal (…Service)
 │   │   ├── Data/             # PlayerRecord (forma de los datos guardados)
 │   │   ├── Combat/           # Lógica pura de combate (AttackClock)
 │   │   ├── Gacha/            # Lógica pura del gacha (GachaRoll)
 │   │   ├── Inventory/        # Lógica pura del inventario (InventoryOps)
+│   │   ├── Portals/          # Lógica pura de desbloqueo y viaje (PortalOps)
 │   │   └── Dev/              # Ayudas solo para Studio (TestArena; DevCheats es temporal)
 │   ├── client/               # StarterPlayer.StarterPlayerScripts.Client — UI, efectos, control
 │   │   ├── Main.client.luau  # Arranca los controladores
-│   │   ├── UI/               # Theme: colores y constructores de UI comunes
-│   │   └── Controllers/      # Hud, Enemy (barras de vida), Gacha (resultado), Inventory (panel)
+│   │   ├── UI/               # Theme (colores y constructores), Notify (avisos en pantalla)
+│   │   └── Controllers/      # Hud, Enemy (barras de vida), Gacha, Inventory (panel), Portal
 │   └── shared/               # ReplicatedStorage.Shared — módulos compartidos
 │       ├── Formulas.luau     # Valores derivados: daño, vida, Yenes, costos
 │       ├── Format.luau       # Formato de números para la UI (1.5K, 2.3M)
@@ -71,6 +72,7 @@ AnimeLegends/
   - `combat.spec.luau`: tiempos de ataque, recompensas y formato de números.
   - `gacha.spec.luau`: probabilidades, Boost de Suerte, pity y distribución de tiradas.
   - `inventory.spec.luau`: añadir, equipar, desequipar, eliminar, "Equipar mejores" y ampliaciones.
+  - `portal.spec.luau`: orden de desbloqueo, viajes e isla de aparición.
 - **Revisión de tipos (incluye código con APIs de Roblox):** `rojo sourcemap default.project.json -o sourcemap.json` y luego `luau-lsp analyze --platform=roblox --definitions=globalTypes.d.luau --sourcemap=sourcemap.json src`. `luau-lsp` y `globalTypes.d.luau` vienen de github.com/JohnnyMorganz/luau-lsp. Debe terminar sin errores.
 
 ## 5. Convenciones de código
@@ -98,6 +100,17 @@ El diseño detallado (islas, personajes, probabilidades, pity) está en `docs/ga
 - **Raids:** lugar común con portal en Nameku, solo o en grupo (máximo 20 jugadores), 20 oleadas (mini jefe en la 10, jefe final en la 20) y 30 minutos de límite. Tres dificultades desbloqueadas desde el inicio, con más vida y mejores recompensas cuanto más difíciles. Espera independiente: Fácil 1 h, Medio 1 h 30 min, Difícil 2 h. No escalan con los jugadores. Cada enemigo da Gemas y Yenes según su tipo.
 - **Pity:** contadores por isla, uno por rareza; cada uno se reinicia al obtener esa rareza.
 - **Guardado:** `src/server/Services/DataService.luau` (DataStore con bloqueo de sesión, autoguardado cada 2 min, guardado al salir y al cerrar el servidor). La forma de los datos, los valores iniciales y las migraciones están en `src/server/Data/PlayerRecord.luau`. Al añadir un campo, ponerlo en `newData()`; la reconciliación lo añade a las partidas existentes. Si se renombra o cambia de forma un campo, subir `CurrentVersion` y añadir una migración.
+- **Construir el mapa:** el código no depende de posiciones; lee Parts etiquetadas (CollectionService) con atributos:
+
+  | Etiqueta | Atributos | Qué es |
+  |---|---|---|
+  | `IslandSpawn` | `Island` | Punto de llegada a una isla (uno por isla) |
+  | `EnemySpawn` | `Island`, `Rank` | Punto de aparición de un enemigo |
+  | `GachaStand` | `Island` | Máquina de gacha |
+  | `Portal` | `TargetIsland` | Portal hacia otra isla (la Part base; el haz de luz es decorativo) |
+
+  En Studio, si no hay ningún `IslandSpawn`, `Dev/TestArena` construye un mundo de prueba con Nameku y Kono.
+- **Portales:** desbloquean islas en orden pagando `Formulas.portalCost` y llevan al `IslandSpawn` de la isla. Las islas desbloqueadas se replican como atributos `Unlocked_<IslandId>` del jugador. Al entrar o reaparecer, el jugador aparece en `LastIsland`.
 - **Enemigos en el mapa:** cada punto de spawn es una Part con la etiqueta `EnemySpawn` y los atributos `Island` (id de isla) y `Rank` (`Easy`, `Medium`, `Hard`, `Boss`). El modelo se toma de `ServerStorage.EnemyModels.<Island>.<Rank>` (Model con PrimaryPart) o se usa un bloque provisional. El servidor pone en el modelo los atributos `EnemyId`, `DisplayName`, `Health` y `MaxHealth`; el cliente dibuja la barra con ellos.
 - **Combate:** el jugador hace clic en un enemigo (ClickDetector) y el servidor lo fija como objetivo si la isla está desbloqueada. Los personajes equipados golpean según su cooldown mientras el jugador esté a menos de `Balance.Combat.range`. El objetivo se replica en el atributo `TargetEnemyId` del jugador.
 - **Gacha en el mapa:** cada máquina es una Part con la etiqueta `GachaStand` y el atributo `Island`. El servidor le añade un ProximityPrompt; al activarlo valida (isla desbloqueada, espacio en inventario, Yenes), tira con `GachaRoll` y envía el resultado por `Remotes.GachaResult`.

@@ -177,6 +177,10 @@ Pendiente de definir:
 
 - Rayos de luz que transportan entre islas.
 - Se desbloquean con Yenes. Cada portal cuesta más según la dificultad de la isla de destino.
+- Las islas se desbloquean en orden: para desbloquear una hay que tener la anterior.
+- Al acercarse, el portal muestra "Desbloquear (costo ¥)" o "Viajar". Hay que mantener la tecla medio segundo para evitar pagar por accidente.
+- Al desbloquear una isla, el jugador viaja a ella directamente. Volver a islas anteriores es gratis.
+- Al entrar al juego o reaparecer, el jugador aparece en la última isla que visitó.
 
 ## Guardado
 

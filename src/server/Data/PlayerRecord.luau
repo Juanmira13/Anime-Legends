@@ -15,6 +15,7 @@ export type Data = {
 	Equipped: { string }, -- unique ids from Characters
 	InventoryUpgrades: number,
 	UnlockedIslands: { [string]: boolean },
+	LastIsland: string, -- where the player spawns when they join or respawn
 	-- Rolls since the last hit of each rarity, per island: Pity[islandId][rarityId].
 	Pity: { [string]: { [string]: number } },
 	Boosts: {
@@ -68,6 +69,7 @@ function PlayerRecord.newData(): Data
 		Equipped = { "1" },
 		InventoryUpgrades = 0,
 		UnlockedIslands = { Nameku = true },
+		LastIsland = "Nameku",
 		Pity = {},
 		Boosts = {
 			Owned = { Luck = 0, Money = 0, Gems = 0 },

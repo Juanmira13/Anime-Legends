@@ -1,88 +1,146 @@
 --!strict
--- Studio-only test setup. When the place has no enemy spawn points or gacha
--- stands yet, builds Nameku ones near the origin so they can be tried right away.
+-- Studio-only test world. When the place has no island arrival points yet,
+-- builds the first two islands side by side on the baseplate, each with an
+-- arrival point, enemy spawns, a gacha stand and portals between them.
 
 local CollectionService = game:GetService("CollectionService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
-local SPAWN_TAG = "EnemySpawn"
-local STAND_TAG = "GachaStand"
+local Islands = require(ReplicatedStorage:WaitForChild("Shared").Data.Islands)
 
--- Spawn points per rank, laid out along the X axis in front of the default spawn.
+local ISLAND_SPAWN_TAG = "IslandSpawn"
+
+-- Islands to build and where; the next island in the list is the portal target.
 local LAYOUT = {
+	{ island = "Nameku", origin = Vector3.new(0, 0, 0), color = Color3.fromRGB(120, 200, 120) },
+	{ island = "Kono", origin = Vector3.new(400, 0, 0), color = Color3.fromRGB(255, 150, 60) },
+}
+
+-- Enemy spawn points per rank, laid out in a row in front of the arrival point.
+local ENEMIES = {
 	{ rank = "Easy", count = 3 },
 	{ rank = "Medium", count = 2 },
 	{ rank = "Hard", count = 1 },
 	{ rank = "Boss", count = 1 },
 }
-local SPACING = 14
-local DISTANCE = 30
-local STAND_POSITION = Vector3.new(20, 3, 0)
+local ENEMY_SPACING = 14
+local ENEMY_DISTANCE = 30
 
 local TestArena = {}
 
-local function getFolder(): Folder
-	local existing = workspace:FindFirstChild("TestArena")
-	if existing and existing:IsA("Folder") then
-		return existing
+local function tagged(part: BasePart, tag: string, attributes: { [string]: any }, parent: Instance): BasePart
+	for name, value in attributes do
+		part:SetAttribute(name, value)
+	end
+	part.Anchored = true
+	part.Parent = parent
+	CollectionService:AddTag(part, tag)
+	return part
+end
+
+local function marker(name: string, position: Vector3): Part
+	local part = Instance.new("Part")
+	part.Name = name
+	part.Size = Vector3.new(4, 1, 4)
+	part.Position = position
+	part.CanCollide = false
+	part.Transparency = 1
+	return part
+end
+
+local function buildEnemies(islandId: string, origin: Vector3, parent: Instance)
+	local total = 0
+	for _, entry in ENEMIES do
+		total += entry.count
+	end
+	local index = 0
+	for _, entry in ENEMIES do
+		for _ = 1, entry.count do
+			local offset = Vector3.new((index - (total - 1) / 2) * ENEMY_SPACING, 0.5, -ENEMY_DISTANCE)
+			tagged(marker(`Spawn_{entry.rank}`, origin + offset), "EnemySpawn", { Island = islandId, Rank = entry.rank }, parent)
+			index += 1
+		end
+	end
+end
+
+local function buildGacha(islandId: string, origin: Vector3, color: Color3, parent: Instance)
+	local stand = Instance.new("Part")
+	stand.Name = `GachaStand_{islandId}`
+	stand.Shape = Enum.PartType.Ball
+	stand.Size = Vector3.one * 5
+	stand.Position = origin + Vector3.new(20, 3, 0)
+	stand.Color = color
+	stand.Material = Enum.Material.Neon
+	tagged(stand, "GachaStand", { Island = islandId }, parent)
+end
+
+-- A portal is a pad on the ground (holds the prompt) under a column of light.
+local function buildPortal(targetId: string, position: Vector3, color: Color3, parent: Instance)
+	local pad = Instance.new("Part")
+	pad.Name = `Portal_{targetId}`
+	pad.Shape = Enum.PartType.Cylinder
+	pad.Size = Vector3.new(1, 10, 10)
+	pad.CFrame = CFrame.new(position + Vector3.new(0, 0.5, 0)) * CFrame.Angles(0, 0, math.rad(90))
+	pad.Color = color
+	pad.Material = Enum.Material.Neon
+	tagged(pad, "Portal", { TargetIsland = targetId }, parent)
+
+	local beam = Instance.new("Part")
+	beam.Name = "LightBeam"
+	beam.Shape = Enum.PartType.Cylinder
+	beam.Size = Vector3.new(40, 7, 7)
+	beam.CFrame = CFrame.new(position + Vector3.new(0, 20, 0)) * CFrame.Angles(0, 0, math.rad(90))
+	beam.Color = color
+	beam.Material = Enum.Material.Neon
+	beam.Transparency = 0.45
+	beam.Anchored = true
+	beam.CanCollide = false
+	beam.CanQuery = false
+	beam.Parent = pad
+
+	local light = Instance.new("PointLight")
+	light.Color = color
+	light.Range = 20
+	light.Brightness = 3
+	light.Parent = beam
+end
+
+local function buildIsland(index: number, folder: Folder)
+	local entry = LAYOUT[index]
+	local islandFolder = Instance.new("Folder")
+	islandFolder.Name = entry.island
+	islandFolder.Parent = folder
+
+	tagged(marker("Arrival", entry.origin + Vector3.new(0, 0.5, 8)), ISLAND_SPAWN_TAG, { Island = entry.island }, islandFolder)
+	buildEnemies(entry.island, entry.origin, islandFolder)
+	buildGacha(entry.island, entry.origin, entry.color, islandFolder)
+
+	local nextEntry = LAYOUT[index + 1]
+	if nextEntry then
+		buildPortal(nextEntry.island, entry.origin + Vector3.new(-20, 0, 0), nextEntry.color, islandFolder)
+	end
+	local previousEntry = LAYOUT[index - 1]
+	if previousEntry then
+		buildPortal(previousEntry.island, entry.origin + Vector3.new(-20, 0, 14), previousEntry.color, islandFolder)
+	end
+end
+
+function TestArena.buildIfNeeded()
+	if not RunService:IsStudio() or #CollectionService:GetTagged(ISLAND_SPAWN_TAG) > 0 then
+		return
 	end
 	local folder = Instance.new("Folder")
 	folder.Name = "TestArena"
 	folder.Parent = workspace
-	return folder
-end
-
-local function buildSpawns(folder: Folder)
-	local total = 0
+	for index in LAYOUT do
+		buildIsland(index, folder)
+	end
+	local names = {}
 	for _, entry in LAYOUT do
-		total += entry.count
+		table.insert(names, Islands.get(entry.island).displayName)
 	end
-
-	local index = 0
-	for _, entry in LAYOUT do
-		for _ = 1, entry.count do
-			local spawnPoint = Instance.new("Part")
-			spawnPoint.Name = `Spawn_{entry.rank}`
-			spawnPoint.Size = Vector3.new(4, 1, 4)
-			spawnPoint.Position = Vector3.new((index - (total - 1) / 2) * SPACING, 0.5, -DISTANCE)
-			spawnPoint.Anchored = true
-			spawnPoint.CanCollide = false
-			spawnPoint.Transparency = 1
-			spawnPoint:SetAttribute("Island", "Nameku")
-			spawnPoint:SetAttribute("Rank", entry.rank)
-			spawnPoint.Parent = folder
-			CollectionService:AddTag(spawnPoint, SPAWN_TAG)
-			index += 1
-		end
-	end
-	print(`[TestArena] No enemy spawn points found; built {total} test spawns for Nameku.`)
-end
-
-local function buildStand(folder: Folder)
-	local stand = Instance.new("Part")
-	stand.Name = "GachaStand_Nameku"
-	stand.Shape = Enum.PartType.Ball
-	stand.Size = Vector3.one * 5
-	stand.Position = STAND_POSITION
-	stand.Color = Color3.fromRGB(255, 200, 60)
-	stand.Material = Enum.Material.Neon
-	stand.Anchored = true
-	stand:SetAttribute("Island", "Nameku")
-	stand.Parent = folder
-	CollectionService:AddTag(stand, STAND_TAG)
-	print("[TestArena] No gacha stands found; built a test stand for Nameku.")
-end
-
-function TestArena.buildIfNeeded()
-	if not RunService:IsStudio() then
-		return
-	end
-	if #CollectionService:GetTagged(SPAWN_TAG) == 0 then
-		buildSpawns(getFolder())
-	end
-	if #CollectionService:GetTagged(STAND_TAG) == 0 then
-		buildStand(getFolder())
-	end
+	print(`[TestArena] No islands found; built a test world: {table.concat(names, ", ")}.`)
 end
 
 return TestArena
