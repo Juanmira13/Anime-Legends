@@ -1,0 +1,14 @@
+# Rojo build output
+*.rbxl
+*.rbxlx
+*.rbxm
+*.rbxmx
+sourcemap.json
+
+# Studio lock files
+*.rbxl.lock
+*.rbxlx.lock
+
+# OS
+.DS_Store
+Thumbs.db
