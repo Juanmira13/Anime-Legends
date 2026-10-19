@@ -2,6 +2,17 @@
 
 Este archivo es la guía que Claude Code sigue en este proyecto. Mantenerlo corto, concreto y actualizado.
 
+**Documentos del proyecto** (se actualizan juntos en cada cambio; ver sección 7):
+
+| Documento | Qué contiene |
+|---|---|
+| `CLAUDE.md` (este archivo) | Constitución: visión, stack, reglas de arquitectura y de trabajo |
+| `docs/spec.md` | Especificación: qué hace el juego, requisitos y criterios de aceptación |
+| `docs/plan.md` | Plan técnico: arquitectura, flujo de datos y fases |
+| `docs/tasks.md` | Tareas: hechas (con su commit) y pendientes |
+| `docs/game-design.md` | Diseño detallado de cada sistema |
+| `docs/balance.md` | Valores numéricos y el modelo que los genera |
+
 ## 1. Visión del proyecto
 
 - **Qué es:** videojuego de Roblox basado en distintos animes japoneses (Dragon Ball, Naruto, Black Clover, etc.). Es un simulador de progresión entre mundos con lucha contra enemigos, obtención de objetos, dinero y personajes.
@@ -14,7 +25,7 @@ Este archivo es la guía que Claude Code sigue en este proyecto. Mantenerlo cort
   - Enemigos estáticos con barra de vida sobre la cabeza. Al ser derrotados dan dinero (Yenes).
   - Sistema de gacha por isla con 7 rarezas: Común, Poco común, Raro, Épico, Legendario, Mítico y Secreto. Los personajes son de cada anime (p. ej., Goku y Vegeta en el mundo de Dragon Ball; Naruto y Sasuke en el de Naruto), con nombres ligeramente modificados.
   - Daño por personaje según rareza: más alto en Mítico y Secreto, más bajo en Común y Poco común. Cada personaje tiene un cooldown entre golpes.
-  - Inventario limitado de N personajes. El jugador es dueño de sus personajes y puede equiparlos y desequiparlos.
+  - Inventario limitado (50 personajes al inicio, ampliable). El jugador es dueño de sus personajes y puede equiparlos y desequiparlos.
   - Dos monedas: Yenes (principal) y Gemas (secundaria), para comprar gacha, boosts e items.
   - Portales (rayos de luz) como sistema de transporte entre mundos.
   - Raids: fuente de Gemas y de mejoras del límite de personajes equipados.
@@ -59,8 +70,13 @@ AnimeLegends/
 │       ├── Format.luau       # Formato de números para la UI (1.5K, 2.3M)
 │       ├── Config/           # Constantes: Balance, Rarities, Raids, Boosts
 │       └── Data/             # Contenido: Islands, Characters
-├── docs/                     # Diseño, decisiones de arquitectura
-└── tests/                    # Pruebas
+├── docs/
+│   ├── spec.md               # Especificación (qué)
+│   ├── plan.md               # Plan técnico (cómo)
+│   ├── tasks.md              # Tareas hechas y pendientes
+│   ├── game-design.md        # Diseño detallado
+│   └── balance.md            # Valores numéricos
+└── tests/                    # Pruebas (*.spec.luau, run.py, bundle.py)
 ```
 
 ## 4. Comandos
@@ -138,8 +154,12 @@ El diseño detallado (islas, personajes, probabilidades, pity) está en `docs/ga
 - No añadir dependencias nuevas sin preguntar.
 - No modificar assets binarios ni datos de diseño sin confirmación.
 - Ejecutar las pruebas o el build después de cambios relevantes, e informar del resultado tal cual.
+- **Mantener los documentos al día:** cada cambio de diseño, regla o sistema se guarda en este archivo (constitución) si afecta a sus reglas, y siempre se refleja en `docs/spec.md`, `docs/plan.md` y `docs/tasks.md` dentro del mismo trabajo y del mismo commit. El detalle va en `docs/game-design.md` y los números en `docs/balance.md`; spec y plan enlazan a ellos en lugar de duplicarlos.
+- Hacer commit y push solo cuando el usuario lo pida.
 
-## 8. Decisiones abiertas
+## 8. Registro de decisiones
+
+Decisiones cerradas. Las tareas pendientes están en `docs/tasks.md`.
 
 - [x] Definir la visión y el MVP (sección 1).
 - [x] Elegir motor y stack (sección 2).
@@ -155,11 +175,14 @@ El diseño detallado (islas, personajes, probabilidades, pity) está en `docs/ga
 - [x] Pity por isla; se reinicia al obtener esa rareza.
 - [x] Valores iniciales de balance propuestos en `docs/balance.md` (pendientes de probar y ajustar).
 - [x] Boosts: Suerte, Dinero y Gemas, 15 min, drop en Raids o compra con Gemas.
-- [ ] Antes de publicar: eliminar `src/server/Dev/DevCheats.luau` y su llamada en `Main.server.luau` (atajo temporal de Studio: da Yenes y Gemas, y acorta los Raids a las oleadas 1, 10 y 20).
 - [x] Diseño del MVP cerrado. En el MVP las Gemas solo se usan para comprar boosts.
 - [x] Raids entran en el MVP; Mazmorras quedan fuera.
 - [x] Diseño de Raids: acceso, jugadores, formato y recompensas.
 - [x] Raids: ranuras extra por Raids completados, máximo 20 jugadores, 3 dificultades.
 - [x] Raids: diferencias entre dificultades, desbloqueo, esperas y logros de ranuras.
-- [ ] Confirmar si el máximo de equipados es 6 (solo logros) o si se mantienen 5 ranuras extra (máximo 8).
+- [x] Máximo de equipados: 6 (3 iniciales + 3 logros de Raid).
 - [x] Respawn: 20 segundos los enemigos normales, 1 minuto los jefes.
+- [x] Nombres provisionales de personajes aceptados.
+- [x] Inicio lento aceptado: el jugador nuevo empieza con 0 Yenes y solo Kurilin (primera tirada a los ~6 min).
+- [x] Eliminar personajes: permitido sin recompensa; no se puede eliminar uno equipado ni el último.
+- [x] `DevCheats` es temporal y se elimina antes de publicar (ver `docs/tasks.md`).
