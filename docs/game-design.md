@@ -63,6 +63,13 @@ Probabilidades (suman 100%):
 | Mítico | 1% |
 | Secreto | 0.1% |
 
+Cómo se tira:
+- Cada isla tiene una máquina de gacha. El jugador se acerca y la activa (tecla E, o tocarla en móvil).
+- Cada tirada cuesta Yenes según la isla (ver `docs/balance.md`). Solo se puede tirar en islas desbloqueadas y con espacio libre en el inventario.
+- El resultado se muestra en pantalla con el nombre del personaje y el color de su rareza.
+
+Con el Boost de Suerte activo, las probabilidades de Legendario, Mítico y Secreto se duplican (4%, 2% y 0.2%) y la diferencia se resta de Común (queda en 46.9%), para que el total siga siendo 100%.
+
 ### Pity (obtención garantizada)
 
 | Rareza | Tiradas hasta garantía |

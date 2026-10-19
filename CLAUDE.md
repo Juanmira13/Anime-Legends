@@ -40,13 +40,15 @@ AnimeLegends/
 ├── src/
 │   ├── server/               # ServerScriptService.Server — lógica del servidor
 │   │   ├── Main.server.luau  # Arranca los servicios en orden
-│   │   ├── Services/         # DataService, EnemyService, CombatService
+│   │   ├── Remotes.luau      # Crea los RemoteEvents en ReplicatedStorage.Remotes
+│   │   ├── Services/         # DataService, EnemyService, CombatService, GachaService
 │   │   ├── Data/             # PlayerRecord (forma de los datos guardados)
 │   │   ├── Combat/           # Lógica pura de combate (AttackClock)
+│   │   ├── Gacha/            # Lógica pura del gacha (GachaRoll)
 │   │   └── Dev/              # Ayudas solo para Studio (TestArena)
 │   ├── client/               # StarterPlayer.StarterPlayerScripts.Client — UI, efectos, control
 │   │   ├── Main.client.luau  # Arranca los controladores
-│   │   └── Controllers/      # EnemyController (barras de vida, resaltado del objetivo)
+│   │   └── Controllers/      # EnemyController (barras de vida), GachaController (resultado de tiradas)
 │   └── shared/               # ReplicatedStorage.Shared — módulos compartidos
 │       ├── Formulas.luau     # Valores derivados: daño, vida, Yenes, costos
 │       ├── Format.luau       # Formato de números para la UI (1.5K, 2.3M)
@@ -65,6 +67,7 @@ AnimeLegends/
   - `balance.spec.luau`: `Formulas` reproduce las tablas de `docs/balance.md`. Si se cambia el balance, actualizar ambos.
   - `player-record.spec.luau`: datos iniciales, reconciliación, migraciones y bloqueo de sesión.
   - `combat.spec.luau`: tiempos de ataque, recompensas y formato de números.
+  - `gacha.spec.luau`: probabilidades, Boost de Suerte, pity y distribución de tiradas.
 - **Revisión de tipos (incluye código con APIs de Roblox):** `rojo sourcemap default.project.json -o sourcemap.json` y luego `luau-lsp analyze --platform=roblox --definitions=globalTypes.d.luau --sourcemap=sourcemap.json src`. `luau-lsp` y `globalTypes.d.luau` vienen de github.com/JohnnyMorganz/luau-lsp. Debe terminar sin errores.
 
 ## 5. Convenciones de código
@@ -94,6 +97,8 @@ El diseño detallado (islas, personajes, probabilidades, pity) está en `docs/ga
 - **Guardado:** `src/server/Services/DataService.luau` (DataStore con bloqueo de sesión, autoguardado cada 2 min, guardado al salir y al cerrar el servidor). La forma de los datos, los valores iniciales y las migraciones están en `src/server/Data/PlayerRecord.luau`. Al añadir un campo, ponerlo en `newData()`; la reconciliación lo añade a las partidas existentes. Si se renombra o cambia de forma un campo, subir `CurrentVersion` y añadir una migración.
 - **Enemigos en el mapa:** cada punto de spawn es una Part con la etiqueta `EnemySpawn` y los atributos `Island` (id de isla) y `Rank` (`Easy`, `Medium`, `Hard`, `Boss`). El modelo se toma de `ServerStorage.EnemyModels.<Island>.<Rank>` (Model con PrimaryPart) o se usa un bloque provisional. El servidor pone en el modelo los atributos `EnemyId`, `DisplayName`, `Health` y `MaxHealth`; el cliente dibuja la barra con ellos.
 - **Combate:** el jugador hace clic en un enemigo (ClickDetector) y el servidor lo fija como objetivo si la isla está desbloqueada. Los personajes equipados golpean según su cooldown mientras el jugador esté a menos de `Balance.Combat.range`. El objetivo se replica en el atributo `TargetEnemyId` del jugador.
+- **Gacha en el mapa:** cada máquina es una Part con la etiqueta `GachaStand` y el atributo `Island`. El servidor le añade un ProximityPrompt; al activarlo valida (isla desbloqueada, espacio en inventario, Yenes), tira con `GachaRoll` y envía el resultado por `Remotes.GachaResult`.
+- **Remotes:** los crea el servidor con `Remotes.event(name)`; el cliente los espera con `ReplicatedStorage.Remotes:WaitForChild(name)`. Nunca confiar en datos del cliente sin validarlos en el servidor.
 - **Acceso a datos:** los demás servicios usan `DataService.getData`/`waitForData` y `addCurrency`/`spendCurrency`. Yenes y Gemas se replican al cliente como atributos del jugador (`Yen`, `Gems`).
 - **Fuente de verdad de datos:** las constantes viven en `src/shared/Config/` y el contenido (islas, personajes) en `src/shared/Data/`. Los valores derivados (daño, vida, Yenes, costos) se calculan siempre con `Shared.Formulas`; nunca escribir esos números a mano en otro sitio.
 - **Lógica sensible en el servidor:** tiradas del gacha, daño, monedas y pity se calculan en el servidor; el cliente solo envía peticiones y muestra resultados.
@@ -122,6 +127,7 @@ El diseño detallado (islas, personajes, probabilidades, pity) está en `docs/ga
 - [x] Pity por isla; se reinicia al obtener esa rareza.
 - [x] Valores iniciales de balance propuestos en `docs/balance.md` (pendientes de probar y ajustar).
 - [x] Boosts: Suerte, Dinero y Gemas, 15 min, drop en Raids o compra con Gemas.
+- [ ] Antes de publicar: eliminar `src/server/Dev/DevCheats.luau` y su llamada en `Main.server.luau` (atajo temporal que da Yenes en Studio).
 - [x] Diseño del MVP cerrado. En el MVP las Gemas solo se usan para comprar boosts.
 - [x] Raids entran en el MVP; Mazmorras quedan fuera.
 - [x] Diseño de Raids: acceso, jugadores, formato y recompensas.

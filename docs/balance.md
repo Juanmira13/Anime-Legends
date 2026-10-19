@@ -180,6 +180,10 @@ El Boost de Gemas es el más caro porque se paga a sí mismo: activado durante u
 
 Pendiente: otros usos de las Gemas (tiradas de gacha con Gemas, items).
 
+## Inicio del jugador
+
+El jugador nuevo empieza con 0 Yenes y solo Kurilin (10 de daño cada 2 s). Un enemigo Fácil de Nameku tarda ~34 s y la primera tirada de gacha llega a los ~6 minutos. Es un ritmo de inicio aceptado a propósito: no acelerarlo sin decidirlo antes.
+
 ## Cómo ajustar
 
 El modelo está en estas constantes; cambiar una reajusta todas las tablas de forma proporcional:
