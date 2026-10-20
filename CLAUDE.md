@@ -47,6 +47,7 @@ Rojo sincroniza los archivos `.luau` con Roblox Studio. El mapeo está en `defau
 AnimeLegends/
 ├── CLAUDE.md                 # Este archivo
 ├── default.project.json      # Mapeo de Rojo: carpetas → servicios de Roblox
+├── builder.project.json      # Plugin "Island Builder" de Studio (src/builder + src/shared)
 ├── rokit.toml                # Versiones fijadas de las herramientas
 ├── src/
 │   ├── server/               # ServerScriptService.Server — lógica del servidor
@@ -60,17 +61,25 @@ AnimeLegends/
 │   │   ├── Portals/          # Lógica pura de desbloqueo y viaje (PortalOps)
 │   │   ├── Raids/            # Lógica pura de Raids (RaidOps)
 │   │   ├── Boosts/           # Lógica pura de boosts (BoostOps)
-│   │   └── Dev/              # Ayudas solo para Studio (TestArena; DevCheats es temporal)
+│   │   └── Dev/              # Ayudas solo para Studio (TestArena, MapValidator; DevCheats es temporal)
 │   ├── client/               # StarterPlayer.StarterPlayerScripts.Client — UI, efectos, control
 │   │   ├── Main.client.luau  # Arranca los controladores
 │   │   ├── UI/               # Theme (colores y constructores), Notify (avisos en pantalla)
 │   │   ├── Followers/        # Lógica pura de los personajes visibles (FollowerMotion)
-│   │   └── Controllers/      # Hud, Enemy (barras de vida), Gacha, Inventory (panel), Portal, Raid, Boost, Follower
-│   └── shared/               # ReplicatedStorage.Shared — módulos compartidos
-│       ├── Formulas.luau     # Valores derivados: daño, vida, Yenes, costos
-│       ├── Format.luau       # Formato de números para la UI (1.5K, 2.3M)
-│       ├── Config/           # Constantes: Balance, Rarities, Raids, Boosts
-│       └── Data/             # Contenido: Islands, Characters
+│   │   └── Controllers/      # Hud, Enemy (barras de vida), Gacha, Inventory (panel), Portal, Raid, Boost, Follower, Ambience, Sea
+│   ├── shared/               # ReplicatedStorage.Shared — módulos compartidos
+│   │   ├── Formulas.luau     # Valores derivados: daño, vida, Yenes, costos
+│   │   ├── Format.luau       # Formato de números para la UI (1.5K, 2.3M)
+│   │   ├── Config/           # Constantes: Balance, Rarities, Raids, Boosts, World (mar e islas), Ambience (look por área)
+│   │   ├── Map/              # MapCheck (reglas puras del mapa), MapScan (recolecta y valida), AmbienceApply
+│   │   └── Data/             # Contenido: Islands, Characters
+│   └── builder/              # Plugin Island Builder (no se publica en el juego)
+│       ├── Main.server.luau  # Panel: construir mundo/isla/lobby, validar, puntos de foto
+│       ├── IslandBuilder.luau # Construye una isla: terreno, mar, jugabilidad, decoración
+│       ├── RaidLobby.luau    # Lobby de Raids (templo flotante)
+│       ├── Gen/              # Lógica pura: Rng, Shape (terreno), Scatter, LayoutCheck
+│       ├── Kit/              # Parts, TerrainWriter, Sea, Gameplay, Nature
+│       └── Islands/          # Una definición por isla (Nameku detallada; Generic v0) + Registry
 ├── docs/
 │   ├── spec.md               # Especificación (qué)
 │   ├── plan.md               # Plan técnico (cómo)
@@ -79,9 +88,12 @@ AnimeLegends/
 │   └── balance.md            # Valores numéricos
 ├── assets/                   # Modelos (.rbxmx/.rbxm) que Rojo sincroniza
 │   ├── CharacterModels/      # ReplicatedStorage.CharacterModels.<Isla>.<IdPersonaje> — luchadores
-│   └── EnemyModels/          # ServerStorage.EnemyModels.<Isla>.<Rango> y .Raid.<Tipo> — enemigos
+│   ├── EnemyModels/          # ServerStorage.EnemyModels.<Isla>.<Rango> y .Raid.<Tipo> — enemigos
+│   └── Textures/             # Imágenes para subir a Roblox (SeaCartoon.png); Rojo no las sincroniza
 ├── tools/
-│   └── build_rigs.py         # Genera los rigs R6 provisionales que falten
+│   ├── build_rigs.py         # Genera los rigs R6 provisionales que falten
+│   ├── build_textures.py     # Genera la textura cartoon del mar
+│   └── typecheck.py          # Revisión de tipos del juego y del plugin
 └── tests/                    # Pruebas (*.spec.luau, run.py, bundle.py)
 ```
 
@@ -90,7 +102,7 @@ AnimeLegends/
 - **Instalar herramientas:** `rokit install` (instala la versión de Rojo fijada en `rokit.toml`).
 - **Ejecutar en desarrollo:** `rojo serve`, y en Roblox Studio conectar desde el plugin de Rojo (pestaña Plugins → Rojo → Connect).
 - **Build / exportar:** `rojo build -o AnimeLegends.rbxlx` (los `.rbxl`/`.rbxlx` están en `.gitignore`).
-- **Pruebas:** `python tests/run.py` ejecuta todos los `tests/*.spec.luau`. Requiere Python y el CLI de Luau (`luau`, de github.com/luau-lang/luau/releases; si no está en el PATH, indicar su ruta en la variable `LUAU`). `tests/bundle.py` empaqueta `src/shared`, `src/server` y `src/client` con una imitación de `script` para que los `require` por instancia funcionen fuera de Studio; solo sirve para módulos puros, sin servicios de Roblox.
+- **Pruebas:** `python tests/run.py` ejecuta todos los `tests/*.spec.luau`. Requiere Python y el CLI de Luau (`luau`, de github.com/luau-lang/luau/releases; si no está en el PATH, indicar su ruta en la variable `LUAU`). `tests/bundle.py` empaqueta `src/shared`, `src/server`, `src/client` y `src/builder` con una imitación de `script` para que los `require` por instancia funcionen fuera de Studio; solo sirve para módulos puros, sin servicios de Roblox.
   - `balance.spec.luau`: `Formulas` reproduce las tablas de `docs/balance.md`. Si se cambia el balance, actualizar ambos.
   - `player-record.spec.luau`: datos iniciales, reconciliación, migraciones y bloqueo de sesión.
   - `combat.spec.luau`: tiempos de ataque, recompensas y formato de números.
@@ -100,8 +112,12 @@ AnimeLegends/
   - `raid.spec.luau`: esperas, completados y logros de ranuras, recompensas, drops de boosts y oleadas.
   - `boost.spec.luau`: conceder, activar (acumula duración) y descontar tiempo.
   - `followers.spec.luau`: formación, arco alrededor del objetivo, embestida (más corta que el cooldown más rápido), velocidad de marcha, ciclo de caminar y giro de los personajes visibles.
+  - `worldgen.spec.luau`: aleatorio con semilla, forma del terreno, materiales, orilla, vóxeles de tierra y agua, dispersión, y reglas de trazado (`LayoutCheck`) sobre las 6 islas reales.
+  - `map.spec.luau`: reglas del mapa (`MapCheck`), configuración del mundo y ambientación de todas las áreas.
 - **Modelos provisionales:** `python tools/build_rigs.py` crea el rig R6 de cada luchador y enemigo que no tenga modelo (nunca sobrescribe; `--force` regenera solo los `.rbxmx`). `python tools/build_rigs.py --check` falla si falta alguno: ejecutarlo al añadir personajes, islas, rangos o tipos de enemigo de Raid.
-- **Revisión de tipos (incluye código con APIs de Roblox):** `rojo sourcemap default.project.json -o sourcemap.json` y luego `luau-lsp analyze --platform=roblox --definitions=globalTypes.d.luau --sourcemap=sourcemap.json src`. `luau-lsp` y `globalTypes.d.luau` vienen de github.com/JohnnyMorganz/luau-lsp. Debe terminar sin errores.
+- **Plugin Island Builder:** `rojo build builder.project.json --plugin AnimeLegendsBuilder.rbxm` lo instala en la carpeta de plugins de Studio (volver a ejecutarlo tras cada cambio en `src/builder`). En Studio: pestaña Plugins → Anime Legends → Island Builder.
+- **Textura del mar:** `python tools/build_textures.py` genera `assets/Textures/SeaCartoon.png`. Subirla a Roblox y poner su id en `World.Sea.textureId`.
+- **Revisión de tipos (incluye código con APIs de Roblox):** `python tools/typecheck.py`. Hace tres pasadas con `luau-lsp`: juego (con `sourcemap.json`), plugin (con `builder-sourcemap.json`) y una pasada sin mapa de fuentes que detecta propiedades inexistentes de clases de Roblox (con mapa de fuentes, `luau-lsp` no tipa bien `workspace` ni `game` y esos errores se escapan). Requiere `rojo`, `luau-lsp` y `globalTypes.d.luau` (de github.com/JohnnyMorganz/luau-lsp); si no están en el PATH o en la raíz, indicar sus rutas en `ROJO`, `LUAU_LSP` y `LUAU_DEFINITIONS`. Debe terminar sin errores.
 
 ## 5. Convenciones de código
 
@@ -128,6 +144,9 @@ El diseño detallado (islas, personajes, probabilidades, pity) está en `docs/ga
 - **Raids:** lugar común con portal en Nameku, solo o en grupo (máximo 20 jugadores), 20 oleadas (mini jefe en la 10, jefe final en la 20) y 30 minutos de límite. Tres dificultades desbloqueadas desde el inicio, con más vida y mejores recompensas cuanto más difíciles. Espera independiente: Fácil 1 h, Medio 1 h 30 min, Difícil 2 h. No escalan con los jugadores. Cada enemigo da Gemas y Yenes según su tipo.
 - **Pity:** contadores por isla, uno por rareza; cada uno se reinicia al obtener esa rareza.
 - **Guardado:** `src/server/Services/DataService.luau` (DataStore con bloqueo de sesión, autoguardado cada 2 min, guardado al salir y al cerrar el servidor). La forma de los datos, los valores iniciales y las migraciones están en `src/server/Data/PlayerRecord.luau`. Al añadir un campo, ponerlo en `newData()`; la reconciliación lo añade a las partidas existentes. Si se renombra o cambia de forma un campo, subir `CurrentVersion` y añadir una migración.
+- **Mundo:** las islas están en el mar (no flotan), en fila sobre +X a 2000 studs una de otra (Nameku en el origen), con el nivel del mar en y = 0 (`Shared/Config/World`). Cada isla ocupa un cuadrado de mar de 2000 studs con su orilla de espuma y una textura cartoon animada encima del agua Terrain; alrededor de todas, un océano (`Workspace.Map.Ocean`) llega 4000 studs más allá para que el mar alcance el horizonte. El lobby de Raids es un templo flotante en el cielo.
+- **Island Builder (plugin):** construye las islas en Studio desde código, en `Workspace.Map.<Área>` (`Gameplay`, `Decor`, `Sea`). Cada isla es un trazado puro (`Islands/<Isla>Layout` o `GenericLayout`: costa, colinas, plaza, 4 zonas, camino, mesetas) y una función de decoración. El terreno, los objetos y los puntos de jugabilidad salen de las mismas funciones de `Gen/Shape`, así que siempre coinciden. Reconstruir borra y regenera el área salvo la carpeta `Map.<Área>.Manual`, que es para retoques a mano. Antes de construir comprueba el trazado con `LayoutCheck`; después valida el mapa con `MapCheck`. Los puntos de foto (cámaras fijas para capturas) se guardan en `ServerStorage.PhotoSpots`.
+- **Ambientación:** cada área (isla, `RaidLobby`, `Raid`) tiene su iluminación, cielo, niebla, color, colores de terreno y agua y partículas en `Shared/Config/Ambience`. El servidor replica el área del jugador en el atributo `CurrentArea` (`PortalService` y `RaidService` al teletransportar) y `AmbienceController` la aplica. Los colores de material del terreno son globales en Roblox, por eso se aplican por área en el cliente.
 - **Construir el mapa:** el código no depende de posiciones; lee Parts etiquetadas (CollectionService) con atributos:
 
   | Etiqueta | Atributos | Qué es |
@@ -142,7 +161,7 @@ El diseño detallado (islas, personajes, probabilidades, pity) está en `docs/ga
 
   Modelos de enemigos en `ServerStorage.EnemyModels.<Isla>.<Rango>` y `EnemyModels.Raid.<Tipo>` (vienen de `assets/EnemyModels`, ver **Modelos**). Opcional: `ServerStorage.RaidArena` (Model con PrimaryPart, una Part `PlayerSpawn` y una carpeta `EnemySpawns` de Parts) para la arena de Raid; sin ella se usa una plataforma generada.
 
-  En Studio, si no hay ningún `IslandSpawn`, `Dev/TestArena` construye un mundo de prueba con Nameku, Kono y el lobby de Raids.
+  En Studio, si no hay ningún `IslandSpawn`, `Dev/TestArena` construye un mundo de prueba con Nameku, Kono y el lobby de Raids. Si existe `Workspace.Map`, `Dev/MapValidator` lo valida al arrancar y muestra en la salida lo que falte. Para que el validador sepa en qué área está cada Part, las Parts hechas a mano van dentro de `Workspace.Map.<Área>`.
 - **Raids:** `RaidService` gestiona filas (empiezan 15 s después del primer jugador), una arena por grupo creada en el aire (`y = 1500`), oleadas, recompensas por enemigo para todos los jugadores del Raid y logros. El estado se replica en atributos del jugador (`RaidQueue`, `RaidSessionId`, `RaidWave`, `RaidEndsAt`, `RaidReady_<Dificultad>`); los tiempos son unix (comparar con `workspace:GetServerTimeNow()`). Las recompensas de enemigos de Raid las da `RaidService`, no `CombatService`.
 - **Portales:** desbloquean islas en orden pagando `Formulas.portalCost` y llevan al `IslandSpawn` de la isla. Las islas desbloqueadas se replican como atributos `Unlocked_<IslandId>` del jugador. Al entrar o reaparecer, el jugador aparece en `LastIsland`.
 - **Enemigos en el mapa:** cada punto de spawn es una Part con la etiqueta `EnemySpawn` y los atributos `Island` (id de isla) y `Rank` (`Easy`, `Medium`, `Hard`, `Boss`). El modelo se toma de `ServerStorage.EnemyModels.<Island>.<Rank>` (ver **Modelos**); el ClickDetector va en el modelo, así que cualquier parte sirve para elegirlo. El servidor pone en el modelo los atributos `EnemyId`, `DisplayName`, `Health` y `MaxHealth`; el cliente dibuja la barra con ellos.
@@ -198,3 +217,6 @@ Decisiones cerradas. Las tareas pendientes están en `docs/tasks.md`.
 - [x] `DevCheats` es temporal y se elimina antes de publicar (ver `docs/tasks.md`).
 - [x] Personajes visibles para todos los jugadores; los golpes se sincronizan con un evento del servidor por golpe (`CharacterHit`).
 - [x] Modelos en rig R6, uno por luchador y por enemigo, en `assets/` para exportarlos y rehacerlos en Blender.
+- [x] Islas de alta calidad: dirección de arte por anime aprobada (`docs/game-design.md`), construidas por código con el plugin Island Builder; Nameku primero como isla de prueba del estilo.
+- [x] Las islas están en el mar (no flotan), con mar de estilo cartoon (textura animada y espuma en la orilla).
+- [x] La ambientación por isla (luz, cielo, niebla, partículas) entra en la Fase 9.

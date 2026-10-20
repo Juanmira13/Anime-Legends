@@ -12,7 +12,8 @@
 -- or a generated platform, placed high above the map.
 --
 -- Replicated to the client as player attributes: RaidQueue, RaidQueueStartsAt,
--- RaidSessionId, RaidDifficulty, RaidWave, RaidEndsAt, RaidReady_<Difficulty>.
+-- RaidSessionId, RaidDifficulty, RaidWave, RaidEndsAt, RaidReady_<Difficulty>,
+-- and CurrentArea ("RaidLobby" or "Raid") for the client's ambience.
 -- Times are unix seconds (compare with workspace:GetServerTimeNow()).
 
 local CollectionService = game:GetService("CollectionService")
@@ -97,17 +98,21 @@ local function findTagged(tag: string): BasePart?
 	return nil
 end
 
-local function moveTo(player: Player, cframe: CFrame)
+local function moveTo(player: Player, cframe: CFrame, area: string)
 	local character = player.Character
 	if character and character.PrimaryPart then
-		character:PivotTo(cframe * CFrame.new(0, 3, 0))
+		local target = cframe * CFrame.new(0, 3, 0)
+		-- With streaming, load the destination first so the player does not fall through it.
+		pcall(player.RequestStreamAroundAsync, player, target.Position)
+		character:PivotTo(target)
+		player:SetAttribute("CurrentArea", area)
 	end
 end
 
 local function sendToLobby(player: Player)
 	local lobby = findTagged(LOBBY_SPAWN_TAG)
 	if lobby then
-		moveTo(player, lobby.CFrame * CFrame.new(0, lobby.Size.Y / 2, 0))
+		moveTo(player, lobby.CFrame * CFrame.new(0, lobby.Size.Y / 2, 0), "RaidLobby")
 	else
 		warn("[RaidService] No RaidLobbySpawn in the map")
 	end
@@ -363,7 +368,7 @@ local function startQueue(difficultyId: string, queue: Queue)
 		player:SetAttribute("RaidSessionId", session.id)
 		player:SetAttribute("RaidDifficulty", difficultyId)
 		player:SetAttribute("RaidEndsAt", endsAt)
-		moveTo(player, playerSpawn)
+		moveTo(player, playerSpawn, "Raid")
 		send(player, { kind = "Started", difficulty = difficultyId })
 	end
 	task.spawn(runSession, session, endsAt)

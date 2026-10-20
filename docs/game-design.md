@@ -21,6 +21,37 @@ Orden de progresión (de menor a mayor dificultad y costo de portal):
 - Los enemigos normales reaparecen 20 segundos después de ser derrotados.
 - Los jefes reaparecen 1 minuto después de ser derrotados.
 
+### Mundo y mar
+
+- Las islas están en el mar, no flotan. Están en fila, separadas 2000 studs; cada una mide unos 780 studs de diámetro, con playas y mesetas de roca que salen del agua.
+- El mar es de estilo cartoon: agua del color de cada isla, una textura de líneas de luz que se mueve despacio y una franja de espuma que "respira" a lo largo de cada orilla. Un océano rodea todas las islas hasta el horizonte. La orilla es de arena (agua turquesa) y el fondo del mar abierto es oscuro, del tono del agua de cada isla, para que se vea profundo.
+- El lobby de Raids es un templo flotante en el cielo, aparte de las islas.
+
+### Recorrido de cada isla
+
+1. **Plaza de llegada** junto a la costa: punto de llegada, máquina de gacha, portales a la isla anterior y a la siguiente (en Nameku, el portal de Raids ocupa el lugar del anterior). Es el escaparate de la isla.
+2. **Un camino** recorre las cuatro zonas en orden, subiendo de altura: Fácil (8 enemigos) → Media (6) → Difícil (4) → Jefe (1). Cada zona es un área plana con su cartel; los enemigos quedan a 24 studs entre sí, repartidos por casi toda la zona, y sus barras de vida tienen tamaño en el mundo (unos 7 studs de ancho, más en enemigos grandes): se achican con la distancia y no se amontonan. Se ven hasta 150 studs.
+3. **El hito del jefe** se ve desde la plaza y marca hacia dónde progresar.
+4. El detalle se concentra en caminos, plaza y zonas de combate; el resto es paisaje más simple para cuidar el rendimiento en móvil.
+
+### Dirección de arte (aprobada)
+
+Todo está *inspirado en* cada anime, sin logotipos ni copias exactas.
+
+| Isla | Ambiente | Paleta y luz | Elementos clave | Zonas: Fácil → Media → Difícil → Jefe |
+|---|---|---|---|---|
+| **Nameku** | Planeta alienígena tranquilo | Cielo verde claro, agua turquesa, hierba azul verdosa; día muy brillante | Árboles de tronco fino con copa redonda, casas-domo blancas con ventanas redondas, mesetas de roca en el mar | Praderas Azules → Aldea Namek → Mesetas Rocosas → Nave del Tirano (nave esférica estrellada) |
+| **Kono** | Aldea ninja en el bosque | Verdes intensos, tejados rojos y naranjas; atardecer cálido | Gran portón, casas de tejado curvo, depósito de agua, postes de entrenamiento, árboles gigantes | Campo de Entrenamiento → Calles de la Aldea → Bosque Profundo → Valle de la Cascada (estatuas en Blender) |
+| **Clover Kingdom** | Reino medieval mágico | Pradera, piedra clara, toques violeta; día con chispas mágicas | Aldea humilde, castillo blanco de torres azules, cuartel oscuro, bosque con niebla violeta | Aldea Humilde → Camino Real → Bosque Embrujado → Altar del Grimorio |
+| **Titan Village** | Ciudad amurallada en peligro | Tonos tierra desaturados, cielo nublado | Muralla gigante en el horizonte, casas de piedra y madera, cañones sobre el muro, árboles altísimos | Campos Exteriores → Ciudad Amurallada → Bosque Gigante → Brecha del Muro |
+| **Hero Academy** | Ciudad moderna de héroes | Azul limpio, cristal, blanco y rojo; mediodía con reflejos | Campus con edificio de cristal en forma de H, calles con semáforos, ciudad de simulacro en ruinas | Campus → Avenida Central → Ciudad Simulacro → Gran Estadio |
+| **Demon Corps** | Japón tradicional de noche | Azul noche, glicinas moradas, faroles cálidos; luna llena | Glicinas con pétalos cayendo, bambú con niebla, toriis, aldea con faroles | Aldea de Faroles → Bosque de Bambú → Montaña de Toriis → Tren de la Luna |
+
+- **Lobby de Raids:** templo flotante en el cielo, con un altar por dificultad y nubes alrededor.
+- **Arena de Raid:** coliseo de piedra con antorchas (pendiente).
+- Partículas de ambiente por isla: polen (Nameku), hojas (Kono), chispas mágicas (Clover), polvo (Titan), pétalos (Demon Corps).
+- Estado: Nameku tiene su versión detallada (v1). Las demás islas están en v0 (terreno, mar, paleta, árboles, jugabilidad completa y un hito provisional) hasta que llegue su turno.
+
 ## Personajes por isla
 
 Cada isla tiene un personaje por rareza. Los nombres finales del juego llevarán una pequeña variación.

@@ -46,7 +46,7 @@ Orden de arranque (`src/server/Main.server.luau`): los servicios que escuchan `D
 
 ### Mapa
 
-El código no depende de posiciones: lee Parts etiquetadas (`IslandSpawn`, `EnemySpawn`, `GachaStand`, `Portal`, `RaidPortal`, `RaidLobbySpawn`, `RaidPad`) y modelos opcionales de `ServerStorage`. En Studio, `Dev/TestArena` construye un mundo de prueba si no hay islas.
+El código no depende de posiciones: lee Parts etiquetadas (`IslandSpawn`, `EnemySpawn`, `GachaStand`, `Portal`, `RaidPortal`, `RaidLobbySpawn`, `RaidPad`) y modelos opcionales de `ServerStorage`. El mapa lo construye el plugin Island Builder en `Workspace.Map` (ver Fase 9). En Studio, `Dev/TestArena` construye un mundo de prueba si no hay islas.
 
 ## Fases
 
@@ -61,7 +61,7 @@ El código no depende de posiciones: lee Parts etiquetadas (`IslandSpawn`, `Enem
 | 6 | Raids | ✅ | `2d3c102` |
 | 7 | Boosts y tienda de Gemas | ✅ | `d1afd9a` |
 | 8 | Personajes visibles (estilo AFS), rigs R6 | ✅ | ver `docs/tasks.md` |
-| 9 | Mapas de las 6 islas, modelos | ⏳ siguiente | — |
+| 9 | Islas de alta calidad, mar, ambientación, modelos | 🟡 en curso (Nameku v1, resto v0) | — |
 | 10 | Efectos, números de daño, sonido | ⏳ | — |
 | 11 | Preparar publicación | ⏳ | — |
 
@@ -102,6 +102,23 @@ Los enemigos escalados multiplican tamaños, centros y puntos de giro por su esc
 2. **Modelar en Blender:** una malla por pieza del R6 con el mismo nombre, dentro de la caja de su pieza y con el origen en su centro, para que los puntos de giro coincidan.
 3. **Importar:** con el 3D Importer de Studio, sustituir cada `Part` del rig provisional por la `MeshPart` del mismo nombre, conservando `HumanoidRootPart`, los Motor6D (con su `Part0`/`Part1` apuntando a las nuevas piezas), `Humanoid` y `Animator`.
 4. **Guardar en el repositorio:** clic derecho en el modelo → *Save to File* como `<Id>.rbxm` en la misma carpeta de `assets/` y borrar el `.rbxmx` provisional. Rojo lo sincroniza y `build_rigs.py` ya no lo toca.
+
+### Fase 9 — Islas
+
+**Plugin Island Builder** (`builder.project.json` → `src/builder` + copia de `src/shared`), solo en modo edición:
+
+1. **Trazado puro** por isla (`Islands/NamekuLayout`, `Islands/GenericLayout`): radio y forma de la costa, colinas, plaza, 4 zonas planas, camino y mesetas. `Gen/LayoutCheck` revisa que plaza y zonas estén en tierra y separadas, que el camino las conecte, que ninguna meseta las invada y que quepan los enemigos (también en `worldgen.spec`).
+2. **Terreno y mar** (`Kit/TerrainWriter`): `Gen/Shape` da altura y material en cada punto; se escriben vóxeles de 4 studs por bloques con `WriteVoxelChannels` (tierra y agua comparten vóxel en la orilla) y el mar abierto con `FillBlock`.
+3. **Mar cartoon** (`Kit/Sea`): Part transparente con la textura `World.Sea.textureId` (etiqueta `SeaSurface`, la desplaza `SeaController`) y anillos de espuma en cada orilla (etiqueta `SeaFoam`, su transparencia oscila).
+4. **Jugabilidad** (`Kit/Gameplay`) a partir del trazado: llegada, gacha, portales con arco y nombre, portal de Raids, puntos de enemigos dispersos con separación de 16 studs y carteles de zona.
+5. **Decoración** propia de cada isla con el kit (`Kit/Nature`, `Kit/Parts`): toda anclada y sin `CanQuery`/`CanTouch` (no tapa clics ni rayos); los objetos pequeños no hacen sombra.
+6. **Validación** (`Shared/Map/MapCheck` + `MapScan`) al terminar y al arrancar el juego en Studio, con presupuesto de 9000 Parts por área.
+
+**Ambientación:** `Shared/Config/Ambience` por área; `Shared/Map/AmbienceApply` la aplica (plugin y cliente); `CurrentArea` la replica el servidor.
+
+**Ciclo de calidad:** construir → *Siguiente foto* en el panel (cámaras fijas por área) → capturas → ajustes en el código de la isla → reconstruir. Nameku primero; luego una isla detallada por commit.
+
+**Pendiente de la fase:** subir la textura del mar, iterar Nameku con capturas, versión detallada de las otras 5 islas, arena de Raid, lista de piezas para Blender (hitos difíciles con Parts).
 
 ### Fase 11 — Publicación
 

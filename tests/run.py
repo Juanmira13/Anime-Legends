@@ -15,6 +15,7 @@ ROOTS = {
     "Shared": PROJECT / "src" / "shared",
     "Server": PROJECT / "src" / "server",
     "Client": PROJECT / "src" / "client",
+    "Builder": PROJECT / "src" / "builder",
 }
 LUAU = os.environ.get("LUAU", "luau")
 

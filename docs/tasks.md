@@ -60,11 +60,31 @@ Lista de trabajo. Cada tarea hecha indica su commit. Las fases están descritas 
 
 ## Pendiente
 
-### Fase 9 — Contenido · R5, R9 (siguiente)
-- [ ] Construir en Studio los mapas de las 6 islas con las etiquetas de `CLAUDE.md`.
+### Fase 9 — Islas · R5, R9 (en curso)
+- [x] Dirección de arte por isla en `docs/game-design.md`.
+- [x] `Shared/Config/World` (islas en el mar, mar cartoon) y `Shared/Config/Ambience` (look por área).
+- [x] Plugin Island Builder: `Gen` (Rng, Shape, Scatter, LayoutCheck), `Kit` (Parts, TerrainWriter, Sea, Gameplay, Nature), `IslandBuilder`, `RaidLobby`, panel con construir, validar y puntos de foto.
+- [x] Nameku v1: aldea de domos, árboles de copa redonda, mesetas en el mar, nave esférica del jefe, plaza con cristales.
+- [x] Kono, Clover Kingdom, Titan Village, Hero Academy y Demon Corps en v0 (terreno, paleta, árboles, jugabilidad completa, hito provisional).
+- [x] Lobby de Raids como templo flotante.
+- [x] `MapCheck`/`MapScan` + `Dev/MapValidator`; atributo `CurrentArea`; `AmbienceController` y `SeaController`; precarga del streaming al teletransportar.
+- [x] Textura del mar generada (`tools/build_textures.py`).
+- [x] Pruebas: `worldgen.spec` (incluye las reglas de trazado de las 6 islas) y `map.spec`.
+- [x] Corregido: el plugin fallaba con "Decoration is not a valid member of Terrain" (esa propiedad solo se cambia en Propiedades; ahora el panel avisa). `tools/typecheck.py` añade una pasada que detecta este tipo de error.
+- [ ] Subir `assets/Textures/SeaCartoon.png` a Roblox y poner su id en `World.Sea.textureId`.
+- [x] Construido y probado en Studio: validador sin errores (142 partes etiquetadas), combate y personajes funcionando en Nameku.
+- [x] Ajustes tras la primera ronda de capturas: océano hasta el horizonte, Nameku menos monocromática (tinte más suave, copas variadas, más flores), agua más profunda, menos neblina, noche de Demon Corps más legible, enemigos a 20 studs y barras de vida hasta 90 studs, punto de foto de llegada más alto, cámara del plugin con `Focus`.
+- [x] Segunda ronda de capturas: océano, colores, niebla, noche y lobby correctos.
+- [x] Ajustes de la segunda ronda: fondo marino oscuro por isla (material `Mud`) para que el mar abierto se vea profundo, cámaras de foto de Nameku sin árboles delante, piezas del mar bloqueadas en Studio (`Locked`).
+- [x] Tercera ronda de capturas: fotos de Nameku despejadas; jugando funcionan plaza, combate y jefe.
+- [x] Ajustes de la tercera ronda: barras de vida con tamaño en el mundo (no se amontonan; visibles hasta 150 studs), enemigos a 24 studs repartidos por el 85 % de la zona, plaza de Nameku menos brillante, menos reflejo en el agua.
+- [x] Estilo de Nameku aprobado.
+- [ ] Iterar Nameku con capturas (*Siguiente foto*) hasta aprobar el estilo.
+- [ ] Versión detallada de Kono, Clover Kingdom, Titan Village, Hero Academy y Demon Corps (una por commit).
+- [ ] Arena de Raid (coliseo).
+- [ ] Lista de hitos para Blender (estatuas del valle, etc.).
 - [ ] Exportar un rig con *Export Selection* y abrirlo en Blender (primer paso del flujo).
 - [ ] Modelos finales de Blender para los 42 luchadores y los 28 enemigos, sustituyendo los rigs de `assets/` (flujo en `docs/plan.md`, Modelos y Blender).
-- [ ] Arena de Raid (`ServerStorage.RaidArena`).
 
 ### Fase 10 — Efectos y sonido · R9
 - [ ] Números de daño y efectos al golpear.

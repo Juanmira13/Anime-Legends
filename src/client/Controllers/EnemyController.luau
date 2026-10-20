@@ -10,7 +10,10 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Format = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Format"))
 
 local ENEMY_TAG = "Enemy"
-local BAR_MAX_DISTANCE = 150
+local BAR_MAX_DISTANCE = 150 -- studs from the camera
+local BAR_MIN_WIDTH = 7 -- studs; bars are sized in the world so they shrink with distance
+local BAR_WIDTH_PER_STUD = 1.3 -- bar width relative to the enemy's width
+local BAR_ASPECT = 0.3 -- height over width
 
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
@@ -32,9 +35,10 @@ local function createBillboard(model: Model, root: BasePart): (BillboardGui, () 
 	local billboard = Instance.new("BillboardGui")
 	billboard.Name = "EnemyHealthBar"
 	billboard.Adornee = root
-	billboard.Size = UDim2.fromOffset(170, 44)
 	-- Above the model's highest point (rigs are taller than their root part).
 	local boxCFrame, boxSize = model:GetBoundingBox()
+	local width = math.max(BAR_MIN_WIDTH, math.max(boxSize.X, boxSize.Z) * BAR_WIDTH_PER_STUD)
+	billboard.Size = UDim2.fromScale(width, width * BAR_ASPECT)
 	local top = boxCFrame.Position.Y + boxSize.Y / 2 - root.Position.Y
 	billboard.StudsOffsetWorldSpace = Vector3.new(0, top + 2, 0)
 	billboard.AlwaysOnTop = true
@@ -42,7 +46,7 @@ local function createBillboard(model: Model, root: BasePart): (BillboardGui, () 
 	billboard.ResetOnSpawn = false
 
 	local nameLabel = Instance.new("TextLabel")
-	nameLabel.Size = UDim2.new(1, 0, 0, 18)
+	nameLabel.Size = UDim2.fromScale(1, 0.42)
 	nameLabel.BackgroundTransparency = 1
 	nameLabel.Font = Enum.Font.GothamBold
 	nameLabel.TextScaled = true
@@ -52,8 +56,8 @@ local function createBillboard(model: Model, root: BasePart): (BillboardGui, () 
 	nameLabel.Parent = billboard
 
 	local bar = Instance.new("Frame")
-	bar.Position = UDim2.fromOffset(0, 22)
-	bar.Size = UDim2.new(1, 0, 0, 20)
+	bar.Position = UDim2.fromScale(0, 0.5)
+	bar.Size = UDim2.fromScale(1, 0.5)
 	bar.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 	bar.BorderSizePixel = 0
 	bar.Parent = billboard

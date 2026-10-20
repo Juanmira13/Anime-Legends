@@ -1,0 +1,9 @@
+{
+  "name": "AnimeLegendsBuilder",
+  "tree": {
+    "$path": "src/builder",
+    "Shared": {
+      "$path": "src/shared"
+    }
+  }
+}

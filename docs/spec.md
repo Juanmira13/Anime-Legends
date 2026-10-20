@@ -44,9 +44,10 @@ Simulador de progresión de Roblox al estilo Anime Fighters Simulator. El jugado
 - 6 islas en orden: Nameku, Kono, Clover Kingdom, Titan Village, Hero Academy, Demon Corps.
 - Los portales desbloquean islas en orden pagando Yenes y llevan a su punto de llegada. Volver es gratis.
 - Al entrar o reaparecer, el jugador aparece en la última isla visitada.
+- Las 6 islas están en el mar, cada una con plaza de llegada, gacha, portales, 4 zonas de enemigos unidas por un camino y el hito del jefe. Ver `docs/game-design.md` (Mundo y mar, Recorrido, Dirección de arte).
 
-**Aceptación:** desbloquear Kono cuesta 2,700 ¥; intentar saltar una isla avisa "Primero desbloquea…".
-**Parcial:** la lógica soporta las 6 islas, pero el mapa solo existe como mundo de prueba (Nameku y Kono).
+**Aceptación:** desbloquear Kono cuesta 2,700 ¥; intentar saltar una isla avisa "Primero desbloquea…". Con el mundo construido por el plugin, el validador no muestra errores y se puede viajar por portales de Nameku a Demon Corps y al lobby de Raids.
+**Parcial:** las 6 islas existen (Nameku detallada; las demás en versión v0) y falta probarlas en Studio.
 
 ### R6. Raids ✅
 - Lobby común al que se llega por un portal en Nameku. 3 dificultades abiertas desde el inicio, con espera por jugador (1 h, 1 h 30 min, 2 h).
@@ -72,7 +73,7 @@ Simulador de progresión de Roblox al estilo Anime Fighters Simulator. El jugado
 ### R9. Presentación 🟡
 - Personajes equipados visibles para todos los jugadores, que siguen a su dueño caminando por el suelo y van hasta el enemigo a golpear (estilo AFS). Ver `docs/game-design.md` (Combate → Personajes visibles).
 - Modelos de enemigos y arena de Raid, efectos de golpe, números de daño, efectos de gacha, sonido y música.
-- Mapas de las 6 islas construidos en Studio.
+- Islas de alta calidad, con la dirección de arte de cada anime, mar cartoon animado y ambientación por isla (luz, cielo, niebla, partículas).
 
 **Aceptación:** con 3 personajes equipados, caminan detrás del jugador a la misma velocidad, con los pies en el suelo y moviendo brazos y piernas; al elegir un enemigo caminan hasta colocarse a su alrededor y cada uno embiste cada vez que golpea. Otro jugador ve lo mismo. Al equipar o desequipar, el grupo cambia al momento.
 - Cada luchador y enemigo tiene su modelo en rig R6 que se puede exportar desde Studio para rehacerlo en Blender y volver a importarlo sin tocar código.

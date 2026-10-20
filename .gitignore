@@ -7,6 +7,7 @@
 !assets/**/*.rbxm
 !assets/**/*.rbxmx
 sourcemap.json
+builder-sourcemap.json
 
 # Test bundles
 build/

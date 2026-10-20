@@ -6,6 +6,8 @@
 -- in progression order) if needed, then teleports the player to the island's
 -- arrival point: a BasePart tagged "IslandSpawn" with an Island attribute.
 -- Unlocked islands are replicated as player attributes "Unlocked_<IslandId>".
+-- The island the player is on is replicated as "CurrentArea" (the client uses
+-- it for the island's ambience).
 
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
@@ -61,7 +63,11 @@ local function placeOnIsland(player: Player, islandId: string): boolean
 	if spawnPoint == nil or character == nil or character.PrimaryPart == nil then
 		return false
 	end
-	character:PivotTo(spawnPoint.CFrame * CFrame.new(0, spawnPoint.Size.Y / 2 + 3, 0))
+	local target = spawnPoint.CFrame * CFrame.new(0, spawnPoint.Size.Y / 2 + 3, 0)
+	-- With streaming, load the destination first so the player does not fall through it.
+	pcall(player.RequestStreamAroundAsync, player, target.Position)
+	character:PivotTo(target)
+	player:SetAttribute("CurrentArea", islandId)
 	return true
 end
 
