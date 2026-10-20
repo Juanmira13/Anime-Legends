@@ -8,7 +8,9 @@
 --
 -- The model is ServerStorage.EnemyModels.<folder>.<name> if it exists (a Model
 -- with a PrimaryPart; e.g. EnemyModels.Nameku.Easy or EnemyModels.Raid.Boss),
--- otherwise a placeholder block.
+-- otherwise a placeholder block. Models are R6 rigs (assets/EnemyModels, made
+-- by tools/build_rigs.py): only the PrimaryPart is anchored so the limbs can be
+-- animated, and the model stands with its lowest point on the spawn point.
 
 local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -93,7 +95,10 @@ end
 local function buildModel(spec: SpawnSpec): Model
 	local template = getTemplate(spec.template)
 	if template then
-		return template:Clone()
+		local model = template:Clone()
+		local root = model.PrimaryPart :: BasePart
+		root.Anchored = true
+		return model
 	end
 	local look = PLACEHOLDER_LOOK[spec.look] or PLACEHOLDER_LOOK.Easy
 	local model = Instance.new("Model")
@@ -108,6 +113,12 @@ local function buildModel(spec: SpawnSpec): Model
 	return model
 end
 
+-- Distance from the model's pivot down to its lowest point.
+local function heightAboveGround(model: Model): number
+	local boxCFrame, boxSize = model:GetBoundingBox()
+	return model:GetPivot().Position.Y - (boxCFrame.Position.Y - boxSize.Y / 2)
+end
+
 function EnemyService.spawn(spec: SpawnSpec): Enemy
 	nextId += 1
 	local id = tostring(nextId)
@@ -116,7 +127,7 @@ function EnemyService.spawn(spec: SpawnSpec): Enemy
 	model.Name = `{spec.displayName}_{id}`
 	-- Stream the whole model at once so clients always get its PrimaryPart.
 	model.ModelStreamingMode = Enum.ModelStreamingMode.Atomic
-	model:PivotTo(spec.cframe * CFrame.new(0, root.Size.Y / 2, 0))
+	model:PivotTo(spec.cframe * CFrame.new(0, heightAboveGround(model), 0))
 	model:SetAttribute("EnemyId", id)
 	model:SetAttribute("DisplayName", spec.displayName)
 	model:SetAttribute("Health", spec.maxHealth)
@@ -145,7 +156,8 @@ function EnemyService.spawn(spec: SpawnSpec): Enemy
 			clickedEvent:Fire(player, enemy)
 		end
 	end)
-	clickDetector.Parent = root
+	-- On the model so clicking any of its parts selects the enemy.
+	clickDetector.Parent = model
 
 	CollectionService:AddTag(model, ENEMY_TAG)
 	model.Parent = spec.parent or enemyFolder

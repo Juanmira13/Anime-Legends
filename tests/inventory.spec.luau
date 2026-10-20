@@ -66,6 +66,21 @@ few.Equipped = {}
 InventoryOps.equipBest(few)
 check("best with fewer characters", #few.Equipped, 1)
 
+-- Active team: equip order, capped at the slots, skipping missing characters
+local active = InventoryOps.activeTeam(team)
+check("active team size", #active, 3)
+check("active team order", active[1].id, "Gohan")
+check("active team uid", active[2].uid, t4)
+local capped = PlayerRecord.newData()
+local c1 = InventoryOps.add(capped, "Piccolo")
+local c2 = InventoryOps.add(capped, "Gohan")
+local c3 = InventoryOps.add(capped, "Yamcha")
+capped.Equipped = { "999", c1, "1", c2, c3 }
+local cappedTeam = InventoryOps.activeTeam(capped)
+check("active team skips missing", cappedTeam[1].id, "Piccolo")
+check("active team capped", #cappedTeam, 3)
+check("active team last slot", cappedTeam[3].id, "Gohan")
+
 -- Space
 local full = PlayerRecord.newData()
 for _ = 1, 49 do

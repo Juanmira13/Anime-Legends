@@ -69,10 +69,15 @@ Simulador de progresión de Roblox al estilo Anime Fighters Simulator. El jugado
 - Avisos en pantalla para gacha, portales, Raids y boosts.
 - Interacciones con ProximityPrompt y clic/toque: funcionan en PC, móvil y consola.
 
-### R9. Presentación ⏳
-- Personajes equipados visibles que siguen al jugador y vuelan a golpear (estilo AFS).
+### R9. Presentación 🟡
+- Personajes equipados visibles para todos los jugadores, que siguen a su dueño caminando por el suelo y van hasta el enemigo a golpear (estilo AFS). Ver `docs/game-design.md` (Combate → Personajes visibles).
 - Modelos de enemigos y arena de Raid, efectos de golpe, números de daño, efectos de gacha, sonido y música.
 - Mapas de las 6 islas construidos en Studio.
+
+**Aceptación:** con 3 personajes equipados, caminan detrás del jugador a la misma velocidad, con los pies en el suelo y moviendo brazos y piernas; al elegir un enemigo caminan hasta colocarse a su alrededor y cada uno embiste cada vez que golpea. Otro jugador ve lo mismo. Al equipar o desequipar, el grupo cambia al momento.
+- Cada luchador y enemigo tiene su modelo en rig R6 que se puede exportar desde Studio para rehacerlo en Blender y volver a importarlo sin tocar código.
+
+**Parcial:** personajes visibles hechos; los 70 modelos son rigs R6 provisionales (luchadores del color de su rareza, enemigos del color y tamaño de su rango). Faltan los modelos finales de Blender, efectos, sonido y mapas.
 
 ## Requisitos no funcionales
 

@@ -33,7 +33,10 @@ local function createBillboard(model: Model, root: BasePart): (BillboardGui, () 
 	billboard.Name = "EnemyHealthBar"
 	billboard.Adornee = root
 	billboard.Size = UDim2.fromOffset(170, 44)
-	billboard.StudsOffsetWorldSpace = Vector3.new(0, root.Size.Y / 2 + 2, 0)
+	-- Above the model's highest point (rigs are taller than their root part).
+	local boxCFrame, boxSize = model:GetBoundingBox()
+	local top = boxCFrame.Position.Y + boxSize.Y / 2 - root.Position.Y
+	billboard.StudsOffsetWorldSpace = Vector3.new(0, top + 2, 0)
 	billboard.AlwaysOnTop = true
 	billboard.MaxDistance = BAR_MAX_DISTANCE
 	billboard.ResetOnSpawn = false

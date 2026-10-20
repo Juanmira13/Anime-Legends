@@ -95,6 +95,15 @@ Reglas del pity:
 - Cada personaje tiene daño (según su rareza) y un cooldown entre golpes. Valores: pendientes.
 - Personajes equipados: 3 al inicio, hasta 6 con las ranuras extra de los logros de Raid (ver sección Raids).
 
+### Personajes visibles (estilo AFS)
+
+- Todos los jugadores ven los personajes equipados de todos.
+- Caminan por el suelo, nunca flotan. Todos van a la misma velocidad: la del dueño ×1.25, un poco más rápido para alcanzarlo cuando se detiene. Mientras caminan balancean brazos y piernas (un ciclo cada 6 studs) y miran hacia donde van; al llegar se quedan quietos.
+- Sin objetivo, caminan detrás de su dueño en filas de 3 (la primera a 6 studs, 5 studs entre personajes y entre filas) y miran hacia donde mira él.
+- Con objetivo, caminan hasta un arco de 150° alrededor del enemigo, del lado del dueño, a 3 studs de su superficie.
+- Cada golpe que calcula el servidor dispara una embestida hacia el enemigo (0.12 s de ida y 0.3 s de vuelta), más corta que el cooldown más rápido (1 s), así que cada golpe se ve completo.
+- Son solo visuales: no chocan, no tapan los clics sobre enemigos y no influyen en el daño.
+
 ## Inventario
 
 - Capacidad inicial: 50 personajes.

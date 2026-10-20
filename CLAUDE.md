@@ -64,7 +64,8 @@ AnimeLegends/
 │   ├── client/               # StarterPlayer.StarterPlayerScripts.Client — UI, efectos, control
 │   │   ├── Main.client.luau  # Arranca los controladores
 │   │   ├── UI/               # Theme (colores y constructores), Notify (avisos en pantalla)
-│   │   └── Controllers/      # Hud, Enemy (barras de vida), Gacha, Inventory (panel), Portal, Raid, Boost
+│   │   ├── Followers/        # Lógica pura de los personajes visibles (FollowerMotion)
+│   │   └── Controllers/      # Hud, Enemy (barras de vida), Gacha, Inventory (panel), Portal, Raid, Boost, Follower
 │   └── shared/               # ReplicatedStorage.Shared — módulos compartidos
 │       ├── Formulas.luau     # Valores derivados: daño, vida, Yenes, costos
 │       ├── Format.luau       # Formato de números para la UI (1.5K, 2.3M)
@@ -76,6 +77,11 @@ AnimeLegends/
 │   ├── tasks.md              # Tareas hechas y pendientes
 │   ├── game-design.md        # Diseño detallado
 │   └── balance.md            # Valores numéricos
+├── assets/                   # Modelos (.rbxmx/.rbxm) que Rojo sincroniza
+│   ├── CharacterModels/      # ReplicatedStorage.CharacterModels.<Isla>.<IdPersonaje> — luchadores
+│   └── EnemyModels/          # ServerStorage.EnemyModels.<Isla>.<Rango> y .Raid.<Tipo> — enemigos
+├── tools/
+│   └── build_rigs.py         # Genera los rigs R6 provisionales que falten
 └── tests/                    # Pruebas (*.spec.luau, run.py, bundle.py)
 ```
 
@@ -84,7 +90,7 @@ AnimeLegends/
 - **Instalar herramientas:** `rokit install` (instala la versión de Rojo fijada en `rokit.toml`).
 - **Ejecutar en desarrollo:** `rojo serve`, y en Roblox Studio conectar desde el plugin de Rojo (pestaña Plugins → Rojo → Connect).
 - **Build / exportar:** `rojo build -o AnimeLegends.rbxlx` (los `.rbxl`/`.rbxlx` están en `.gitignore`).
-- **Pruebas:** `python tests/run.py` ejecuta todos los `tests/*.spec.luau`. Requiere Python y el CLI de Luau (`luau`, de github.com/luau-lang/luau/releases; si no está en el PATH, indicar su ruta en la variable `LUAU`). `tests/bundle.py` empaqueta `src/shared` y `src/server` con una imitación de `script` para que los `require` por instancia funcionen fuera de Studio; solo sirve para módulos puros, sin servicios de Roblox.
+- **Pruebas:** `python tests/run.py` ejecuta todos los `tests/*.spec.luau`. Requiere Python y el CLI de Luau (`luau`, de github.com/luau-lang/luau/releases; si no está en el PATH, indicar su ruta en la variable `LUAU`). `tests/bundle.py` empaqueta `src/shared`, `src/server` y `src/client` con una imitación de `script` para que los `require` por instancia funcionen fuera de Studio; solo sirve para módulos puros, sin servicios de Roblox.
   - `balance.spec.luau`: `Formulas` reproduce las tablas de `docs/balance.md`. Si se cambia el balance, actualizar ambos.
   - `player-record.spec.luau`: datos iniciales, reconciliación, migraciones y bloqueo de sesión.
   - `combat.spec.luau`: tiempos de ataque, recompensas y formato de números.
@@ -93,6 +99,8 @@ AnimeLegends/
   - `portal.spec.luau`: orden de desbloqueo, viajes e isla de aparición.
   - `raid.spec.luau`: esperas, completados y logros de ranuras, recompensas, drops de boosts y oleadas.
   - `boost.spec.luau`: conceder, activar (acumula duración) y descontar tiempo.
+  - `followers.spec.luau`: formación, arco alrededor del objetivo, embestida (más corta que el cooldown más rápido), velocidad de marcha, ciclo de caminar y giro de los personajes visibles.
+- **Modelos provisionales:** `python tools/build_rigs.py` crea el rig R6 de cada luchador y enemigo que no tenga modelo (nunca sobrescribe; `--force` regenera solo los `.rbxmx`). `python tools/build_rigs.py --check` falla si falta alguno: ejecutarlo al añadir personajes, islas, rangos o tipos de enemigo de Raid.
 - **Revisión de tipos (incluye código con APIs de Roblox):** `rojo sourcemap default.project.json -o sourcemap.json` y luego `luau-lsp analyze --platform=roblox --definitions=globalTypes.d.luau --sourcemap=sourcemap.json src`. `luau-lsp` y `globalTypes.d.luau` vienen de github.com/JohnnyMorganz/luau-lsp. Debe terminar sin errores.
 
 ## 5. Convenciones de código
@@ -132,13 +140,15 @@ El diseño detallado (islas, personajes, probabilidades, pity) está en `docs/ga
   | `RaidLobbySpawn` | — | Punto de llegada al lobby de Raids |
   | `RaidPad` | `Difficulty` (`Easy`, `Medium`, `Hard`) | Plataforma para entrar a la fila de un Raid |
 
-  Modelos opcionales en `ServerStorage`: `EnemyModels.<Isla>.<Rango>` y `EnemyModels.Raid.<Tipo>` (Model con PrimaryPart) para enemigos, y `RaidArena` (Model con PrimaryPart, una Part `PlayerSpawn` y una carpeta `EnemySpawns` de Parts) para la arena de Raid. Sin ellos se usan bloques y una plataforma generada.
+  Modelos de enemigos en `ServerStorage.EnemyModels.<Isla>.<Rango>` y `EnemyModels.Raid.<Tipo>` (vienen de `assets/EnemyModels`, ver **Modelos**). Opcional: `ServerStorage.RaidArena` (Model con PrimaryPart, una Part `PlayerSpawn` y una carpeta `EnemySpawns` de Parts) para la arena de Raid; sin ella se usa una plataforma generada.
 
   En Studio, si no hay ningún `IslandSpawn`, `Dev/TestArena` construye un mundo de prueba con Nameku, Kono y el lobby de Raids.
 - **Raids:** `RaidService` gestiona filas (empiezan 15 s después del primer jugador), una arena por grupo creada en el aire (`y = 1500`), oleadas, recompensas por enemigo para todos los jugadores del Raid y logros. El estado se replica en atributos del jugador (`RaidQueue`, `RaidSessionId`, `RaidWave`, `RaidEndsAt`, `RaidReady_<Dificultad>`); los tiempos son unix (comparar con `workspace:GetServerTimeNow()`). Las recompensas de enemigos de Raid las da `RaidService`, no `CombatService`.
 - **Portales:** desbloquean islas en orden pagando `Formulas.portalCost` y llevan al `IslandSpawn` de la isla. Las islas desbloqueadas se replican como atributos `Unlocked_<IslandId>` del jugador. Al entrar o reaparecer, el jugador aparece en `LastIsland`.
-- **Enemigos en el mapa:** cada punto de spawn es una Part con la etiqueta `EnemySpawn` y los atributos `Island` (id de isla) y `Rank` (`Easy`, `Medium`, `Hard`, `Boss`). El modelo se toma de `ServerStorage.EnemyModels.<Island>.<Rank>` (Model con PrimaryPart) o se usa un bloque provisional. El servidor pone en el modelo los atributos `EnemyId`, `DisplayName`, `Health` y `MaxHealth`; el cliente dibuja la barra con ellos.
+- **Enemigos en el mapa:** cada punto de spawn es una Part con la etiqueta `EnemySpawn` y los atributos `Island` (id de isla) y `Rank` (`Easy`, `Medium`, `Hard`, `Boss`). El modelo se toma de `ServerStorage.EnemyModels.<Island>.<Rank>` (ver **Modelos**); el ClickDetector va en el modelo, así que cualquier parte sirve para elegirlo. El servidor pone en el modelo los atributos `EnemyId`, `DisplayName`, `Health` y `MaxHealth`; el cliente dibuja la barra con ellos.
 - **Combate:** el jugador hace clic en un enemigo (ClickDetector) y el servidor lo fija como objetivo si la isla está desbloqueada. Los personajes equipados golpean según su cooldown mientras el jugador esté a menos de `Balance.Combat.range`. El objetivo se replica en el atributo `TargetEnemyId` del jugador.
+- **Modelos (preparados para Blender):** cada luchador y cada enemigo tiene su propio modelo en `assets/` (uno por personaje, uno por rango e isla y uno por tipo de Raid), sincronizado por Rojo. Todos son **rigs R6**: `HumanoidRootPart` (PrimaryPart, invisible, la única pieza anclada), `Torso`, `Head`, `Left Arm`, `Right Arm`, `Left Leg`, `Right Leg`, los Motor6D estándar (`RootJoint`, `Neck`, `Left/Right Shoulder`, `Left/Right Hip`) y `Humanoid` (sin nombre ni vida visibles) con `Animator`. Escala 1 = 5 studs de alto con los pies en y = 0; los enemigos más grandes escalan el rig entero. Los modelos finales de Blender sustituyen al provisional con el mismo nombre y ruta, guardados como `.rbxm`; mantienen esa estructura para que las animaciones R6 funcionen. El código no ancla las extremidades y apoya cada modelo por su punto más bajo. Flujo completo en `docs/plan.md` (Modelos y Blender). Si falta un modelo se usa un bloque provisional.
+- **Personajes visibles:** todos los jugadores ven los personajes equipados de todos. El servidor replica el equipo en el atributo `EquippedCharacters` del jugador (ids en orden de ranura, separados por comas; sale de `InventoryOps.activeTeam`) y envía `Remotes.CharacterHit (dueño, enemyId, {ranura, daño})` a todos los clientes por cada golpe. Es solo para animar: el daño lo decide `CombatService`. `FollowerController` dibuja los modelos de `ReplicatedStorage.CharacterModels.<Isla>.<IdPersonaje>` sin colisión ni `CanQuery` para no tapar los clics, con el nombre encima. Caminan por el suelo (no flotan), todos a la misma velocidad (la del dueño ×1.25), y mueven brazos y piernas con los Motor6D del rig R6.
 - **Gacha en el mapa:** cada máquina es una Part con la etiqueta `GachaStand` y el atributo `Island`. El servidor le añade un ProximityPrompt; al activarlo valida (isla desbloqueada, espacio en inventario, Yenes), tira con `GachaRoll` y envía el resultado por `Remotes.GachaResult`.
 - **Boosts:** `BoostService` activa boosts, los vende por Gemas y descuenta el tiempo cada segundo solo para jugadores conectados. Cualquier sistema que dé boosts usa `BoostService.grant`. Se replican como atributos `BoostOwned_<Id>` y `BoostTime_<Id>`. Los efectos se leen de `data.Boosts.Remaining.<Id> > 0` donde se calcula cada recompensa.
 - **Inventario:** toda la lógica está en `InventoryOps` (pura). Los cambios en personajes siempre pasan por `InventoryService` (por ejemplo `addCharacter`), que envía el estado al cliente por `Remotes.InventoryChanged`. El cliente pide acciones por `Remotes.InventoryAction` y recibe el resultado más un snapshot.
@@ -186,3 +196,5 @@ Decisiones cerradas. Las tareas pendientes están en `docs/tasks.md`.
 - [x] Inicio lento aceptado: el jugador nuevo empieza con 0 Yenes y solo Kurilin (primera tirada a los ~6 min).
 - [x] Eliminar personajes: permitido sin recompensa; no se puede eliminar uno equipado ni el último.
 - [x] `DevCheats` es temporal y se elimina antes de publicar (ver `docs/tasks.md`).
+- [x] Personajes visibles para todos los jugadores; los golpes se sincronizan con un evento del servidor por golpe (`CharacterHit`).
+- [x] Modelos en rig R6, uno por luchador y por enemigo, en `assets/` para exportarlos y rehacerlos en Blender.

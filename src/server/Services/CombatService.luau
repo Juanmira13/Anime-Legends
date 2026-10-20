@@ -4,6 +4,8 @@
 -- while the player stays in range. Everyone who hit an island enemy gets its
 -- yen (raid rewards are handled by RaidService).
 -- The current target id is replicated as the player attribute "TargetEnemyId".
+-- Each frame with hits fires Remotes.CharacterHit (owner, enemyId, hits) to all
+-- clients, only so they can animate the hits.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -15,8 +17,15 @@ local Formulas = require(Shared.Formulas)
 
 local Server = script.Parent.Parent
 local AttackClock = require(Server.Combat.AttackClock)
+local InventoryOps = require(Server.Inventory.InventoryOps)
+local Remotes = require(Server.Remotes)
 local DataService = require(script.Parent.DataService)
 local EnemyService = require(script.Parent.EnemyService)
+
+export type Hit = {
+	slot: number, -- index in the owner's EquippedCharacters
+	damage: number,
+}
 
 type State = {
 	target: EnemyService.Enemy?,
@@ -24,6 +33,7 @@ type State = {
 }
 
 local states: { [Player]: State } = {}
+local hitRemote = Remotes.event("CharacterHit")
 
 local CombatService = {}
 
@@ -47,22 +57,17 @@ local function isInRange(player: Player, enemy: EnemyService.Enemy): boolean
 	return root ~= nil and (root.Position - enemy.root.Position).Magnitude <= Balance.Combat.range
 end
 
--- Equipped characters that can attack, capped at the player's equip slots.
-local function getAttackers(data: DataService.Data): ({ AttackClock.Attacker }, { [string]: string })
+-- Equipped characters that can attack, and the slot of each one.
+local function getAttackers(data: DataService.Data): ({ AttackClock.Attacker }, { [string]: string }, { [string]: number })
 	local attackers = {}
 	local characterIds = {}
-	local slots = Formulas.equipSlots(data.Raids.Completions)
-	for _, uid in data.Equipped do
-		if #attackers >= slots then
-			break
-		end
-		local owned = data.Characters[uid]
-		if owned then
-			table.insert(attackers, { uid = uid, cooldown = Formulas.characterCooldown(owned.id) })
-			characterIds[uid] = owned.id
-		end
+	local slotsByUid = {}
+	for slot, member in InventoryOps.activeTeam(data) do
+		table.insert(attackers, { uid = member.uid, cooldown = Formulas.characterCooldown(member.id) })
+		characterIds[member.uid] = member.id
+		slotsByUid[member.uid] = slot
 	end
-	return attackers, characterIds
+	return attackers, characterIds, slotsByUid
 end
 
 -- Island enemies need the island unlocked; raid enemies need the player in that raid.
@@ -120,11 +125,18 @@ local function step()
 		if data == nil then
 			continue
 		end
-		local attackers, characterIds = getAttackers(data)
+		local attackers, characterIds, slotsByUid = getAttackers(data)
+		local hits: { Hit } = {}
 		for _, uid in AttackClock.collectHits(state.clock, attackers, now) do
-			if EnemyService.damage(enemy, player, Formulas.characterDamage(characterIds[uid])) then
+			local damage = Formulas.characterDamage(characterIds[uid])
+			table.insert(hits, { slot = slotsByUid[uid], damage = damage })
+			if EnemyService.damage(enemy, player, damage) then
 				break
 			end
+		end
+		if #hits > 0 then
+			-- Every client animates this player's characters; damage stays on the server.
+			hitRemote:FireAllClients(player, enemy.id, hits)
 		end
 	end
 end

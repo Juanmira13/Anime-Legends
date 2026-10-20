@@ -95,6 +95,23 @@ function InventoryOps.delete(data: Data, uid: string): (boolean, Failure?)
 	return true, nil
 end
 
+-- Equipped characters that fight, in equip order and capped at the equip slots.
+-- The slot of each one is its index in this list.
+function InventoryOps.activeTeam(data: Data): { { uid: string, id: string } }
+	local team = {}
+	local slots = InventoryOps.equipSlots(data)
+	for _, uid in data.Equipped do
+		if #team >= slots then
+			break
+		end
+		local owned = data.Characters[uid]
+		if owned then
+			table.insert(team, { uid = uid, id = owned.id })
+		end
+	end
+	return team
+end
+
 local function damagePerSecond(characterId: string): number
 	return Formulas.characterDamage(characterId) / Formulas.characterCooldown(characterId)
 end

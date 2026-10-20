@@ -3,6 +3,8 @@
 -- (Refresh, Equip, Unequip, Delete, EquipBest, Upgrade) and get back the
 -- outcome plus a fresh snapshot. Server-side changes (e.g. a gacha roll) push
 -- a snapshot through Remotes.InventoryChanged.
+-- The active team is replicated to every client as the player attribute
+-- "EquippedCharacters" (character ids in slot order, comma separated).
 
 local Players = game:GetService("Players")
 
@@ -46,6 +48,14 @@ local function upgrade(player: Player, data: Data): (boolean, string?)
 	return true, nil
 end
 
+local function replicateTeam(player: Player, data: Data)
+	local ids = {}
+	for _, member in InventoryOps.activeTeam(data) do
+		table.insert(ids, member.id)
+	end
+	player:SetAttribute("EquippedCharacters", table.concat(ids, ","))
+end
+
 local function handleAction(player: Player, action: unknown, uid: unknown): ActionResult
 	if type(action) ~= "string" or (uid ~= nil and type(uid) ~= "string") then
 		return { ok = false, reason = "BadRequest" }
@@ -78,10 +88,12 @@ local function handleAction(player: Player, action: unknown, uid: unknown): Acti
 		return { ok = false, reason = "BadRequest" }
 	end
 
+	replicateTeam(player, data)
 	return { ok = ok, reason = reason, snapshot = InventoryOps.snapshot(data) }
 end
 
 local function pushSnapshot(player: Player, data: Data)
+	replicateTeam(player, data)
 	changedRemote:FireClient(player, InventoryOps.snapshot(data))
 end
 

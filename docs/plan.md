@@ -26,11 +26,11 @@ Patrón por sistema: `XOps` (puro y probado) + `XService` (servidor) + `XControl
 
 ```
 DataService ── carga/guarda PlayerRecord; Yen y Gems como atributos
-  ├── InventoryService (InventoryOps) ── InventoryAction / InventoryChanged
+  ├── InventoryService (InventoryOps) ── InventoryAction / InventoryChanged; EquippedCharacters
   ├── GachaService (GachaRoll) ── usa InventoryService; GachaResult
   ├── PortalService (PortalOps) ── Unlocked_<Isla>, LastIsland; PortalResult
   ├── BoostService (BoostOps) ── BoostAction; BoostOwned_/BoostTime_
-  ├── CombatService (AttackClock) ── usa EnemyService; TargetEnemyId
+  ├── CombatService (AttackClock) ── usa EnemyService; TargetEnemyId; CharacterHit a todos
   └── RaidService (RaidOps) ── usa EnemyService, InventoryService, BoostService; RaidEvent
 EnemyService ── enemigos de isla (EnemySpawn) y de Raid (spawn); Health/MaxHealth
 ```
@@ -60,17 +60,48 @@ El código no depende de posiciones: lee Parts etiquetadas (`IslandSpawn`, `Enem
 | 5 | Portales e isla de aparición | ✅ | `288bb92` |
 | 6 | Raids | ✅ | `2d3c102` |
 | 7 | Boosts y tienda de Gemas | ✅ | `d1afd9a` |
-| 8 | Personajes visibles (estilo AFS) | ⏳ siguiente | — |
-| 9 | Mapas de las 6 islas, modelos | ⏳ | — |
+| 8 | Personajes visibles (estilo AFS), rigs R6 | ✅ | ver `docs/tasks.md` |
+| 9 | Mapas de las 6 islas, modelos | ⏳ siguiente | — |
 | 10 | Efectos, números de daño, sonido | ⏳ | — |
 | 11 | Preparar publicación | ⏳ | — |
 
-### Fase 8 — Personajes visibles (propuesta)
+### Fase 8 — Personajes visibles
 
-- Cliente: por cada personaje equipado, un modelo que sigue al jugador en formación y, cuando hay objetivo, vuela hasta él y hace una animación de golpe sincronizada con su cooldown.
-- Servidor: sigue siendo la única autoridad del daño; envía un evento por golpe (o el cliente sigue los tiempos de `AttackClock`) solo para la animación.
-- Modelos por personaje en `ReplicatedStorage` (o placeholder si no existen), con la misma convención de rutas que los enemigos.
-- Pruebas: la formación y la sincronización de golpes como lógica pura.
+- `InventoryOps.activeTeam`: equipados en orden y limitados a las ranuras; el índice es la ranura. Lo usan el combate y la replicación.
+- Servidor: `InventoryService` replica el equipo como atributo `EquippedCharacters` (ids separados por comas, visible para todos). `CombatService` sigue siendo la única autoridad del daño y, en cada frame con golpes, envía `CharacterHit (dueño, enemyId, {ranura, daño})` a todos los clientes solo para animar.
+- Cliente: `Followers/FollowerMotion` (puro, probado en `followers.spec`) calcula formación, arco, embestida, velocidad de marcha, ciclo de caminar y giro; `FollowerController` dibuja los personajes de cada jugador caminando sobre el suelo (raycast hacia abajo que ignora personajes y piezas sin colisión), mueve hombros y caderas con `Motor6D.Transform` en `PreSimulation`, los oculta a más de 300 studs de la cámara y los teletransporta en saltos de más de 100 studs (portales, Raids).
+- Modelos en `ReplicatedStorage.CharacterModels.<Isla>.<IdPersonaje>` (rigs R6, ver abajo) con el nombre encima; bloque provisional si falta.
+- El evento lleva el daño para que la Fase 10 dibuje los números sin cambiar el servidor.
+
+### Modelos y Blender
+
+Cada luchador y enemigo tiene su modelo en `assets/` y Rojo lo sincroniza (`default.project.json`):
+
+| Carpeta | En Studio | Modelos |
+|---|---|---|
+| `assets/CharacterModels/<Isla>/<IdPersonaje>` | `ReplicatedStorage.CharacterModels` | 42 luchadores (escala 1, color de su rareza) |
+| `assets/EnemyModels/<Isla>/<Rango>` | `ServerStorage.EnemyModels` | 24 enemigos de isla (Fácil 1, Medio 1.25, Difícil 1.5, Jefe 2.5) |
+| `assets/EnemyModels/Raid/<Tipo>` | `ServerStorage.EnemyModels.Raid` | 4 enemigos de Raid (Débil 1, Mediano 1.25, Mini jefe 2, Jefe 3) |
+
+`tools/build_rigs.py` genera los provisionales a partir de `Characters`, `Islands`, `Balance` y `Raids`, y nunca sobrescribe un modelo existente.
+
+**Rig R6 (escala 1, pies en y = 0, mirando a −Z):**
+
+| Pieza | Tamaño (studs) | Centro | Unión (Motor6D, en la pieza padre) | Punto de giro |
+|---|---|---|---|---|
+| `HumanoidRootPart` | 2 × 2 × 1 | (0, 3, 0) | — (invisible, anclada) | — |
+| `Torso` | 2 × 2 × 1 | (0, 3, 0) | `RootJoint` en HumanoidRootPart | (0, 3, 0) |
+| `Head` | 2 × 1 × 1 | (0, 4.5, 0) | `Neck` en Torso | (0, 4, 0) |
+| `Right Arm` / `Left Arm` | 1 × 2 × 1 | (±1.5, 3, 0) | `Right/Left Shoulder` en Torso | (±1, 3.5, 0) |
+| `Right Leg` / `Left Leg` | 1 × 2 × 1 | (±0.5, 1, 0) | `Right/Left Hip` en Torso | (±1, 2, 0) |
+
+Los enemigos escalados multiplican tamaños, centros y puntos de giro por su escala.
+
+**Flujo:**
+1. **Exportar:** en Studio, seleccionar el modelo (p. ej. `ReplicatedStorage.CharacterModels.Nameku.Krilin`) → clic derecho → *Export Selection* (`.obj`). Sirve como referencia de proporciones; el `.obj` no lleva las uniones, que se definen con la tabla de arriba.
+2. **Modelar en Blender:** una malla por pieza del R6 con el mismo nombre, dentro de la caja de su pieza y con el origen en su centro, para que los puntos de giro coincidan.
+3. **Importar:** con el 3D Importer de Studio, sustituir cada `Part` del rig provisional por la `MeshPart` del mismo nombre, conservando `HumanoidRootPart`, los Motor6D (con su `Part0`/`Part1` apuntando a las nuevas piezas), `Humanoid` y `Animator`.
+4. **Guardar en el repositorio:** clic derecho en el modelo → *Save to File* como `<Id>.rbxm` en la misma carpeta de `assets/` y borrar el `.rbxmx` provisional. Rojo lo sincroniza y `build_rigs.py` ya no lo toca.
 
 ### Fase 11 — Publicación
 

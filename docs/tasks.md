@@ -47,18 +47,24 @@ Lista de trabajo. Cada tarea hecha indica su commit. Las fases están descritas 
 ### Documentación
 - [x] `docs/spec.md`, `docs/plan.md`, `docs/tasks.md` y regla de mantenerlos al día en `CLAUDE.md`.
 
+### Fase 8 — Personajes visibles · R9
+- [x] Personajes equipados de todos los jugadores que siguen a su dueño en formación (`FollowerController`).
+- [x] Arco alrededor del objetivo y embestida en cada golpe del servidor (`Remotes.CharacterHit`).
+- [x] Equipo replicado en el atributo `EquippedCharacters`; `InventoryOps.activeTeam` compartido con el combate.
+- [x] Convención `ReplicatedStorage.CharacterModels.<Isla>.<Id>` con bloque provisional si falta el modelo.
+- [x] 70 rigs R6 provisionales en `assets/` (42 luchadores, 24 enemigos de isla, 4 de Raid), uno por modelo, generados con `tools/build_rigs.py` y sincronizados por Rojo; listos para exportar a Blender.
+- [x] `EnemyService`, `EnemyController` y `FollowerController` aceptan rigs: solo se ancla la raíz, se apoyan por su punto más bajo, el clic vale en cualquier parte del enemigo y las barras y nombres van sobre la cabeza. Formación a 5 studs (los rigs miden 4 de ancho).
+- [x] Pruebas: `followers.spec` (formación, arco, embestida, marcha, giro) y `activeTeam` en `inventory.spec`. `tests/run.py` incluye `src/client`.
+- [x] Caminan por el suelo en lugar de flotar: misma velocidad para todos (dueño ×1.25), pies sobre el terreno y ciclo de caminar R6 en hombros y caderas.
+- [x] Probado en Studio: formación, arco, embestidas, caminar, rigs de luchadores y enemigos.
+
 ## Pendiente
 
-### Fase 8 — Personajes visibles · R9 (siguiente)
-- [ ] Modelos de personajes equipados que siguen al jugador en formación.
-- [ ] Vuelo hasta el objetivo y animación de golpe sincronizada con el cooldown.
-- [ ] Convención de modelos por personaje con placeholder.
-- [ ] Pruebas de la lógica de formación/sincronización.
-
-### Fase 9 — Contenido · R5, R9
+### Fase 9 — Contenido · R5, R9 (siguiente)
 - [ ] Construir en Studio los mapas de las 6 islas con las etiquetas de `CLAUDE.md`.
-- [ ] Modelos de enemigos (`ServerStorage.EnemyModels`) y arena de Raid (`ServerStorage.RaidArena`).
-- [ ] Modelos de los 42 personajes.
+- [ ] Exportar un rig con *Export Selection* y abrirlo en Blender (primer paso del flujo).
+- [ ] Modelos finales de Blender para los 42 luchadores y los 28 enemigos, sustituyendo los rigs de `assets/` (flujo en `docs/plan.md`, Modelos y Blender).
+- [ ] Arena de Raid (`ServerStorage.RaidArena`).
 
 ### Fase 10 — Efectos y sonido · R9
 - [ ] Números de daño y efectos al golpear.

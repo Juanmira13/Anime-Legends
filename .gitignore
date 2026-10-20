@@ -3,6 +3,9 @@
 *.rbxlx
 *.rbxm
 *.rbxmx
+# Character and enemy models synced by Rojo
+!assets/**/*.rbxm
+!assets/**/*.rbxmx
 sourcemap.json
 
 # Test bundles

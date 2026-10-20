@@ -1,7 +1,7 @@
 """Bundle Luau source folders and a spec into one file with a fake instance tree,
 so modules that use `require(script.Parent...)` run under the standalone luau CLI.
 
-Each root becomes a variable named after it (e.g. `Shared`, `Server`) and is
+Each root becomes a variable named after it (e.g. `Shared`, `Server`, `Client`) and is
 placed in its service, so `game:GetService("ReplicatedStorage"):WaitForChild("Shared")`
 also works. Only pure modules can be required this way; anything that uses
 other Roblox APIs at require time will fail.
@@ -45,7 +45,8 @@ local game = {
 }
 """
 
-# Service each root lives in, matching default.project.json.
+# Service each root lives in, matching default.project.json. Roots without a
+# service (Client) are only reachable through their variable.
 ROOT_SERVICES = {
     "Shared": "ReplicatedStorage",
     "Server": "ServerScriptService",

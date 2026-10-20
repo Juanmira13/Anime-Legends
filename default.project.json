@@ -5,11 +5,19 @@
     "ReplicatedStorage": {
       "Shared": {
         "$path": "src/shared"
+      },
+      "CharacterModels": {
+        "$path": "assets/CharacterModels"
       }
     },
     "ServerScriptService": {
       "Server": {
         "$path": "src/server"
+      }
+    },
+    "ServerStorage": {
+      "EnemyModels": {
+        "$path": "assets/EnemyModels"
       }
     },
     "StarterPlayer": {

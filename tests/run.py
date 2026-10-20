@@ -14,6 +14,7 @@ PROJECT = pathlib.Path(__file__).resolve().parent.parent
 ROOTS = {
     "Shared": PROJECT / "src" / "shared",
     "Server": PROJECT / "src" / "server",
+    "Client": PROJECT / "src" / "client",
 }
 LUAU = os.environ.get("LUAU", "luau")
 
