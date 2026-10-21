@@ -69,7 +69,7 @@ El código no depende de posiciones: lee Parts etiquetadas (`IslandSpawn`, `Enem
 | 12 | Prueba temprana en servidor publicado | ⏳ | — |
 | 13 | Preparar publicación | ⏳ | — |
 
-**Orden aprobado:** cerrar la Fase 9 (arena de Raid, textura del mar, lista de hitos para Blender) → 10 → 11 → 12 → 13. Los modelos finales de Blender avanzan en paralelo: no bloquean nada porque el código los acepta con el mismo nombre y ruta.
+**Orden aprobado:** cerrar la Fase 9 (arena de Raid, textura del mar) → 10 → 11 → 12 → 13. Los modelos finales de Blender avanzan en paralelo: no bloquean nada porque el código los acepta con el mismo nombre y ruta.
 
 ### Fase 8 — Personajes visibles
 
@@ -124,7 +124,7 @@ Los enemigos escalados multiplican tamaños, centros y puntos de giro por su esc
 
 **Ciclo de calidad:** construir → *Siguiente foto* en el panel (cámaras fijas por área) → capturas → ajustes en el código de la isla → reconstruir. Nameku primero; luego una isla detallada por commit.
 
-**Pendiente de la fase:** las 6 islas están aprobadas. La arena de Raid (coliseo) la construye el plugin como plantilla `ServerStorage.RaidArena` que `RaidService` clona por grupo; `RaidArenaLayout` (puro, probado en `map.spec`) fija las medidas y los puntos de aparición. Faltan subir la textura del mar y la lista de piezas para Blender (estatuas de Kono y otros hitos difíciles con Parts).
+**Pendiente de la fase:** las 6 islas están aprobadas. La arena de Raid (coliseo) la construye el plugin como plantilla `ServerStorage.RaidArena` que `RaidService` clona por grupo; `RaidArenaLayout` (puro, probado en `map.spec`) fija las medidas y los puntos de aparición. La textura del mar está subida (`World.Sea.textureId`); falta reconstruir el mundo para verla. Los hitos hechos con Parts (estatuas, castillo, nave, tren) se quedan así; no hay lista aparte para Blender.
 
 ### Fase 10 — Efectos y sonido
 

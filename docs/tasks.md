@@ -71,7 +71,8 @@ Lista de trabajo. Cada tarea hecha indica su commit. Las fases están descritas 
 - [x] Textura del mar generada (`tools/build_textures.py`).
 - [x] Pruebas: `worldgen.spec` (incluye las reglas de trazado de las 6 islas) y `map.spec`.
 - [x] Corregido: el plugin fallaba con "Decoration is not a valid member of Terrain" (esa propiedad solo se cambia en Propiedades; ahora el panel avisa). `tools/typecheck.py` añade una pasada que detecta este tipo de error.
-- [ ] Subir `assets/Textures/SeaCartoon.png` a Roblox y poner su id en `World.Sea.textureId`.
+- [x] `SeaCartoon.png` subida a Roblox; `World.Sea.textureId = rbxassetid://133815183624535`.
+- [ ] Reconstruir el mundo en Studio y comprobar que la textura del mar se ve y se desplaza.
 - [x] Construido y probado en Studio: validador sin errores (142 partes etiquetadas), combate y personajes funcionando en Nameku.
 - [x] Ajustes tras la primera ronda de capturas: océano hasta el horizonte, Nameku menos monocromática (tinte más suave, copas variadas, más flores), agua más profunda, menos neblina, noche de Demon Corps más legible, enemigos a 20 studs y barras de vida hasta 90 studs, punto de foto de llegada más alto, cámara del plugin con `Focus`.
 - [x] Segunda ronda de capturas: océano, colores, niebla, noche y lobby correctos.
@@ -87,7 +88,6 @@ Lista de trabajo. Cada tarea hecha indica su commit. Las fases están descritas 
 - [x] Arena de Raid (coliseo): `RaidArena` en el plugin (botón *Arena de Raid* y en *Construir todo el mundo*) guarda la plantilla `ServerStorage.RaidArena` y una vista previa para fotos; `RaidArenaLayout` con pruebas en `map.spec` (sitio para la oleada más grande, puntos dentro del campo y separados, jugador al alcance de la primera fila, cabe entre arenas); `RaidService` ordena los puntos por nombre y borra la vista previa.
 - [x] Primera ronda de capturas de la arena: estructura correcta. Ajustes: piedra y arena más neutras y luz del Raid menos naranja (todo se veía del mismo color), antorchas con menos luz (manchas amarillas en las gradas), suelo cuadrado oculto bajo las gradas y anillos por segmentos (el cilindro grande mostraba sus caras), círculo dorado en el punto de los jefes en lugar del rosa neón.
 - [x] Arena de Raid aprobada.
-- [ ] Lista de hitos para Blender (estatuas del valle, etc.).
 - [ ] Exportar un rig con *Export Selection* y abrirlo en Blender (primer paso del flujo).
 - [ ] Modelos finales de Blender para los 42 luchadores y los 28 enemigos, sustituyendo los rigs de `assets/` (flujo en `docs/plan.md`, Modelos y Blender).
 

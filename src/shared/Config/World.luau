@@ -14,9 +14,9 @@ local World = {
 
 	Sea = {
 		-- Cartoon overlay over the terrain water: a tiling texture with
-		-- transparent background (assets/Textures/SeaCartoon.png). Empty until
-		-- the image is uploaded to Roblox; the water still shows its color.
-		textureId = "",
+		-- transparent background (assets/Textures/SeaCartoon.png, uploaded to
+		-- Roblox). Empty shows only the water color.
+		textureId = "rbxassetid://133815183624535",
 		studsPerTile = 48,
 		textureTransparency = 0.1,
 		scrollSpeed = { 1.6, 0.9 }, -- studs per second along U and V
