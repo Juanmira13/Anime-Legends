@@ -70,15 +70,16 @@ AnimeLegends/
 │   │   └── Dev/              # Ayudas solo para Studio (TestArena, MapValidator; DevCheats es temporal)
 │   ├── client/               # StarterPlayer.StarterPlayerScripts.Client — UI, efectos, control
 │   │   ├── Main.client.luau  # Arranca los controladores
-│   │   ├── UI/               # Theme (colores y constructores), Notify (avisos en pantalla)
+│   │   ├── Dev/              # Ayudas solo para Studio (RevealPreview, temporal)
+│   │   ├── UI/               # Theme (colores), CheckUI (constructores Check-UI), Notify, CharacterViewport, GachaRevealView
 │   │   ├── Followers/        # Lógica pura de los personajes visibles (FollowerMotion)
-│   │   ├── Effects/          # Lógica pura de los efectos de golpe (HitStyle)
+│   │   ├── Effects/          # Lógica pura de los efectos de golpe y del gacha (HitStyle, GachaReveal)
 │   │   └── Controllers/      # Hud, Enemy (barras de vida), Gacha, Inventory (panel), Portal, Raid, Boost, Follower, Ambience, Sea, Coin, HitEffect
 │   ├── shared/               # ReplicatedStorage.Shared — módulos compartidos
 │   │   ├── Formulas.luau     # Valores derivados: daño, vida, Yenes, costos
 │   │   ├── Format.luau       # Formato de números para la UI (1.5K, 2.3M)
 │   │   ├── Config/           # Constantes: Balance, Rarities, Raids, Boosts, World (mar e islas), Ambience (look por área)
-│   │   ├── Map/              # MapCheck (reglas puras del mapa), MapScan (recolecta y valida), AmbienceApply
+│   │   ├── Map/              # MapCheck (reglas puras del mapa), MapScan (recolecta y valida), AmbienceApply, GachaStar
 │   │   └── Data/             # Contenido: Islands, Characters
 │   └── builder/              # Plugin Island Builder (no se publica en el juego)
 │       ├── Main.server.luau  # Panel: construir mundo/isla/lobby/arena, validar, puntos de foto
@@ -118,18 +119,18 @@ AnimeLegends/
   - `balance.spec.luau`: `Formulas` reproduce las tablas de `docs/balance.md`. Si se cambia el balance, actualizar ambos.
   - `player-record.spec.luau`: datos iniciales, reconciliación, migraciones y bloqueo de sesión.
   - `combat.spec.luau`: tiempos de ataque, recompensas y formato de números.
-  - `gacha.spec.luau`: probabilidades, Boost de Suerte, pity y distribución de tiradas.
-  - `inventory.spec.luau`: añadir, equipar, desequipar, eliminar, "Equipar mejores" y ampliaciones.
+  - `gacha.spec.luau`: probabilidades, Boost de Suerte, pity, distribución de tiradas y tirada x10 (igual que 10 sueltas, costo ×10).
+  - `inventory.spec.luau`: añadir, equipar, desequipar, eliminar, "Equipar mejores", ampliaciones y espacio para varios.
   - `portal.spec.luau`: orden de desbloqueo, viajes e isla de aparición.
   - `raid.spec.luau`: esperas, completados y logros de ranuras, recompensas, drops de boosts, oleadas y puntos aleatorios de los enemigos en la arena.
   - `coins.spec.luau`: reparto de las recompensas en monedas.
   - `signal.spec.luau`: los eventos entre servicios pasan las mismas tablas.
   - `boost.spec.luau`: conceder, activar (acumula duración) y descontar tiempo.
   - `acceptance.spec.luau`: los criterios de aceptación numéricos de `docs/spec.md` (R1 a R7), uno por requisito. Si cambia la especificación, actualizarlo.
-  - `effects.spec.luau`: números de daño (salto, subida y desvanecido, tamaños, topes) y destellos de golpe.
+  - `effects.spec.luau`: números de daño (salto, subida y desvanecido, tamaños, topes), destellos de golpe y animación del gacha (estilo por rareza, entrada, carga con subida de colores, estallido, confeti, cartas, volteo y orden de las diez cartas, distribución en pantalla).
   - `followers.spec.luau`: formación, arco alrededor del objetivo, embestida (más corta que el cooldown más rápido), velocidad de marcha, ciclo de caminar y giro de los personajes visibles.
   - `worldgen.spec.luau`: aleatorio con semilla, forma del terreno, relieve (montañas, ríos con cascada, lagos, caminos con rampas, formas de costa), materiales, orilla, vóxeles de tierra y agua, dispersión, y reglas de trazado (`LayoutCheck`) sobre los trazados reales de las 6 islas.
-  - `map.spec.luau`: reglas del mapa (`MapCheck`), configuración del mundo, ambientación de todas las áreas y trazado de la arena de Raid (`RaidArenaLayout`).
+  - `map.spec.luau`: reglas del mapa (`MapCheck`), configuración del mundo, ambientación de todas las áreas trazado de la arena de Raid (`RaidArenaLayout`) y geometría de la estrella del gacha (`GachaStar`).
 - **Modelos provisionales:** `python tools/build_rigs.py` crea el rig R6 de cada luchador y enemigo que no tenga modelo (nunca sobrescribe; `--force` regenera solo los `.rbxmx`). `python tools/build_rigs.py --check` falla si falta alguno: ejecutarlo al añadir personajes, islas, rangos o tipos de enemigo de Raid.
 - **Plugin Island Builder:** `rojo build builder.project.json --plugin AnimeLegendsBuilder.rbxm` lo instala en la carpeta de plugins de Studio (volver a ejecutarlo tras cada cambio en `src/builder`). En Studio: pestaña Plugins → Anime Legends → Island Builder.
 - **Textura del mar:** `python tools/build_textures.py` genera `assets/Textures/SeaCartoon.png`. Subirla a Roblox y poner su id en `World.Sea.textureId` (ahora `rbxassetid://133815183624535`). El plugin pone la textura al construir, así que tras cambiarla hay que reconstruir el océano y las islas.
@@ -152,7 +153,7 @@ El diseño detallado (islas, personajes, probabilidades, pity) está en `docs/ga
 - **Economía:** Yenes se obtienen derrotando enemigos, que los sueltan como monedas flotantes. Gemas se obtienen en Raids.
 - **Monedas de Yenes:** al morir un enemigo (de isla o de Raid), cada jugador que lo golpeó recibe su propia tanda de monedas donde estaba el enemigo (solo él las ve). Las monedas flotan y giran; al acercarse a menos de `Balance.Coins.magnetRadius` vuelan hacia el jugador y cada una suma su parte de Yenes en ese momento. Las que siguen en el suelo pasados `Balance.Coins.lifetime` segundos se pagan solas (vuelan si el jugador está cerca), y al salir del juego se pagan antes del guardado: nunca se pierden. `CoinService` lleva las tandas y valida cada recogida (la tanda es suya, la moneda no se recogió y el jugador está a menos de `collectRange`); `CoinOps` reparte la recompensa en monedas que suman exacto; `CoinController` las dibuja. Las Gemas de los Raids se suman directamente.
 - **Boosts:** Suerte, Dinero y Gemas, de 15 minutos. Se obtienen como drop de enemigos en los Raids o comprándolos con Gemas en la tienda.
-- **Gacha:** por isla, 7 rarezas, con pity para Legendario, Mítico y Secreto.
+- **Gacha:** por isla, 7 rarezas, con pity para Legendario, Mítico y Secreto. Tirada x1 o x10 (cuesta 10 tiradas, sin descuento, y necesita 10 espacios libres).
 - **Combate:** el jugador elige el objetivo. Daño y cooldown dependen del personaje y su rareza.
 - **Equipados:** 3 al inicio, hasta 6. Logros de Raid de +1 ranura cada uno: Fácil 15 veces, Medio 25 veces, Difícil 50 veces.
 - **Inventario:** 50 personajes al inicio. Se amplía con Yenes, con costo creciente.
@@ -171,7 +172,7 @@ El diseño detallado (islas, personajes, probabilidades, pity) está en `docs/ga
   |---|---|---|
   | `IslandSpawn` | `Island` | Punto de llegada a una isla (uno por isla) |
   | `EnemySpawn` | `Island`, `Rank` | Punto de aparición de un enemigo |
-  | `GachaStand` | `Island` | Máquina de gacha |
+  | `GachaStand` | `Island` | Núcleo de la estrella de una máquina de gacha |
   | `Portal` | `TargetIsland` | Portal hacia otra isla (la Part base; el haz de luz es decorativo) |
   | `RaidPortal` | — | Portal hacia el lobby de Raids (en Nameku) |
   | `RaidLobbySpawn` | — | Punto de llegada al lobby de Raids |
@@ -187,10 +188,11 @@ El diseño detallado (islas, personajes, probabilidades, pity) está en `docs/ga
 - **Modelos (preparados para Blender):** cada luchador y cada enemigo tiene su propio modelo en `assets/` (uno por personaje, uno por rango e isla y uno por tipo de Raid), sincronizado por Rojo. Todos son **rigs R6**: `HumanoidRootPart` (PrimaryPart, invisible, la única pieza anclada), `Torso`, `Head`, `Left Arm`, `Right Arm`, `Left Leg`, `Right Leg`, los Motor6D estándar (`RootJoint`, `Neck`, `Left/Right Shoulder`, `Left/Right Hip`) y `Humanoid` (sin nombre ni vida visibles) con `Animator`. Escala 1 = 5 studs de alto con los pies en y = 0; los enemigos más grandes escalan el rig entero. Los modelos finales de Blender sustituyen al provisional con el mismo nombre y ruta, guardados como `.rbxm`; mantienen esa estructura para que las animaciones R6 funcionen. El código no ancla las extremidades y apoya cada modelo por su punto más bajo. Flujo completo en `docs/plan.md` (Modelos y Blender). Si falta un modelo se usa un bloque provisional.
 - **Personajes visibles:** todos los jugadores ven los personajes equipados de todos. El servidor replica el equipo en el atributo `EquippedCharacters` del jugador (ids en orden de ranura, separados por comas; sale de `InventoryOps.activeTeam`) y envía `Remotes.CharacterHit (dueño, enemyId, {ranura, daño})` a todos los clientes por cada golpe. Es solo para animar: el daño lo decide `CombatService`. `FollowerController` dibuja los modelos de `ReplicatedStorage.CharacterModels.<Isla>.<IdPersonaje>` sin colisión ni `CanQuery` para no tapar los clics, con el nombre encima. Caminan por el suelo (no flotan), todos a la misma velocidad (la del dueño ×1.25), y mueven brazos y piernas con los Motor6D del rig R6.
 - **Efectos de golpe:** `HitEffectController` escucha `Remotes.CharacterHit` y, cuando la embestida conecta (`FollowerMotion.LUNGE_IN_TIME`), muestra el daño sobre el enemigo con el color de la rareza del personaje que golpea (Secreto: blanco con contorno dorado), en GothamBlack con contorno; el número salta, sube y se desvanece. Además, destello y chispas en el impacto, y una nube de humo cuando el enemigo muere. Los golpes propios se ven grandes; los de otros jugadores, más pequeños y solo cerca. Tamaños, tiempos y topes en `Client/Effects/HitStyle` (puro, `effects.spec`). Solo visual: el servidor no cambia.
-- **Gacha en el mapa:** cada máquina es una Part con la etiqueta `GachaStand` y el atributo `Island`. El servidor le añade un ProximityPrompt; al activarlo valida (isla desbloqueada, espacio en inventario, Yenes), tira con `GachaRoll` y envía el resultado por `Remotes.GachaResult`.
+- **Gacha en el mapa y en el HUD:** cada máquina es un pedestal con una estrella dorada (`Shared/Map/GachaStar`, la construyen el plugin y `TestArena`); el núcleo de la estrella es la Part con la etiqueta `GachaStand` y el atributo `Island`. `GachaController` hace girar y flotar las estrellas en el cliente y, a menos de 14 studs (en planta), abre en el HUD un panel Check-UI con los 7 personajes de la isla en 3D (`UI/CharacterViewport`), sus probabilidades (`Formulas.gachaChances`, con la Suerte si está activa) y dos botones: **Tirar x1** y **Tirar x10** (`Balance.GachaMultiRoll`; también E y R, o X e Y con mando). El cliente pide la tirada por `Remotes.GachaRoll (isla, cantidad)`; el servidor valida (cantidad 1 o 10, cerca de una estrella de esa isla, isla desbloqueada, espacio para todos, Yenes para todas), cobra `Formulas.gachaCost(isla, cantidad)` (x10 = 10 tiradas, sin descuento), tira con `GachaRoll.rollMany` (igual que tiradas sueltas seguidas, con pity) y responde por `Remotes.GachaResult` con la lista de resultados.
+- **Animación del gacha:** a pantalla completa sobre el HUD (`UI/GachaRevealView`): la pantalla se oscurece, entra una estrella dorada que se carga (late, tiembla, sacude la pantalla y sube por los colores de rareza hasta la mejor obtenida, con un anillo en cada paso) y estalla con destello, onda y confeti. Una tirada muestra una carta grande con el personaje girando en 3D, cinta de rareza, estrellas de rareza y daño; diez tiradas colocan diez cartas boca abajo que se voltean de peor a mejor, con pausa y onda antes de cada Legendario o superior. Brillo en Legendario y superiores, doble capa de rayos en Mítico y Secreto, arcoíris en Secreto. Un clic, toque, E, Espacio o A adelanta. Tiempos y movimientos en `Client/Effects/GachaReveal` (puro, `effects.spec`); solo visual. En Studio, `Client/Dev/RevealPreview` (temporal) la reproduce sin tirar: Ctrl + 1..7 una tirada de cada rareza, Ctrl + 8 y 9 diez tiradas.
 - **Boosts:** `BoostService` activa boosts, los vende por Gemas y descuenta el tiempo cada segundo solo para jugadores conectados. Cualquier sistema que dé boosts usa `BoostService.grant`. Se replican como atributos `BoostOwned_<Id>` y `BoostTime_<Id>`. Los efectos se leen de `data.Boosts.Remaining.<Id> > 0` donde se calcula cada recompensa.
 - **Inventario:** toda la lógica está en `InventoryOps` (pura). Los cambios en personajes siempre pasan por `InventoryService` (por ejemplo `addCharacter`), que envía el estado al cliente por `Remotes.InventoryChanged`. El cliente pide acciones por `Remotes.InventoryAction` y recibe el resultado más un snapshot.
-- **Interfaz (estilo oficial Check-UI):** toda la UI de pantalla (HUD, inventario, gacha, boosts, Raids, avisos) sigue la skill `check-ui-clean-roblox`: tipografía `GothamBlack` con contorno negro, ventanas opacas `#3B5866` con borde oscuro, cabeceras con degradado por tipo de menú y divisor de dos líneas, botón de cerrar `[X]` con relieve, botones con relieve y tríada de estados (Reclamar, Reclamado, Bloqueado), iconos con `ScaleType.Fit`, interacciones desde el centro (`AnchorPoint` 0.5 y `UIScale`) y escalado según `ViewportSize`. Los colores y constructores viven en `src/client/UI/Theme`, que se adapta a Check-UI; los controladores no ponen colores a mano. Los textos en el mundo 3D (carteles, títulos de portales) mantienen su estilo propio. Antes de tocar la UI, cargar la skill.
+- **Interfaz (estilo oficial Check-UI):** toda la UI de pantalla (HUD, inventario, gacha, boosts, Raids, avisos) sigue la skill `check-ui-clean-roblox`: tipografía `GothamBlack` con contorno negro, ventanas opacas `#3B5866` con borde oscuro, cabeceras con degradado por tipo de menú y divisor de dos líneas, botón de cerrar `[X]` con relieve, botones con relieve y tríada de estados (Reclamar, Reclamado, Bloqueado), iconos con `ScaleType.Fit`, interacciones desde el centro (`AnchorPoint` 0.5 y `UIScale`) y escalado según `ViewportSize`. Los tokens y constructores Check-UI (ventana, cabecera, `[X]`, botón estándar con paletas de la tríada, escalado) viven en `src/client/UI/CheckUI` y los colores de rareza en `src/client/UI/Theme`; los controladores no ponen colores a mano. Los textos en el mundo 3D (carteles, títulos de portales) mantienen su estilo propio. Antes de tocar la UI, cargar la skill.
 - **Intangibles:** los personajes (luchadores) y los enemigos no chocan con nada: el jugador los atraviesa. `Shared/Intangible` pone `CanCollide`/`CanTouch` a false y el grupo de colisión `Intangible` (necesario porque el `Humanoid` vuelve a activar la colisión del torso y la cabeza), y mete los personajes de los jugadores en el grupo `Players`, que no choca con `Intangible`. `Intangible` debe seguir chocando con `Default`: los clics (`ClickDetector`) y los raycasts usan el grupo `Default` e ignoran las partes de grupos que no chocan con él, y los enemigos dejarían de poder seleccionarse. El servidor lo arranca con `Intangible.start()` en `Main.server.luau`.
 - **Eventos entre servicios:** usar `Server.Signal`, nunca `BindableEvent`: un BindableEvent entrega copias de las tablas, así que comparar o usar como clave el enemigo o los datos recibidos falla (por eso los Raids no pasaban de la primera oleada). `EnemyService.Clicked`/`Died` y `DataService.Loaded`/`Releasing` son Signals.
 - **Remotes:** los crea el servidor con `Remotes.event(name)`; el cliente los espera con `ReplicatedStorage.Remotes:WaitForChild(name)`. Nunca confiar en datos del cliente sin validarlos en el servidor.
@@ -236,7 +238,7 @@ Decisiones cerradas. Las tareas pendientes están en `docs/tasks.md`.
 - [x] Nombres provisionales de personajes aceptados.
 - [x] Inicio lento aceptado: el jugador nuevo empieza con 0 Yenes y solo Kurilin (primera tirada a los ~6 min).
 - [x] Eliminar personajes: permitido sin recompensa; no se puede eliminar uno equipado ni el último.
-- [x] `DevCheats` es temporal y se elimina antes de publicar (ver `docs/tasks.md`).
+- [x] `DevCheats` (servidor) y `RevealPreview` (cliente) son temporales y se eliminan antes de publicar (ver `docs/tasks.md`).
 - [x] Personajes visibles para todos los jugadores; los golpes se sincronizan con un evento del servidor por golpe (`CharacterHit`).
 - [x] Modelos en rig R6, uno por luchador y por enemigo, en `assets/` para exportarlos y rehacerlos en Blender.
 - [x] Islas de alta calidad: dirección de arte por anime aprobada (`docs/game-design.md`), construidas por código con el plugin Island Builder; Nameku primero como isla de prueba del estilo.
@@ -253,3 +255,4 @@ Decisiones cerradas. Las tareas pendientes están en `docs/tasks.md`.
 - [x] Raids de 20 oleadas siempre (también en Studio): 4 débiles + 2 medianos + 1 fuerte por oleada, ×1.03 por oleada; mini jefe en la 10 y jefe final en la 20, en el centro del coliseo.
 - [x] Personajes y enemigos intangibles (grupo de colisión `Intangible`).
 - [x] Números de daño del color de la rareza del personaje que golpea, grandes los propios y pequeños los de otros jugadores; destello, chispas y humo al morir.
+- [x] Gacha en el HUD: panel Check-UI junto a la máquina con Tirar x1 y Tirar x10 (10 veces el costo, sin descuento; necesita 10 espacios) y animación a pantalla completa; la máquina es una estrella dorada que gira.

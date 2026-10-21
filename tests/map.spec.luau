@@ -260,6 +260,64 @@ check("arena exit closer to the players' gate than the arrival point", exit[2] >
 -- Clouds reach 1.3 x the outer radius plus a puff; RaidService spaces arenas 400 studs apart.
 check("arena fits between raid slots", (RaidArenaLayout.outerRadius() * 1.3 + 30) * 2 < 400, true)
 
+-- Gacha star: ten wedges (two per point) that meet exactly: each tip on the
+-- outer radius, each base corner on the inner pentagon, flat on the XY plane,
+-- with orthonormal right-handed axes as CFrame.fromMatrix needs.
+local GachaStar = require(Shared.Map.GachaStar)
+local function close(a, b)
+	return math.abs(a - b) < 1e-6
+end
+local function length(v)
+	return math.sqrt(v.x ^ 2 + v.y ^ 2 + v.z ^ 2)
+end
+local function dot(a, b)
+	return a.x * b.x + a.y * b.y + a.z * b.z
+end
+local starRadius, starDepth = 4, 1.5
+local starInner = GachaStar.innerRadius(starRadius)
+local wedges = GachaStar.pieces(starRadius, starDepth)
+check("star wedge count", #wedges, GachaStar.POINTS * 2)
+local starOk = true
+local tips = {}
+for index, wedge in wedges do
+	local function at(up, back)
+		return {
+			x = wedge.center.x + wedge.up.x * up + wedge.back.x * back,
+			y = wedge.center.y + wedge.up.y * up + wedge.back.y * back,
+			z = wedge.center.z + wedge.up.z * up + wedge.back.z * back,
+		}
+	end
+	local h, d = wedge.size.y, wedge.size.z
+	local tip, corner, square = at(h / 2, d / 2), at(-h / 2, -d / 2), at(-h / 2, d / 2)
+	local cross = {
+		x = wedge.up.y * wedge.back.z - wedge.up.z * wedge.back.y,
+		y = wedge.up.z * wedge.back.x - wedge.up.x * wedge.back.z,
+		z = wedge.up.x * wedge.back.y - wedge.up.y * wedge.back.x,
+	}
+	local ok = close(length(tip), starRadius)
+		and close(length(corner), starInner)
+		and close(length(square), starInner * math.cos(math.pi / GachaStar.POINTS))
+		and close(tip.z, 0)
+		and close(corner.z, 0)
+		and close(length(wedge.up), 1)
+		and close(length(wedge.back), 1)
+		and close(dot(wedge.up, wedge.back), 0)
+		and close(cross.x, wedge.right.x)
+		and close(cross.y, wedge.right.y)
+		and close(cross.z, wedge.right.z)
+		and close(wedge.size.x, starDepth)
+	if not ok then
+		print(`star wedge {index} misplaced`)
+	end
+	starOk = starOk and ok
+	tips[index] = tip
+end
+check("star wedges meet exactly", starOk, true)
+check("first point straight up", close(tips[1].x, 0) and close(tips[1].y, starRadius), true)
+check("both halves of a point share the tip", close(tips[1].x, tips[2].x) and close(tips[1].y, tips[2].y), true)
+local nextAngle = math.atan2(tips[3].x, tips[3].y)
+check("points 72 degrees apart", close(nextAngle, 2 * math.pi / GachaStar.POINTS), true)
+
 if failures == 0 then
 	print("OK: all checks passed")
 else

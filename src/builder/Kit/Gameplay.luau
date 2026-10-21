@@ -9,6 +9,7 @@ local CollectionService = game:GetService("CollectionService")
 local Root = script.Parent.Parent
 local Shared = Root.Shared
 local Balance = require(Shared.Config.Balance)
+local GachaStar = require(Shared.Map.GachaStar)
 local Islands = require(Shared.Data.Islands)
 local World = require(Shared.Config.World)
 local Parts = require(script.Parent.Parts)
@@ -66,7 +67,8 @@ function Gameplay.raidLobbyArrival(x: number, ground: number, z: number, parent:
 	tag(marker("Arrival", x, ground, z, parent), "RaidLobbySpawn", {})
 end
 
--- Gacha machine: stone pedestal, glowing orb (the tagged part) and a ring.
+-- Gacha machine: stone pedestal with a glowing ring and a golden star floating
+-- over it (its core is the tagged part; the client spins and bobs it).
 function Gameplay.gacha(islandId: string, x: number, ground: number, z: number, accent: Color3, parent: Instance)
 	local model = Parts.model("GachaMachine", parent)
 	local base = CFrame.new(x, ground, z)
@@ -80,17 +82,12 @@ function Gameplay.gacha(islandId: string, x: number, ground: number, z: number, 
 		model,
 		{ material = Enum.Material.Neon, shadow = false }
 	)
-	local orb = Parts.ball(
-		6,
-		Vector3.new(x, ground + 9.2, z),
-		accent,
-		model,
-		{ material = Enum.Material.Neon, transparency = 0.15, name = `GachaStand_{islandId}` }
-	)
-	orb.CanQuery = true -- the prompt lives here
-	Parts.light(orb, accent, 18, 2)
-	tag(orb, "GachaStand", { Island = islandId })
-	label(orb, "Gacha", Color3.new(1, 1, 1), 6, 90, 9)
+	-- Lowest tips at about 0.8 radius under the center: keep them clear of the ring.
+	local radius = 4.4
+	local _, core = GachaStar.build(CFrame.new(x, ground + 6 + radius * 0.85 + 0.8, z), radius, accent, model)
+	core.Name = `GachaStand_{islandId}`
+	tag(core, "GachaStand", { Island = islandId })
+	label(core, "Gacha", Color3.new(1, 1, 1), radius + 2.5, 90, 9)
 end
 
 -- Portal: glowing pad (tagged, if `tagName` is given) under a column of light,

@@ -8,7 +8,9 @@ local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
-local Islands = require(ReplicatedStorage:WaitForChild("Shared").Data.Islands)
+local Shared = ReplicatedStorage:WaitForChild("Shared")
+local GachaStar = require(Shared.Map.GachaStar)
+local Islands = require(Shared.Data.Islands)
 
 local ISLAND_SPAWN_TAG = "IslandSpawn"
 
@@ -79,14 +81,9 @@ local function buildEnemies(islandId: string, origin: Vector3, parent: Instance)
 end
 
 local function buildGacha(islandId: string, origin: Vector3, color: Color3, parent: Instance)
-	local stand = Instance.new("Part")
+	local star, stand = GachaStar.build(CFrame.new(origin + Vector3.new(20, 4.5, 0)), 3, color, parent)
 	stand.Name = `GachaStand_{islandId}`
-	stand.Shape = Enum.PartType.Ball
-	stand.Size = Vector3.one * 5
-	stand.Position = origin + Vector3.new(20, 3, 0)
-	stand.Color = color
-	stand.Material = Enum.Material.Neon
-	tagged(stand, "GachaStand", { Island = islandId }, parent)
+	tagged(stand, "GachaStand", { Island = islandId }, star)
 end
 
 -- A portal is a pad on the ground (holds the prompt) under a column of light.

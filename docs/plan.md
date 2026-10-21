@@ -76,16 +76,16 @@ El código no depende de posiciones: lee Parts etiquetadas (`IslandSpawn`, `Enem
 | 6 | Raids | ✅ | `2d3c102` |
 | 7 | Boosts y tienda de Gemas | ✅ | `d1afd9a` |
 | 8 | Personajes visibles (estilo AFS), rigs R6 | ✅ | `32d5076` |
-| 9 | Islas de alta calidad, mar, ambientación, arena de Raid | ✅ (falta ver la textura del mar en Studio) | `7d85911`, `a582cd1`, `74b3aec`, `b5a0b0e` |
+| 9 | Islas de alta calidad, mar, ambientación, arena de Raid | ✅ | `7d85911`, `a582cd1`, `74b3aec`, `b5a0b0e` |
 | — | Herramientas: StyLua, selene, Rokit; Check-UI como estilo | ✅ | `304f8fb` |
 | — | Arreglos: oleadas de los Raids, portal de salida, monedas, intangibles | ✅ | `90e577c` |
 | — | Modelos finales de Blender (en paralelo, sin bloquear) | ⏳ | — |
-| 10 | Efectos, números de daño, gacha animado, sonido y música | 🟡 en curso (números de daño hechos) | `7806edd` |
+| 10 | Efectos, números de daño, gacha animado, sonido y música | 🟡 en curso (números de daño y gacha animado hechos) | `7806edd` |
 | 11 | UI con el estilo Check-UI | ⏳ | — |
 | 12 | Prueba temprana en servidor publicado | ⏳ | — |
 | 13 | Preparar publicación | ⏳ | — |
 
-**Orden aprobado:** 10 → 11 → 12 → 13 (la Fase 9 está cerrada; solo falta ver el mar en Studio). Los modelos finales de Blender avanzan en paralelo: no bloquean nada porque el código los acepta con el mismo nombre y ruta.
+**Orden aprobado:** 10 → 11 → 12 → 13 (las fases 0 a 9 están cerradas y verificadas en Studio). Los modelos finales de Blender avanzan en paralelo: no bloquean nada porque el código los acepta con el mismo nombre y ruta.
 
 ### Fase 8 — Personajes visibles
 
@@ -103,7 +103,7 @@ Cada luchador y enemigo tiene su modelo en `assets/` y Rojo lo sincroniza (`defa
 |---|---|---|
 | `assets/CharacterModels/<Isla>/<IdPersonaje>` | `ReplicatedStorage.CharacterModels` | 42 luchadores (escala 1, color de su rareza) |
 | `assets/EnemyModels/<Isla>/<Rango>` | `ServerStorage.EnemyModels` | 24 enemigos de isla (Fácil 1, Medio 1.25, Difícil 1.5, Jefe 2.5) |
-| `assets/EnemyModels/Raid/<Tipo>` | `ServerStorage.EnemyModels.Raid` | 4 enemigos de Raid (Débil 1, Mediano 1.25, Mini jefe 2, Jefe 3) |
+| `assets/EnemyModels/Raid/<Tipo>` | `ServerStorage.EnemyModels.Raid` | 5 enemigos de Raid (Débil 1, Mediano 1.25, Fuerte 1.5, Mini jefe 2, Jefe 3) |
 
 `tools/build_rigs.py` genera los provisionales a partir de `Characters`, `Islands`, `Balance` y `Raids`, y nunca sobrescribe un modelo existente.
 
@@ -140,14 +140,14 @@ Los enemigos escalados multiplican tamaños, centros y puntos de giro por su esc
 
 **Ciclo de calidad:** construir → *Siguiente foto* en el panel (cámaras fijas por área) → capturas → ajustes en el código de la isla → reconstruir. Nameku primero; luego una isla detallada por commit.
 
-**Pendiente de la fase:** las 6 islas están aprobadas. La arena de Raid (coliseo) la construye el plugin como plantilla `ServerStorage.RaidArena` que `RaidService` clona por grupo; `RaidArenaLayout` (puro, probado en `map.spec`) fija las medidas, la llegada y el portal de salida; los enemigos salen en puntos aleatorios de la pista (`RaidOps.randomSpots`, probado en `raid.spec`). La textura del mar está subida (`World.Sea.textureId`); falta reconstruir el mundo para verla. Los hitos hechos con Parts (estatuas, castillo, nave, tren) se quedan así; no hay lista aparte para Blender.
+**Cierre de la fase:** las 6 islas están aprobadas. La arena de Raid (coliseo) la construye el plugin como plantilla `ServerStorage.RaidArena` que `RaidService` clona por grupo; `RaidArenaLayout` (puro, probado en `map.spec`) fija las medidas, la llegada y el portal de salida; los enemigos salen en puntos aleatorios de la pista (`RaidOps.randomSpots`, probado en `raid.spec`). La textura del mar está subida (`World.Sea.textureId`) y comprobada en Studio. Los hitos hechos con Parts (estatuas, castillo, nave, tren) se quedan así; no hay lista aparte para Blender.
 
 ### Fase 10 — Efectos y sonido
 
 Todo en el cliente; el servidor ya envía lo necesario (`CharacterHit` con el daño, `GachaResult` con personaje y rareza, `CurrentArea`, `RaidEvent`).
 
 - ✅ Números de daño y efectos de golpe (`7806edd`): `HitEffectController` con la lógica pura de `Effects/HitStyle`.
-- **Gacha animado:** `Effects/GachaReveal` (puro y probado: fases, duración y colores por rareza) y la secuencia sobre la máquina: el orbe tiembla y brilla, estalla en el color de la rareza y aparece el modelo del personaje girando. Más larga y vistosa cuanto más rara (Legendario y Mítico con rayos de luz, Secreto con destello en pantalla y arcoíris). Se puede saltar; las tiradas seguidas hacen cola.
+- ✅ **Gacha en el HUD** (probado en Studio): la máquina es una estrella dorada (`Shared/Map/GachaStar`, geometría pura probada en `map.spec`) que el cliente hace girar. Junto a ella, `GachaController` abre un panel Check-UI (`UI/CheckUI`, `UI/CharacterViewport`) con los 7 personajes, sus probabilidades (`Formulas.gachaChances`, compartida con `GachaRoll`) y los botones Tirar x1 y Tirar x10. Nuevo remote `GachaRoll (isla, cantidad)`; `GachaService` ya no usa ProximityPrompt, valida la distancia a la estrella, el espacio (`InventoryOps.hasSpace(data, cantidad)`) y los Yenes (`Formulas.gachaCost(isla, cantidad)`), tira con `GachaRoll.rollMany` y añade los personajes de una vez (`InventoryService.addCharacters`). La animación va a pantalla completa (`UI/GachaRevealView`) con la lógica pura de `Effects/GachaReveal` (probada en `effects.spec`): entrada, carga con subida de colores, estallido, carta grande o diez cartas que se voltean de peor a mejor. `Dev/RevealPreview` (temporal, cliente) la prueba con Ctrl + 1..9.
 - **Sonidos:** ids en `Shared/Config/Sounds`; `SoundController` para golpes, muertes, monedas, gacha, portales, Raids, boosts y UI. Sonido 3D en el mundo y 2D en la UI, con límite cuando suenan muchos a la vez.
 - **Música:** una pista por área (islas, lobby de Raids, Raid y jefe final) con fundido al cambiar `CurrentArea`.
 - **Opciones:** música y efectos activables, guardados en los datos del jugador (campo nuevo en `PlayerRecord.newData`); la ventana de Ajustes se dibuja en la Fase 11.
@@ -166,7 +166,7 @@ Todo en el cliente; el servidor ya envía lo necesario (`CharacterHit` con el da
 
 ### Fase 13 — Publicación
 
-- Eliminar `Dev/DevCheats` y su llamada.
+- Eliminar `Server/Dev/DevCheats` y `Client/Dev/RevealPreview` y sus llamadas.
 - Revisar el balance con partidas reales y ajustar `docs/balance.md` y las pruebas.
 - Borrar los datos de prueba del DataStore.
 - Página de la experiencia: nombre, descripción, icono y miniaturas (puntos de foto del plugin), clasificación de edad y dispositivos.

@@ -1,6 +1,7 @@
 -- Checks gacha chances, the Luck boost, pity and roll distribution.
 local GachaRoll = require(Server.Gacha.GachaRoll)
 local Balance = require(Shared.Config.Balance)
+local Formulas = require(Shared.Formulas)
 
 local failures = 0
 local function check(label, actual, expected)
@@ -96,6 +97,31 @@ for rarity, chance in base do
 	local tolerance = if rarity == "Legendary" then 0.3 else 0.25
 	near(`distribution {rarity}`, (counts[rarity] or 0) / rolls * 100, chance, tolerance)
 end
+
+-- Ten rolls at once are exactly ten single rolls in a row (pity included).
+local manyCounters, singleCounters = {}, {}
+seed = 777
+local many = GachaRoll.rollMany(manyCounters, true, Balance.GachaMultiRoll, lcg)
+seed = 777
+check("multi roll count", #many, Balance.GachaMultiRoll)
+for index = 1, Balance.GachaMultiRoll do
+	check(`multi roll {index} like a single roll`, many[index], GachaRoll.roll(singleCounters, true, lcg))
+end
+for rarity, value in manyCounters do
+	check(`multi roll pity {rarity}`, value, singleCounters[rarity])
+end
+local almost = { Legendary = Balance.Pity.Legendary - 3 }
+local pityRolls = GachaRoll.rollMany(almost, false, 10, constant(0))
+check("pity reached inside a multi roll", pityRolls[3], "Legendary")
+check("rolls before it are normal", pityRolls[2], "Common")
+check("pity counts on after it", almost.Legendary, 7)
+
+-- Ten rolls cost exactly ten single rolls; the client shows the server's chances.
+check("multi roll is ten", Balance.GachaMultiRoll, 10)
+check("one roll cost", Formulas.gachaCost("Nameku", 1), Formulas.gachaCost("Nameku"))
+check("ten rolls cost", Formulas.gachaCost("Nameku", 10), Formulas.gachaCost("Nameku") * 10)
+check("ten rolls on Kono", Formulas.gachaCost("Kono", 10), Formulas.gachaCost("Kono") * 10)
+check("same chances as the client", GachaRoll.getChances, Formulas.gachaChances)
 
 if failures == 0 then
 	print("OK: all checks passed")

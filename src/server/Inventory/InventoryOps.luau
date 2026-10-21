@@ -40,8 +40,9 @@ function InventoryOps.equipSlots(data: Data): number
 	return Formulas.equipSlots(data.Raids.Completions)
 end
 
-function InventoryOps.hasSpace(data: Data): boolean
-	return InventoryOps.count(data) < InventoryOps.capacity(data)
+-- Whether `amount` (default 1) more characters fit.
+function InventoryOps.hasSpace(data: Data, amount: number?): boolean
+	return InventoryOps.count(data) + (amount or 1) <= InventoryOps.capacity(data)
 end
 
 -- Adds a character and returns its new unique id. Callers check hasSpace first.

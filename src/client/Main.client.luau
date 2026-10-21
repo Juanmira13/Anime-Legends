@@ -13,6 +13,7 @@ local AmbienceController = require(Controllers.AmbienceController)
 local SeaController = require(Controllers.SeaController)
 local CoinController = require(Controllers.CoinController)
 local HitEffectController = require(Controllers.HitEffectController)
+local RevealPreview = require(script.Parent.Dev.RevealPreview) -- TEMPORARY: remove before release
 
 HudController.start()
 EnemyController.start()
@@ -26,5 +27,6 @@ AmbienceController.start()
 SeaController.start()
 CoinController.start()
 HitEffectController.start()
+RevealPreview.start()
 
 print("[AnimeLegends] Client started")

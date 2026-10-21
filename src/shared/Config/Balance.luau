@@ -34,6 +34,8 @@ local Balance = {
 
 	-- Cost of one gacha roll on the first island.
 	GachaBaseCost = 50,
+	-- Rolls of the multi-roll button; it costs exactly that many single rolls.
+	GachaMultiRoll = 10,
 
 	-- Rolls on the same island until the rarity is guaranteed. Counters are per
 	-- island and per rarity, and reset when that rarity is obtained.

@@ -69,6 +69,8 @@ Yenes por segundo con el equipo de referencia: Fácil 1.25, Medio 1.5, Difícil 
 
 \*\* Solo el tiempo de farmeo para pagar el portal. Como el jugador también gasta Yenes en el gacha, el tiempo real en cada isla es aproximadamente el doble.
 
+La tirada x10 cuesta exactamente 10 tiradas (sin descuento): 500 ¥ en Nameku.
+
 Una tirada cuesta lo que se gana en unos 33 s farmeando enemigos Medios de esa isla, unas 100 tiradas por hora. Con las probabilidades del gacha, eso da un Legendario cada ~30 min, un Mítico cada ~1 h y un Secreto cada ~10 h de farmeo, en promedio.
 
 ## Inventario

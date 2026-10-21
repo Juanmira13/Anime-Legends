@@ -106,9 +106,9 @@ function InventoryService.refresh(player: Player)
 	end
 end
 
-function InventoryService.hasSpace(player: Player): boolean
+function InventoryService.hasSpace(player: Player, amount: number?): boolean
 	local data = DataService.getData(player)
-	return data ~= nil and InventoryOps.hasSpace(data)
+	return data ~= nil and InventoryOps.hasSpace(data, amount)
 end
 
 -- Adds a character to a loaded player's inventory and notifies the client.
@@ -121,6 +121,20 @@ function InventoryService.addCharacter(player: Player, characterId: string): str
 	local uid = InventoryOps.add(data, characterId)
 	pushSnapshot(player, data)
 	return uid
+end
+
+-- Adds several characters at once (one update to the client). Callers check
+-- hasSpace for all of them first. Returns false if the data is not loaded.
+function InventoryService.addCharacters(player: Player, characterIds: { string }): boolean
+	local data = DataService.getData(player)
+	if data == nil then
+		return false
+	end
+	for _, characterId in characterIds do
+		InventoryOps.add(data, characterId)
+	end
+	pushSnapshot(player, data)
+	return true
 end
 
 function InventoryService.start()

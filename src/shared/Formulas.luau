@@ -66,8 +66,29 @@ function Formulas.enemyRespawnTime(rankId: string): number
 	return getEnemyRank(rankId).respawnTime
 end
 
-function Formulas.gachaCost(islandId: string): number
-	return Formulas.niceRound(Balance.GachaBaseCost * Formulas.islandScale(islandId))
+-- Yen for `count` rolls (default 1) on an island's gacha; no discount for many.
+function Formulas.gachaCost(islandId: string, count: number?): number
+	return Formulas.niceRound(Balance.GachaBaseCost * Formulas.islandScale(islandId)) * (count or 1)
+end
+
+-- Percent chance of each gacha rarity. With the Luck boost, boosted rarities
+-- are multiplied and the extra chance is taken from Common, so the total stays 100.
+function Formulas.gachaChances(luckActive: boolean): { [string]: number }
+	local chances: { [string]: number } = {}
+	for _, rarity in Rarities.List do
+		chances[rarity.id] = rarity.gachaChance
+	end
+	if luckActive then
+		local multiplier = Boosts.get("Luck").multiplier
+		local extra = 0
+		for _, id in Boosts.LuckRarities do
+			local boosted = chances[id] * multiplier
+			extra += boosted - chances[id]
+			chances[id] = boosted
+		end
+		chances.Common -= extra
+	end
+	return chances
 end
 
 -- Yen to unlock an island's portal; 0 for the first island.

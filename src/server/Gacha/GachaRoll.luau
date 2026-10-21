@@ -4,7 +4,7 @@
 
 local Shared = game:GetService("ReplicatedStorage"):WaitForChild("Shared")
 local Balance = require(Shared.Config.Balance)
-local Boosts = require(Shared.Config.Boosts)
+local Formulas = require(Shared.Formulas)
 local Rarities = require(Shared.Config.Rarities)
 
 -- Rolls since the last hit of each pity rarity, for one island.
@@ -24,25 +24,8 @@ end
 
 local GachaRoll = {}
 
--- Percent chance of each rarity. With the Luck boost, boosted rarities are
--- multiplied and the extra chance is taken from Common, so the total stays 100.
-function GachaRoll.getChances(luckActive: boolean): { [string]: number }
-	local chances: { [string]: number } = {}
-	for _, rarity in Rarities.List do
-		chances[rarity.id] = rarity.gachaChance
-	end
-	if luckActive then
-		local multiplier = Boosts.get("Luck").multiplier
-		local extra = 0
-		for _, id in Boosts.LuckRarities do
-			local boosted = chances[id] * multiplier
-			extra += boosted - chances[id]
-			chances[id] = boosted
-		end
-		chances.Common -= extra
-	end
-	return chances
-end
+-- Percent chance of each rarity (see Formulas.gachaChances; the client shows the same).
+GachaRoll.getChances = Formulas.gachaChances
 
 -- Rolls one rarity and updates `counters` in place: every roll adds 1 to each
 -- pity counter, and the counter of the rarity obtained resets to 0.
@@ -80,6 +63,21 @@ function GachaRoll.roll(counters: PityCounters, luckActive: boolean, random: () 
 		counters[result] = 0
 	end
 	return result
+end
+
+-- Rolls `count` times in a row, exactly like `count` single rolls (pity counts
+-- every one of them), and returns the rarities in order.
+function GachaRoll.rollMany(
+	counters: PityCounters,
+	luckActive: boolean,
+	count: number,
+	random: () -> number
+): { string }
+	local results = {}
+	for index = 1, count do
+		results[index] = GachaRoll.roll(counters, luckActive, random)
+	end
+	return results
 end
 
 return GachaRoll

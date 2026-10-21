@@ -106,9 +106,19 @@ Probabilidades (suman 100%):
 | Secreto | 0.1% |
 
 Cómo se tira:
-- Cada isla tiene una máquina de gacha. El jugador se acerca y la activa (tecla E, o tocarla en móvil).
-- Cada tirada cuesta Yenes según la isla (ver `docs/balance.md`). Solo se puede tirar en islas desbloqueadas y con espacio libre en el inventario.
-- El resultado se muestra en pantalla con el nombre del personaje y el color de su rareza.
+- Cada isla tiene una máquina de gacha: un pedestal con una estrella dorada que gira y flota sobre él.
+- Al acercarse, se abre en la parte baja del HUD el panel del gacha (estilo Check-UI): los 7 personajes de la isla en 3D con su rareza y su probabilidad (con el Boost de Suerte, la probabilidad aumentada y la etiqueta "SUERTE x2"), y dos botones: **Tirar x1** y **Tirar x10**, con su precio. En PC también E (x1) y R (x10); con mando, X e Y. El panel se cierra al alejarse o con [X] (vuelve a abrirse al volver a acercarse). Los botones se ven en rojo si no alcanzan los Yenes y en gris si la isla está bloqueada.
+- Cada tirada cuesta Yenes según la isla (ver `docs/balance.md`); la x10 cuesta exactamente 10 tiradas, sin descuento. Solo se puede tirar en islas desbloqueadas y con espacio libre en el inventario (10 espacios para la x10).
+- La x10 son 10 tiradas seguidas: cada una cuenta para el pity igual que una tirada suelta.
+- El resultado se muestra en el HUD con la animación de la tirada.
+
+### Animación de la tirada
+- A pantalla completa, sobre el HUD: la pantalla se oscurece y entra una estrella dorada desde abajo. La estrella se carga: late cada vez más rápido, tiembla y sacude la pantalla, y sube por los colores de rareza (Común, Poco común...) hasta la mejor rareza obtenida, con un anillo en cada paso. Luego estalla: destello blanco, onda expansiva y confeti.
+- **Una tirada:** aparece una carta grande con rebote: el personaje girando en 3D, la cinta de su rareza, tantas estrellas como su rareza (1 a 7, una tras otra) y su daño.
+- **Diez tiradas:** caen diez cartas boca abajo en dos filas y se voltean una a una, de peor a mejor; antes de cada Legendario o superior hay una pausa de suspense, y al voltearse una onda y una sacudida.
+- Cuanto más rara, más larga la carga, más fuerte la sacudida y el destello y más confeti. Las cartas Épico o superiores tienen rayos detrás; Legendario y superiores, un brillo que las recorre; Mítico y Secreto, doble capa de rayos; Secreto, colores arcoíris.
+- Un clic, un toque, E, Espacio o A adelantan: primero al estallido, luego a todas las cartas reveladas y luego cierran (no justo al tirar, para que la propia pulsación no la salte). Si no, se cierra sola a los pocos segundos.
+- Solo la ve quien tira; es solo visual (la tirada ya la hizo el servidor). Tiempos y efectos exactos en `src/client/Effects/GachaReveal.luau`.
 
 Con el Boost de Suerte activo, las probabilidades de Legendario, Mítico y Secreto se duplican (4%, 2% y 0.2%) y la diferencia se resta de Común (queda en 46.9%), para que el total siga siendo 100%.
 

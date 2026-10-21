@@ -90,6 +90,11 @@ check("full at 50", InventoryOps.hasSpace(full), false)
 full.InventoryUpgrades = 1
 check("upgrade adds space", InventoryOps.hasSpace(full), true)
 
+local free = InventoryOps.capacity(full) - InventoryOps.count(full)
+check("room for exactly the free slots", InventoryOps.hasSpace(full, free), true)
+check("no room for one more", InventoryOps.hasSpace(full, free + 1), false)
+check("default asks for one", InventoryOps.hasSpace(full), free >= 1)
+
 -- Upgrades
 local upgrades = PlayerRecord.newData()
 check("first upgrade cost", InventoryOps.nextUpgradeCost(upgrades), 10000)

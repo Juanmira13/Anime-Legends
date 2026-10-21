@@ -30,8 +30,9 @@ Simulador de progresión de Roblox al estilo Anime Fighters Simulator. El jugado
 - Pity por isla para Legendario (500), Mítico (5,000) y Secreto (1,000,000).
 - Boost de Suerte: ×2 Legendario, Mítico y Secreto, restado de Común.
 - No se puede tirar sin Yenes, en islas bloqueadas ni con el inventario lleno.
+- Junto a la máquina se abre en el HUD un panel con los personajes de la isla, sus probabilidades y los botones Tirar x1 y Tirar x10. La x10 cuesta 10 tiradas, necesita 10 espacios libres y equivale a 10 tiradas seguidas (cuentan para el pity).
 
-**Aceptación:** una tirada en Nameku cuesta 50 ¥ y muestra el personaje con el color de su rareza.
+**Aceptación:** una tirada en Nameku cuesta 50 ¥ y una x10, 500 ¥; el resultado se muestra en el HUD con el personaje y el color de su rareza.
 
 ### R4. Inventario ✅
 - 50 espacios al inicio, ampliables de 10 en 10 con Yenes (costo ×1.5) hasta 250.
@@ -70,20 +71,21 @@ Las 6 islas están construidas por el plugin con su propio terreno, relieve y de
 - Yenes y Gemas siempre visibles, con los boosts activos debajo.
 - Botones "Inventario" y "Boosts" en el borde izquierdo (no tapan el joystick en móvil).
 - Avisos en pantalla para gacha, portales, Raids y boosts.
-- Interacciones con ProximityPrompt y clic/toque: funcionan en PC, móvil y consola.
+- Interacciones con proximidad (panel del gacha), ProximityPrompt y clic/toque: funcionan en PC, móvil y consola.
 - Estilo oficial Check-UI (ventanas opacas, tipografía GothamBlack con contorno, botones con relieve, escalado según el tamaño de pantalla). Ver `CLAUDE.md` (sección 6, Interfaz); la migración de la UI actual es la Fase 11 de `docs/plan.md`.
 
 ### R9. Presentación 🟡
 - Personajes y enemigos intangibles: el jugador los atraviesa (los enemigos se siguen pudiendo seleccionar con clic).
 - Personajes equipados visibles para todos los jugadores, que siguen a su dueño caminando por el suelo y van hasta el enemigo a golpear (estilo AFS). Ver `docs/game-design.md` (Combate → Personajes visibles).
 - Números de daño (color de la rareza del personaje, grandes los propios), destello y chispas al golpear y humo al morir.
+- Animación de la tirada del gacha a pantalla completa sobre el HUD (una carta o diez que se voltean), más larga y vistosa cuanto más rara; se puede adelantar. La máquina es una estrella dorada que gira. Ver `docs/game-design.md` (Gacha → Animación de la tirada).
 - Modelos de enemigos y arena de Raid (coliseo flotante), efectos de golpe, números de daño, efectos de gacha, sonido y música.
 - Islas de alta calidad, con la dirección de arte de cada anime, mar cartoon animado y ambientación por isla (luz, cielo, niebla, partículas).
 
 **Aceptación:** con 3 personajes equipados, caminan detrás del jugador a la misma velocidad, con los pies en el suelo y moviendo brazos y piernas; al elegir un enemigo caminan hasta colocarse a su alrededor y cada uno embiste cada vez que golpea. Otro jugador ve lo mismo. Al equipar o desequipar, el grupo cambia al momento.
 - Cada luchador y enemigo tiene su modelo en rig R6 que se puede exportar desde Studio para rehacerlo en Blender y volver a importarlo sin tocar código.
 
-**Parcial:** hechos los personajes visibles, las 6 islas, el mar cartoon, la ambientación por área y la arena de Raid. Los 71 modelos (42 luchadores, 24 enemigos de isla y 5 de Raid) son rigs R6 provisionales (luchadores del color de su rareza, enemigos del color y tamaño de su rango). Hechos también los números de daño y efectos de golpe. Faltan los modelos finales de Blender (en paralelo), efectos de gacha, sonido y música (Fase 10).
+**Parcial:** hechos los personajes visibles, las 6 islas, el mar cartoon, la ambientación por área y la arena de Raid. Los 71 modelos (42 luchadores, 24 enemigos de isla y 5 de Raid) son rigs R6 provisionales (luchadores del color de su rareza, enemigos del color y tamaño de su rango). Hechos también los números de daño, los efectos de golpe y el gacha en el HUD (Tirar x1 y x10, estrella dorada y animación a pantalla completa por rareza, probado en Studio). Faltan los modelos finales de Blender (en paralelo), sonido y música (Fase 10).
 
 ## Requisitos no funcionales
 

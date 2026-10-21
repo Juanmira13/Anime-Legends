@@ -23,7 +23,7 @@ Lista de trabajo. Cada tarea hecha indica su commit. Las fases están descritas 
 
 ### Fase 3 — Gacha (`81ba7ff`) · R3
 - [x] `GachaRoll` con pity y Suerte (prueba `gacha.spec`).
-- [x] `GachaService` con `GachaStand` y ProximityPrompt; aviso del resultado.
+- [x] `GachaService` con `GachaStand` y ProximityPrompt; aviso del resultado (sustituido en la Fase 10 por el panel del HUD).
 - [x] `DevCheats` temporal (Yenes de prueba). Probado en Studio.
 
 ### Fase 4 — Inventario (`663c2cf`) · R4, R8
@@ -91,16 +91,30 @@ Lista de trabajo. Cada tarea hecha indica su commit. Las fases están descritas 
 - [x] Yenes como monedas flotantes: `CoinService`, `CoinOps` (`coins.spec`), `CoinController`, `DataService.Releasing` para pagar lo pendiente antes del guardado; también en los Raids (las Gemas siguen directas).
 - [x] Personajes y enemigos intangibles (`Shared/Intangible`, grupos `Intangible` y `Players`). Corregido: al principio no se podía atacar porque el grupo no chocaba con `Default` y los clics lo ignoraban.
 
+### Verificado en Studio (2026-10-21)
+- [x] Reconstruir el mundo y comprobar que la textura del mar se ve y se desplaza.
+- [x] Raid completo: las 20 oleadas con enemigos de los tres tipos en sitios distintos, el mini jefe y el jefe en el círculo dorado, el portal de salida lleva al lobby.
+- [x] Monedas: caen al derrotar un enemigo, vuelan al acercarse y suben los Yenes del HUD en el momento; las no recogidas se pagan solas a los 30 s.
+- [x] El jugador atraviesa enemigos y luchadores, y sigue pudiendo seleccionar enemigos con clic.
+- [x] Números de daño, destellos y humo al morir.
+- [x] Ponerse en la fila de un Raid, volver a Nameku por el portal y comprobar que sale de la fila.
+- [x] Guardado entre sesiones con "Enable Studio Access to API Services".
+- [x] Línea naranja fina sobre el mar entre Kono y Clover Kingdom: comprobado, no es un fallo.
+
 ## Pendiente
 
 ### Fase 10 — Efectos y sonido · R9 (en curso)
 - [x] Números de daño y efectos al golpear (`7806edd`): `HitEffectController` y `Effects/HitStyle` (`effects.spec`). El daño sale al conectar la embestida, del color de la rareza del personaje; propios grandes, de otros pequeños y solo cerca; destello y chispas al golpear y humo al morir.
-- [ ] **Animación de la tirada del gacha por rareza.** Sin cambios en el servidor (`GachaResult` ya trae personaje y rareza):
-  - [ ] Lógica pura de la animación (`Effects/GachaReveal`: fases, duración por rareza, colores y si se puede saltar) con pruebas.
-  - [ ] Secuencia sobre la máquina: el orbe tiembla y brilla, estalla en el color de la rareza y aparece el modelo del personaje girando con su nombre y su rareza.
-  - [ ] Más larga y vistosa cuanto más rara: Común y Poco común cortas; Legendario y Mítico con rayos de luz; Secreto con destello en pantalla y colores arcoíris.
-  - [ ] Se puede saltar con un clic o toque, y las tiradas seguidas no se pisan (cola).
-  - [ ] Probar en Studio con cada rareza (atajo temporal en `DevCheats` para forzar una rareza, que se quita con él).
+- [x] **Gacha en el HUD con Tirar x1 y Tirar x10, y animación a pantalla completa.**
+  - [x] Estrella dorada en lugar del orbe (`Shared/Map/GachaStar`: contorno, cuerpo y corazón brillante; geometría probada en `map.spec`), en el plugin y en `TestArena`; el cliente la hace girar y flotar.
+  - [x] Tirada x10: `Balance.GachaMultiRoll`, `Formulas.gachaCost(isla, cantidad)`, `GachaRoll.rollMany`, `InventoryOps.hasSpace(data, cantidad)`, `InventoryService.addCharacters`; pruebas en `gacha.spec` e `inventory.spec`.
+  - [x] `GachaService` sin ProximityPrompt: remote `GachaRoll (isla, cantidad)` con validación de cantidad, distancia a la estrella, isla, espacio y Yenes.
+  - [x] Constructores Check-UI en `UI/CheckUI` (ventana, cabecera, `[X]`, botón estándar, paletas, escalado, rebote) y `UI/CharacterViewport` (personaje en 3D para la UI).
+  - [x] Panel del gacha junto a la máquina: 7 personajes en 3D con probabilidades (Suerte incluida), botones x1 y x10 con precio y estados (rojo sin Yenes, gris bloqueada), teclas E/R y X/Y.
+  - [x] Animación a pantalla completa (`UI/GachaRevealView` + `Effects/GachaReveal`, probada en `effects.spec`): entrada, carga con subida de colores, estallido con destello, onda y confeti, carta grande o diez cartas que se voltean de peor a mejor, brillo, rayos y arcoíris según la rareza; se puede adelantar.
+  - [x] Atajo temporal de Studio `Client/Dev/RevealPreview`: Ctrl + 1..7 (cada rareza) y Ctrl + 8 y 9 (diez tiradas), sin tirar.
+  - [x] Plugin reinstalado e islas reconstruidas con la estrella.
+  - [x] Probado en Studio (2026-10-21): panel al acercarse, x1 y x10 reales, cada rareza con Ctrl + 1..9 y adelantar.
 - [ ] **Sonidos.**
   - [ ] Elegir o subir los audios (biblioteca de Roblox o propios) y guardar sus ids en un `Shared/Config/Sounds`.
   - [ ] `SoundController` (cliente): golpes (por rareza), muerte de enemigo, recoger monedas (tono que sube en cadena), tirada y revelado del gacha por rareza, portales (viajar y desbloquear), Raid (empieza, oleada, mini jefe, jefe, completado, fallido), boost activado, clic y hover de la UI.
@@ -109,16 +123,16 @@ Lista de trabajo. Cada tarea hecha indica su commit. Las fases están descritas 
   - [ ] Una pista por isla, por el lobby de Raids y por el Raid (con otra para el jefe final), en `Config/Ambience` o `Config/Sounds`.
   - [ ] Cambio con fundido al cambiar el atributo `CurrentArea`.
 - [ ] Opciones de sonido: activar o desactivar música y efectos (se guardan en los datos del jugador). La ventana de Ajustes con Check-UI va en la Fase 11.
-- [ ] Probar en Studio los números de daño, los efectos, el gacha y el sonido (con varios jugadores si es posible).
+- [ ] Probar en Studio el sonido y, con varios jugadores si es posible, los números de daño y los efectos (el gacha ya está probado).
 - [ ] Documentos al día (constitución, spec, plan, diseño) y commit.
 
 ### Fase 11 — UI Check-UI · R8
 - [ ] Cargar la skill `check-ui-clean-roblox` y pasar sus constantes a `UI/Theme`: lienzo `#3B5866`, GothamBlack con contorno, cabeceras por tipo de menú con divisor de dos líneas, damero con degradado, colores de la tríada de botones.
-- [ ] Constructores en `UI/Theme` (o `UI/Components`): ventana, cabecera, botón de cerrar `[X]` con relieve, botón estándar sin icono, botón con estados (Reclamar, Reclamado, Bloqueado), barra de progreso, tarjeta de personaje.
+- [ ] Constructores en `UI/CheckUI` (ya existen ventana, cabecera, `[X]`, botón estándar con paletas y escalado, hechos para el gacha): ventana, cabecera, botón de cerrar `[X]` con relieve, botón estándar sin icono, botón con estados (Reclamar, Reclamado, Bloqueado), barra de progreso, tarjeta de personaje.
 - [ ] Escalado por pantalla (`UIScale` según `ViewportSize`, base 1050 × 620, entre 0.52 y 1.18) e interacciones desde el centro (salto al pasar y al pulsar).
 - [ ] Rehacer el HUD: Yenes y Gemas, boosts activos con su tiempo, botones laterales (no tapan el joystick en móvil).
 - [ ] Rehacer el inventario: tarjetas por rareza, equipar y desequipar, "Equipar mejores", eliminar con confirmación, ampliar espacio.
-- [ ] Rehacer el resultado del gacha junto con la animación de la Fase 10.
+- [x] Rehacer el resultado del gacha junto con la animación de la Fase 10 (panel y animación ya en Check-UI).
 - [ ] Rehacer la tienda de boosts, el estado del Raid (oleada, tiempo, fila) y los avisos (`Notify`).
 - [ ] Ventana de Ajustes (música y efectos) con el arquetipo Settings de Check-UI.
 - [ ] Iconos de `CheckUIIcons` donde aporten (Yenes, Gemas, boosts, Raids) con `ScaleType.Fit`; comprobar que los ids siguen disponibles.
@@ -135,7 +149,7 @@ Lista de trabajo. Cada tarea hecha indica su commit. Las fases están descritas 
 - [ ] Anotar y corregir lo que falle antes de la publicación.
 
 ### Fase 13 — Publicación
-- [ ] Eliminar `src/server/Dev/DevCheats.luau` y su llamada en `Main.server.luau`.
+- [ ] Eliminar `src/server/Dev/DevCheats.luau` y su llamada en `Main.server.luau`, y `src/client/Dev/RevealPreview.luau` y su llamada en `Main.client.luau`.
 - [ ] Borrar los datos de prueba del DataStore (o empezar con un DataStore nuevo).
 - [ ] Revisar el balance con partidas reales (primera tirada, coste de portales, duración de los Raids, Gemas por hora) y ajustar `docs/balance.md` y las pruebas.
 - [ ] Página de la experiencia: nombre, descripción, icono y miniaturas (con los puntos de foto del plugin), clasificación de edad, dispositivos (PC, móvil, consola).
@@ -144,13 +158,3 @@ Lista de trabajo. Cada tarea hecha indica su commit. Las fases están descritas 
 ### En paralelo — Modelos finales de Blender
 - [ ] Exportar un rig con *Export Selection* y abrirlo en Blender (primer paso del flujo).
 - [ ] Modelos finales para los 42 luchadores y los 29 enemigos (24 de isla y 5 de Raid), sustituyendo los rigs de `assets/` con el mismo nombre y ruta (flujo en `docs/plan.md`, Modelos y Blender).
-
-### Pendientes de verificar en Studio
-- [ ] Reconstruir el mundo y comprobar que la textura del mar se ve y se desplaza.
-- [ ] Raid completo: las 20 oleadas con enemigos de los tres tipos en sitios distintos, el mini jefe y el jefe en el círculo dorado, el portal de salida lleva al lobby.
-- [ ] Monedas: caen al derrotar un enemigo, vuelan al acercarse y suben los Yenes del HUD en el momento; las no recogidas se pagan solas a los 30 s.
-- [ ] El jugador atraviesa enemigos y luchadores, y sigue pudiendo seleccionar enemigos con clic.
-- [ ] Números de daño, destellos y humo al morir.
-- [ ] Ponerse en la fila de un Raid, volver a Nameku por el portal y comprobar que sale de la fila.
-- [ ] Guardado entre sesiones con "Enable Studio Access to API Services".
-- [ ] Línea naranja fina sobre el mar entre Kono y Clover Kingdom en la vista aérea de Kono: comprobar si es una pieza o un reflejo del agua lejana.
