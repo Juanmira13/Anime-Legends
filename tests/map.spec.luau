@@ -244,37 +244,19 @@ for _, area in areas do
 end
 check("unknown area falls back", Ambience.get("Nowhere") == Ambience.Areas[Ambience.DefaultArea], true)
 
--- Raid arena: room for the biggest wave, spots on the field and apart, and
--- the coliseum (with its clouds) fits between neighbouring arenas.
+-- Raid arena: arrival point and exit portal on the field and apart, room left
+-- for enemies, and the coliseum (with its clouds) fits between neighbouring
+-- arenas. Random enemy spots are checked in raid.spec.
 local RaidArenaLayout = require(Builder.RaidArenaLayout)
-local RaidOps = require(Server.Raids.RaidOps)
 local function distance(a, b)
 	return math.sqrt((a[1] - b[1]) ^ 2 + (a[2] - b[2]) ^ 2)
 end
-local biggestWave = 0
-for wave = 1, Raids.WaveCount do
-	biggestWave = math.max(biggestWave, #RaidOps.waveEnemies(wave))
-end
-local spots = RaidArenaLayout.enemySpots
-check("arena spots fit the biggest wave", #spots >= biggestWave, true)
-check("arena boss spot in the middle row", spots[1][1] == 0 and spots[1][2] < 0, true)
-local minimumGap, farthest = math.huge, 0
-for index, spot in spots do
-	farthest = math.max(farthest, distance(spot, { 0, 0 }))
-	for other = index + 1, #spots do
-		minimumGap = math.min(minimumGap, distance(spot, spots[other]))
-	end
-end
-check("arena spots inside the field", farthest <= RaidArenaLayout.floorRadius - 10, true)
-check("arena spots apart", minimumGap >= 20, true)
-local spawn = RaidArenaLayout.playerSpawn
-check("arena player spawn inside the field", distance(spawn, { 0, 0 }) <= RaidArenaLayout.floorRadius - 10, true)
-local nearestEnemy = math.huge
-for _, spot in spots do
-	nearestEnemy = math.min(nearestEnemy, distance(spawn, spot))
-end
-check("arena player spawn away from enemies", nearestEnemy >= 40, true)
-check("arena player spawn within combat range of the front row", nearestEnemy <= Balance.Combat.range, true)
+local fieldEdge = RaidArenaLayout.floorRadius - 8
+local spawn, exit = RaidArenaLayout.playerSpawn, RaidArenaLayout.exitPortal
+check("arena player spawn inside the field", distance(spawn, { 0, 0 }) <= fieldEdge, true)
+check("arena exit portal inside the field", distance(exit, { 0, 0 }) <= fieldEdge, true)
+check("arena exit apart from the arrival point", distance(spawn, exit) >= 20, true)
+check("arena exit closer to the players' gate than the arrival point", exit[2] > spawn[2], true)
 -- Clouds reach 1.3 x the outer radius plus a puff; RaidService spaces arenas 400 studs apart.
 check("arena fits between raid slots", (RaidArenaLayout.outerRadius() * 1.3 + 30) * 2 < 400, true)
 

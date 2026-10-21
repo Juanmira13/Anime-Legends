@@ -105,10 +105,27 @@ Lista de trabajo. Cada tarea hecha indica su commit. Las fases están descritas 
 - [ ] Publicar en privado y probar guardado entre sesiones, bloqueo de sesión y un Raid con varios jugadores.
 
 ### Fase 13 — Publicación
-- [ ] Eliminar `src/server/Dev/DevCheats.luau` y su llamada en `Main.server.luau` (también quita los Raids cortos de Studio).
+- [ ] Eliminar `src/server/Dev/DevCheats.luau` y su llamada en `Main.server.luau`.
 - [ ] Borrar los datos de prueba del DataStore.
 - [ ] Revisión final en un servidor publicado.
 - [ ] Revisar balance con partidas reales y ajustar `docs/balance.md` + pruebas.
+
+### Revisión general (constitución, especificación y tareas)
+- [x] Revisados `CLAUDE.md`, `docs/spec.md`, `docs/plan.md` y `docs/tasks.md`; textos de R5 y R9 al día; Fase 9 cerrada salvo ver el mar en Studio; los modelos de Blender pasan a una línea en paralelo.
+- [x] Revisado el código de los servicios del servidor contra R1 a R7: validación de todo lo que envía el cliente, límites contra spam, cobros solo si la acción es válida, recompensas y logros.
+- [x] `tests/acceptance.spec.luau`: criterios de aceptación numéricos de R1 a R7 en una sola prueba.
+- [x] Corregido: un jugador en la fila de un Raid que volvía a una isla seguía en la fila y el Raid lo sacaba de la isla; ahora salir del lobby (portal o reaparecer) lo saca de la fila.
+
+### Arreglos antes de la Fase 10 (Raids y Yenes)
+- [x] Corregido: los Raids no pasaban de la primera oleada. `EnemyService.Died` era un `BindableEvent`, que entrega una copia del enemigo, y `RaidService` no podía quitarlo de la oleada. Ahora los eventos entre servicios usan `Server.Signal` (también `Clicked` y `DataService.Loaded`); prueba `signal.spec`.
+- [x] Portal de salida dentro del coliseo (`Gameplay.raidExit`, Part `RaidExit`): mantenerlo 0.5 s saca del Raid y lleva al lobby de Raids con "Abandonaste el Raid".
+- [x] Enemigos del Raid en puntos aleatorios de la pista en cada oleada (`RaidOps.randomSpots`, `Raids.Arena`), lejos del muro, entre sí, de la llegada y del portal; la arena expone `FieldRadius` en lugar de puntos fijos. Pruebas en `raid.spec` con 200 semillas.
+- [x] Yenes como monedas flotantes: `CoinService` (servidor), `CoinOps` (reparto puro, `coins.spec`), `CoinController` (cliente), `DataService.Releasing` para pagar lo pendiente antes del guardado; también en los Raids (las Gemas siguen directas). Constitución, spec, plan, diseño y balance al día.
+- [x] Raids de 20 oleadas siempre: `DevCheats` ya no acorta los Raids en Studio (jugaba solo las oleadas 1, 10 y 20). Nuevo tipo de enemigo "Fuerte" (`Strong`, rig provisional generado); cada oleada trae 4 débiles + 2 medianos + 1 fuerte con ×1.03 de vida y Yenes por oleada (`Raids.WaveGrowth`), mini jefe en la 10 y jefe final en la 20 (`Raids.WaveExtras`). Balance recalculado (Raid solo ~24 min; Gemas totales 370 / 920 / 2,240) en `docs/balance.md` y pruebas.
+- [x] Mini jefe y jefe final en el centro del coliseo (círculo dorado); el resto lejos de ellos (`RaidOps.waveSpots`).
+- [x] Personajes y enemigos intangibles: `Shared/Intangible` (grupo de colisión `Intangible`, personajes de jugadores en `Players`).
+- [x] Corregido: tras hacerlos intangibles no se podía atacar. El grupo `Intangible` no chocaba con `Default`, y los clics (`ClickDetector`) usan un raycast del grupo `Default` que ignora esas partes. Ahora `Intangible` choca con `Default` y solo deja de chocar con el grupo `Players` de los personajes de los jugadores.
+- [ ] Probar en Studio: un Raid pasa por las 20 oleadas con enemigos de los tres tipos en sitios distintos, el mini jefe y el jefe salen en el círculo dorado, el portal de salida lleva al lobby, el jugador atraviesa enemigos y luchadores, y las monedas caen, vuelan al acercarse y suben los Yenes del HUD en el momento.
 
 ### Herramientas
 - [x] Constitución revisada: plan aprobado, Check-UI como estilo oficial, StyLua y selene.

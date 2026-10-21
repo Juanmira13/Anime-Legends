@@ -61,6 +61,14 @@ local Balance = {
 		-- Max distance in studs between the player and their target.
 		range = 60,
 	},
+
+	-- Yen from a defeated enemy drops as floating coins for each player who hit it.
+	Coins = {
+		maxPerDrop = 8, -- coins a reward is split into (fewer for small rewards)
+		magnetRadius = 20, -- studs: closer coins fly to the player and are collected
+		collectRange = 45, -- studs: the server rejects pickups farther than this from the drop
+		lifetime = 30, -- seconds: coins still on the ground then fly to their owner
+	},
 }
 
 local ranksById: { [string]: EnemyRank } = {}

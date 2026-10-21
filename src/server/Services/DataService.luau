@@ -8,6 +8,7 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 
 local PlayerRecord = require(script.Parent.Parent.Data.PlayerRecord)
+local Signal = require(script.Parent.Parent.Signal)
 
 export type Data = PlayerRecord.Data
 type Currency = "Yen" | "Gems"
@@ -37,12 +38,17 @@ local loadAttempts = if RunService:IsStudio() then 1 else LOAD_ATTEMPTS
 
 local sessions: { [Player]: Session } = {}
 local pendingSaves = 0
-local loadedEvent = Instance.new("BindableEvent")
+local loadedSignal = Signal.new() -- listeners get the live data table, not a copy
+local releasingSignal = Signal.new()
 
 local DataService = {}
 
 -- Fires (player, data) once a player's data is ready.
-DataService.Loaded = loadedEvent.Event
+DataService.Loaded = loadedSignal
+
+-- Fires (player, data) right before a player's final save (leaving or shutdown),
+-- while getData still works: last chance to add pending rewards. Listeners must not yield.
+DataService.Releasing = releasingSignal
 
 local function getKey(player: Player): string
 	return `player_{player.UserId}`
@@ -132,7 +138,7 @@ local function onPlayerAdded(player: Player)
 
 	sessions[player] = session
 	replicateCurrencies(player, data)
-	loadedEvent:Fire(player, data)
+	loadedSignal:Fire(player, data)
 end
 
 local function onPlayerRemoving(player: Player)
@@ -140,6 +146,7 @@ local function onPlayerRemoving(player: Player)
 	if session == nil then
 		return
 	end
+	releasingSignal:Fire(player, session.data)
 	sessions[player] = nil
 	save(player, session, true)
 end
@@ -147,6 +154,9 @@ end
 -- Saves everyone still loaded and waits for every in-flight save, including
 -- the ones started by PlayerRemoving, before the server closes.
 local function saveAllOnShutdown()
+	for player, session in sessions do
+		releasingSignal:Fire(player, session.data)
+	end
 	for player, session in sessions do
 		task.spawn(save, player, session, true)
 	end

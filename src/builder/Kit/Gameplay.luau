@@ -93,10 +93,11 @@ function Gameplay.gacha(islandId: string, x: number, ground: number, z: number, 
 	label(orb, "Gacha", Color3.new(1, 1, 1), 6, 90, 9)
 end
 
--- Portal: glowing pad (tagged) under a column of light, framed by an arch.
+-- Portal: glowing pad (tagged, if `tagName` is given) under a column of light,
+-- framed by an arch.
 local function portal(
 	name: string,
-	tagName: string,
+	tagName: string?,
 	attributes: { [string]: any },
 	title: string,
 	x: number,
@@ -117,7 +118,9 @@ local function portal(
 		{ material = Enum.Material.Neon, shadow = false, name = name }
 	)
 	pad.CanQuery = true
-	tag(pad, tagName, attributes)
+	if tagName then
+		tag(pad, tagName, attributes)
+	end
 	Parts.disc(13, 0.6, Vector3.new(x, ground + 0.2, z), STONE, model, { collide = true })
 
 	local beam = Parts.column(
@@ -166,6 +169,12 @@ function Gameplay.islandPortal(
 		color,
 		parent
 	)
+end
+
+-- Exit portal inside the raid arena: an untagged pad named "RaidExit"; RaidService
+-- gives each arena's copy its prompt.
+function Gameplay.raidExit(x: number, ground: number, z: number, facing: number, parent: Instance)
+	portal("RaidExit", nil, {}, "Salir del Raid", x, ground, z, facing, Parts.rgb(World.RaidAccentColor), parent)
 end
 
 function Gameplay.raidPortal(x: number, ground: number, z: number, facing: number, parent: Instance)

@@ -32,12 +32,13 @@ DataService ── carga/guarda PlayerRecord; Yen y Gems como atributos
   ├── GachaService (GachaRoll) ── usa InventoryService; GachaResult
   ├── PortalService (PortalOps) ── Unlocked_<Isla>, LastIsland; PortalResult
   ├── BoostService (BoostOps) ── BoostAction; BoostOwned_/BoostTime_
-  ├── CombatService (AttackClock) ── usa EnemyService; TargetEnemyId; CharacterHit a todos
+  ├── CombatService (AttackClock) ── usa EnemyService; TargetEnemyId; CharacterHit a todos; Yenes con CoinService
+  ├── CoinService (CoinOps) ── monedas por jugador: CoinDrop, CoinCollect, CoinAutoCollect; paga lo pendiente en DataService.Releasing
   └── RaidService (RaidOps) ── usa EnemyService, InventoryService, BoostService; RaidEvent
 EnemyService ── enemigos de isla (EnemySpawn) y de Raid (spawn); Health/MaxHealth
 ```
 
-Orden de arranque (`src/server/Main.server.luau`): los servicios que escuchan `DataService.Loaded` arrancan antes que `DataService`; `TestArena` antes que `PortalService` para que existan los puntos de llegada.
+Los eventos entre servicios son `Server.Signal` (pasan las mismas tablas; un `BindableEvent` las copia). Orden de arranque (`src/server/Main.server.luau`): los servicios que escuchan `DataService.Loaded` o `Releasing` arrancan antes que `DataService`; `TestArena` antes que `PortalService` para que existan los puntos de llegada.
 
 ### Flujo de datos
 
@@ -63,7 +64,8 @@ El código no depende de posiciones: lee Parts etiquetadas (`IslandSpawn`, `Enem
 | 6 | Raids | ✅ | `2d3c102` |
 | 7 | Boosts y tienda de Gemas | ✅ | `d1afd9a` |
 | 8 | Personajes visibles (estilo AFS), rigs R6 | ✅ | ver `docs/tasks.md` |
-| 9 | Islas de alta calidad, mar, ambientación, modelos | 🟡 en curso (6 islas aprobadas) | ver `docs/tasks.md` |
+| 9 | Islas de alta calidad, mar, ambientación, arena de Raid | ✅ (falta ver la textura del mar en Studio) | ver `docs/tasks.md` |
+| — | Modelos finales de Blender (en paralelo, sin bloquear) | ⏳ | — |
 | 10 | Efectos, números de daño, sonido | ⏳ | — |
 | 11 | UI con el estilo Check-UI | ⏳ | — |
 | 12 | Prueba temprana en servidor publicado | ⏳ | — |
@@ -124,7 +126,7 @@ Los enemigos escalados multiplican tamaños, centros y puntos de giro por su esc
 
 **Ciclo de calidad:** construir → *Siguiente foto* en el panel (cámaras fijas por área) → capturas → ajustes en el código de la isla → reconstruir. Nameku primero; luego una isla detallada por commit.
 
-**Pendiente de la fase:** las 6 islas están aprobadas. La arena de Raid (coliseo) la construye el plugin como plantilla `ServerStorage.RaidArena` que `RaidService` clona por grupo; `RaidArenaLayout` (puro, probado en `map.spec`) fija las medidas y los puntos de aparición. La textura del mar está subida (`World.Sea.textureId`); falta reconstruir el mundo para verla. Los hitos hechos con Parts (estatuas, castillo, nave, tren) se quedan así; no hay lista aparte para Blender.
+**Pendiente de la fase:** las 6 islas están aprobadas. La arena de Raid (coliseo) la construye el plugin como plantilla `ServerStorage.RaidArena` que `RaidService` clona por grupo; `RaidArenaLayout` (puro, probado en `map.spec`) fija las medidas, la llegada y el portal de salida; los enemigos salen en puntos aleatorios de la pista (`RaidOps.randomSpots`, probado en `raid.spec`). La textura del mar está subida (`World.Sea.textureId`); falta reconstruir el mundo para verla. Los hitos hechos con Parts (estatuas, castillo, nave, tren) se quedan así; no hay lista aparte para Blender.
 
 ### Fase 10 — Efectos y sonido
 
@@ -143,7 +145,7 @@ Los enemigos escalados multiplican tamaños, centros y puntos de giro por su esc
 
 ### Fase 13 — Publicación
 
-- Eliminar `Dev/DevCheats` y su llamada (con él desaparecen los Raids cortos de Studio).
+- Eliminar `Dev/DevCheats` y su llamada.
 - Revisar el balance con partidas reales y ajustar `docs/balance.md` y las pruebas.
 - Borrar los datos de prueba del DataStore.
 - Comprobar en un servidor publicado: guardado, bloqueo de sesión, Raids con varios jugadores.

@@ -1,6 +1,7 @@
 --!strict
 -- Raid rules on player data and config: cooldowns, completions, per-enemy
--- rewards, boost drops and wave composition. Pure (randomness is passed in),
+-- rewards, boost drops, wave composition and where enemies stand. Pure
+-- (randomness is passed in),
 -- so it can be unit tested.
 
 local Shared = game:GetService("ReplicatedStorage"):WaitForChild("Shared")
@@ -12,8 +13,10 @@ local PlayerRecord = require(script.Parent.Parent.Data.PlayerRecord)
 
 type Data = PlayerRecord.Data
 
--- Spawn order inside a wave: bosses first so they get the central spots.
-local SPAWN_ORDER = { "Boss", "MiniBoss", "Medium", "Weak" }
+-- Spawn order inside a wave: bosses first, so they get placed while the field is emptiest.
+local SPAWN_ORDER = { "Boss", "MiniBoss", "Strong", "Medium", "Weak" }
+-- These stand in the center of the arena (the golden circle).
+local CENTER_TYPES: { [string]: boolean } = { Boss = true, MiniBoss = true }
 
 local RaidOps = {}
 
@@ -54,9 +57,15 @@ function RaidOps.waveEnemies(wave: number): { string }
 	return list
 end
 
--- Yen and gems a raid player gets when an enemy dies, with boosts applied.
-function RaidOps.reward(difficultyId: string, typeId: string, moneyBoost: boolean, gemsBoost: boolean): (number, number)
-	local yen = Formulas.raidEnemyYen(difficultyId, typeId)
+-- Yen and gems a raid player gets for an enemy of `wave` (yen grows with the wave), with boosts applied.
+function RaidOps.reward(
+	difficultyId: string,
+	typeId: string,
+	wave: number,
+	moneyBoost: boolean,
+	gemsBoost: boolean
+): (number, number)
+	local yen = Formulas.raidEnemyYen(difficultyId, typeId, wave)
 	local gems = Formulas.raidEnemyGems(difficultyId, typeId)
 	if moneyBoost then
 		yen *= Boosts.get("Money").multiplier
@@ -76,6 +85,89 @@ function RaidOps.rollBoostDrop(difficultyId: string, typeId: string, random: () 
 	end
 	local index = math.floor(random() * #Boosts.List) + 1
 	return Boosts.List[math.min(index, #Boosts.List)].id
+end
+
+export type Point = { number } -- { x, z } relative to the arena center
+export type Clearance = { x: number, z: number, radius: number }
+
+local SPOT_ATTEMPTS = 60
+
+-- `count` random points on a round field of `fieldRadius` (relative to its
+-- center): inside the edge margin, at least `enemyGap` apart and outside every
+-- `avoid` circle (the players' arrival point, the exit portal). When the field
+-- is too crowded for a spot, it takes the attempt farthest from the others.
+function RaidOps.randomSpots(count: number, fieldRadius: number, avoid: { Clearance }, random: () -> number): { Point }
+	local arena = Raids.Arena
+	local radius = math.max(0, fieldRadius - arena.wallMargin)
+	local spots: { Point } = {}
+	for _ = 1, count do
+		local best: Point? = nil
+		local bestGap = -math.huge
+		for _ = 1, SPOT_ATTEMPTS do
+			-- Uniform over the disc: sqrt keeps points from bunching in the middle.
+			local distance = radius * math.sqrt(random())
+			local angle = random() * 2 * math.pi
+			local x, z = math.cos(angle) * distance, math.sin(angle) * distance
+			local clear = true
+			for _, zone in avoid do
+				if (x - zone.x) ^ 2 + (z - zone.z) ^ 2 < zone.radius ^ 2 then
+					clear = false
+					break
+				end
+			end
+			if clear then
+				local gap = math.huge
+				for _, spot in spots do
+					gap = math.min(gap, math.sqrt((x - spot[1]) ^ 2 + (z - spot[2]) ^ 2))
+				end
+				if gap >= arena.enemyGap then
+					best = { x, z }
+					break
+				end
+				if gap > bestGap then
+					best, bestGap = { x, z }, gap
+				end
+			end
+		end
+		table.insert(spots, best or { 0, 0 })
+	end
+	return spots
+end
+
+-- Where each enemy of a wave stands, in the order of `typeIds`: the mini boss
+-- and the final boss in the center of the field, the rest at random points
+-- (kept away from the center when a boss is there).
+function RaidOps.waveSpots(
+	typeIds: { string },
+	fieldRadius: number,
+	avoid: { Clearance },
+	random: () -> number
+): { Point }
+	local others = 0
+	local hasBoss = false
+	for _, typeId in typeIds do
+		if CENTER_TYPES[typeId] then
+			hasBoss = true
+		else
+			others += 1
+		end
+	end
+	local clearances = table.clone(avoid)
+	if hasBoss then
+		table.insert(clearances, { x = 0, z = 0, radius = Raids.Arena.bossClearance })
+	end
+	local randomSpots = RaidOps.randomSpots(others, fieldRadius, clearances, random)
+	local spots: { Point } = {}
+	local nextRandom = 1
+	for _, typeId in typeIds do
+		if CENTER_TYPES[typeId] then
+			table.insert(spots, { 0, 0 })
+		else
+			table.insert(spots, randomSpots[nextRandom])
+			nextRandom += 1
+		end
+	end
+	return spots
 end
 
 return RaidOps

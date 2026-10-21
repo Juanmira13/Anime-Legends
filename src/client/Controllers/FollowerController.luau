@@ -20,6 +20,7 @@ local RunService = game:GetService("RunService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Characters = require(Shared.Data.Characters)
+local Intangible = require(Shared.Intangible)
 local Client = script.Parent.Parent
 local FollowerMotion = require(Client.Followers.FollowerMotion)
 local Theme = require(Client.UI.Theme)
@@ -147,11 +148,10 @@ end
 local function buildFollower(characterId: string): Follower
 	local template = getTemplate(characterId)
 	local model = if template then template:Clone() else buildPlaceholder(characterId)
-	-- Visual only: never collide with or block clicks on enemies.
+	-- Visual only: intangible (players walk through) and never block clicks on enemies.
+	Intangible.apply(model)
 	for _, part in model:GetDescendants() do
 		if part:IsA("BasePart") then
-			part.CanCollide = false
-			part.CanTouch = false
 			part.CanQuery = false
 		end
 	end

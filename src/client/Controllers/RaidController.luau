@@ -114,6 +114,8 @@ local function onEvent(event: any)
 		Notify.show("¡Raid completado!", Theme.rarityColor("Uncommon"))
 	elseif kind == "Failed" then
 		Notify.error("Raid fallido")
+	elseif kind == "Left" then
+		Notify.show("Abandonaste el Raid", Theme.MutedText)
 	end
 end
 

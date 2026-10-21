@@ -86,28 +86,58 @@ for n, cost in inventoryCosts do
 	check(`inventory upgrade {n}`, Formulas.inventoryUpgradeCost(n), cost)
 end
 
+-- Wave 1 values; later waves grow by Raids.WaveGrowth.
 local raidHealth = {
-	Easy = { Weak = 780, Medium = 2100, MiniBoss = 16000, Boss = 39000 },
-	Medium = { Weak = 28000, Medium = 75000, MiniBoss = 560000, Boss = 1400000 },
-	Hard = { Weak = 1000000, Medium = 2700000, MiniBoss = 20000000, Boss = 51000000 },
+	Easy = { Weak = 780, Medium = 2100, Strong = 3100, MiniBoss = 16000, Boss = 39000 },
+	Medium = { Weak = 28000, Medium = 75000, Strong = 110000, MiniBoss = 560000, Boss = 1400000 },
+	Hard = { Weak = 1000000, Medium = 2700000, Strong = 4000000, MiniBoss = 20000000, Boss = 51000000 },
 }
 local raidYen = {
-	Easy = { Weak = 30, Medium = 90, MiniBoss = 1400, Boss = 5400 },
-	Medium = { Weak = 1100, Medium = 3200, MiniBoss = 49000, Boss = 190000 },
-	Hard = { Weak = 39000, Medium = 120000, MiniBoss = 1700000, Boss = 7000000 },
+	Easy = { Weak = 30, Medium = 90, Strong = 180, MiniBoss = 1400, Boss = 5400 },
+	Medium = { Weak = 1100, Medium = 3200, Strong = 6500, MiniBoss = 49000, Boss = 190000 },
+	Hard = { Weak = 39000, Medium = 120000, Strong = 230000, MiniBoss = 1700000, Boss = 7000000 },
 }
-local raidTotalGems = { Easy = 356, Medium = 868, Hard = 2236 }
+local raidTotalGems = { Easy = 370, Medium = 920, Hard = 2240 }
+local raidTotalYen = { Easy = 24184, Medium = 866600, Hard = 31002000 }
+-- Wave 10 mini boss and wave 20 boss and weak enemies, after wave growth.
+local raidLateHealth = {
+	Easy = { weak20 = 1400, miniBoss10 = 20000, boss20 = 68000 },
+	Medium = { weak20 = 49000, miniBoss10 = 730000, boss20 = 2500000 },
+	Hard = { weak20 = 1800000, miniBoss10 = 26000000, boss20 = 89000000 },
+}
+local soloSeconds = 0
+for wave = 1, Raids.WaveCount do
+	for enemyTypeId, count in Raids.getWave(wave) do
+		soloSeconds += count * Raids.getEnemyType(enemyTypeId).timeToKill * Raids.waveScale(wave)
+	end
+end
+check("raid solo time under the limit", soloSeconds < Raids.TimeLimit * 0.85, true)
+check("raid solo time about 24 min", math.floor(soloSeconds / 60 + 0.5), 24)
 for difficultyId, row in raidHealth do
-	local totalGems = 0
-	local counts = { Weak = 0, Medium = 0, MiniBoss = 0, Boss = 0 }
+	local totalGems, totalYen = 0, 0
+	local counts = { Weak = 0, Medium = 0, Strong = 0, MiniBoss = 0, Boss = 0 }
 	for wave = 1, Raids.WaveCount do
 		for enemyTypeId, count in Raids.getWave(wave) do
 			counts[enemyTypeId] += count
 			totalGems += count * Formulas.raidEnemyGems(difficultyId, enemyTypeId)
+			totalYen += count * Formulas.raidEnemyYen(difficultyId, enemyTypeId, wave)
 		end
 	end
-	check(`raid {difficultyId} counts`, `{counts.Weak}/{counts.Medium}/{counts.MiniBoss}/{counts.Boss}`, "94/96/1/1")
+	check(
+		`raid {difficultyId} counts`,
+		`{counts.Weak}/{counts.Medium}/{counts.Strong}/{counts.MiniBoss}/{counts.Boss}`,
+		"80/40/20/1/1"
+	)
 	check(`raid {difficultyId} total gems`, totalGems, raidTotalGems[difficultyId])
+	check(`raid {difficultyId} total yen`, totalYen, raidTotalYen[difficultyId])
+	local late = raidLateHealth[difficultyId]
+	check(`raid {difficultyId} weak wave 20`, Formulas.raidEnemyHealth(difficultyId, "Weak", 20), late.weak20)
+	check(
+		`raid {difficultyId} mini boss wave 10`,
+		Formulas.raidEnemyHealth(difficultyId, "MiniBoss", 10),
+		late.miniBoss10
+	)
+	check(`raid {difficultyId} boss wave 20`, Formulas.raidEnemyHealth(difficultyId, "Boss", 20), late.boss20)
 	for enemyTypeId, expected in row do
 		check(`raid health {difficultyId} {enemyTypeId}`, Formulas.raidEnemyHealth(difficultyId, enemyTypeId), expected)
 		check(

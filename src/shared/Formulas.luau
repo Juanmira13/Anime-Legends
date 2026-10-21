@@ -98,16 +98,19 @@ function Formulas.inventorySlots(upgradesBought: number): number
 	return Balance.Inventory.startingSlots + upgradesBought * Balance.Inventory.slotsPerUpgrade
 end
 
-function Formulas.raidEnemyHealth(difficultyId: string, enemyTypeId: string): number
+-- Raid enemy health and yen grow by Raids.WaveGrowth each wave (`wave` defaults to 1).
+function Formulas.raidEnemyHealth(difficultyId: string, enemyTypeId: string, wave: number?): number
 	local difficulty = Raids.getDifficulty(difficultyId)
 	local enemyType = Raids.getEnemyType(enemyTypeId)
-	return Formulas.niceRound(Formulas.referenceDps(difficulty.referenceIsland) * enemyType.timeToKill)
+	local base = Formulas.referenceDps(difficulty.referenceIsland) * enemyType.timeToKill
+	return Formulas.niceRound(base * Raids.waveScale(wave or 1))
 end
 
-function Formulas.raidEnemyYen(difficultyId: string, enemyTypeId: string): number
+function Formulas.raidEnemyYen(difficultyId: string, enemyTypeId: string, wave: number?): number
 	local difficulty = Raids.getDifficulty(difficultyId)
 	local enemyType = Raids.getEnemyType(enemyTypeId)
-	return Formulas.niceRound(enemyType.yen * Formulas.islandScale(difficulty.referenceIsland))
+	local base = enemyType.yen * Formulas.islandScale(difficulty.referenceIsland)
+	return Formulas.niceRound(base * Raids.waveScale(wave or 1))
 end
 
 function Formulas.raidEnemyGems(difficultyId: string, enemyTypeId: string): number

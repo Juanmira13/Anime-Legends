@@ -22,7 +22,7 @@ Este archivo es la guía que Claude Code sigue en este proyecto. Mantenerlo cort
 - **Proyecto:** personal y no comercial.
 - **Objetivo del MVP:** una primera versión jugable con:
   - Varios mundos o "islas" de tamaño considerable, cada uno con zonas de spawn de enemigos y un jefe final. Cada isla representa un anime (Dragon Ball, Naruto, Black Clover, etc.) y su costo sube proporcionalmente a su dificultad.
-  - Enemigos estáticos con barra de vida sobre la cabeza. Al ser derrotados dan dinero (Yenes).
+  - Enemigos estáticos con barra de vida sobre la cabeza. Al ser derrotados sueltan monedas flotantes de Yenes que el jugador recoge.
   - Sistema de gacha por isla con 7 rarezas: Común, Poco común, Raro, Épico, Legendario, Mítico y Secreto. Los personajes son de cada anime (p. ej., Goku y Vegeta en el mundo de Dragon Ball; Naruto y Sasuke en el de Naruto), con nombres ligeramente modificados.
   - Daño por personaje según rareza: más alto en Mítico y Secreto, más bajo en Común y Poco común. Cada personaje tiene un cooldown entre golpes.
   - Inventario limitado (50 personajes al inicio, ampliable). El jugador es dueño de sus personajes y puede equiparlos y desequiparlos.
@@ -57,7 +57,9 @@ AnimeLegends/
 │   ├── server/               # ServerScriptService.Server — lógica del servidor
 │   │   ├── Main.server.luau  # Arranca los servicios en orden
 │   │   ├── Remotes.luau      # Crea los RemoteEvents en ReplicatedStorage.Remotes
-│   │   ├── Services/         # Data, Enemy, Combat, Gacha, Inventory, Portal, Raid, Boost (…Service)
+│   │   ├── Services/         # Data, Enemy, Combat, Coin, Gacha, Inventory, Portal, Raid, Boost (…Service)
+│   │   ├── Signal.luau       # Eventos entre servicios (pasan las mismas tablas, no copias)
+│   │   ├── Coins/            # Lógica pura de las monedas (CoinOps)
 │   │   ├── Data/             # PlayerRecord (forma de los datos guardados)
 │   │   ├── Combat/           # Lógica pura de combate (AttackClock)
 │   │   ├── Gacha/            # Lógica pura del gacha (GachaRoll)
@@ -70,7 +72,7 @@ AnimeLegends/
 │   │   ├── Main.client.luau  # Arranca los controladores
 │   │   ├── UI/               # Theme (colores y constructores), Notify (avisos en pantalla)
 │   │   ├── Followers/        # Lógica pura de los personajes visibles (FollowerMotion)
-│   │   └── Controllers/      # Hud, Enemy (barras de vida), Gacha, Inventory (panel), Portal, Raid, Boost, Follower, Ambience, Sea
+│   │   └── Controllers/      # Hud, Enemy (barras de vida), Gacha, Inventory (panel), Portal, Raid, Boost, Follower, Ambience, Sea, Coin
 │   ├── shared/               # ReplicatedStorage.Shared — módulos compartidos
 │   │   ├── Formulas.luau     # Valores derivados: daño, vida, Yenes, costos
 │   │   ├── Format.luau       # Formato de números para la UI (1.5K, 2.3M)
@@ -82,7 +84,7 @@ AnimeLegends/
 │       ├── IslandBuilder.luau # Construye una isla: terreno, mar, jugabilidad, decoración
 │       ├── RaidLobby.luau    # Lobby de Raids (templo flotante)
 │       ├── RaidArena.luau    # Arena de Raid (coliseo) → ServerStorage.RaidArena
-│       ├── RaidArenaLayout.luau # Medidas y puntos de aparición de la arena (puro)
+│       ├── RaidArenaLayout.luau # Medidas, llegada y portal de salida de la arena (puro)
 │       ├── Gen/              # Lógica pura: Rng, Shape (terreno), Scatter, PathWalk, LayoutCheck
 │       ├── Kit/              # Parts, Buildings, TerrainWriter, Sea, Gameplay, Nature
 │       └── Islands/          # Por isla: <Isla>Layout (trazado puro) y <Isla> (decoración); Layouts y Registry
@@ -118,8 +120,11 @@ AnimeLegends/
   - `gacha.spec.luau`: probabilidades, Boost de Suerte, pity y distribución de tiradas.
   - `inventory.spec.luau`: añadir, equipar, desequipar, eliminar, "Equipar mejores" y ampliaciones.
   - `portal.spec.luau`: orden de desbloqueo, viajes e isla de aparición.
-  - `raid.spec.luau`: esperas, completados y logros de ranuras, recompensas, drops de boosts y oleadas.
+  - `raid.spec.luau`: esperas, completados y logros de ranuras, recompensas, drops de boosts, oleadas y puntos aleatorios de los enemigos en la arena.
+  - `coins.spec.luau`: reparto de las recompensas en monedas.
+  - `signal.spec.luau`: los eventos entre servicios pasan las mismas tablas.
   - `boost.spec.luau`: conceder, activar (acumula duración) y descontar tiempo.
+  - `acceptance.spec.luau`: los criterios de aceptación numéricos de `docs/spec.md` (R1 a R7), uno por requisito. Si cambia la especificación, actualizarlo.
   - `followers.spec.luau`: formación, arco alrededor del objetivo, embestida (más corta que el cooldown más rápido), velocidad de marcha, ciclo de caminar y giro de los personajes visibles.
   - `worldgen.spec.luau`: aleatorio con semilla, forma del terreno, relieve (montañas, ríos con cascada, lagos, caminos con rampas, formas de costa), materiales, orilla, vóxeles de tierra y agua, dispersión, y reglas de trazado (`LayoutCheck`) sobre los trazados reales de las 6 islas.
   - `map.spec.luau`: reglas del mapa (`MapCheck`), configuración del mundo, ambientación de todas las áreas y trazado de la arena de Raid (`RaidArenaLayout`).
@@ -142,7 +147,8 @@ El diseño detallado (islas, personajes, probabilidades, pity) está en `docs/ga
 
 - **Islas (en orden de progresión):** Nameku, Kono, Clover Kingdom, Titan Village, Hero Academy, Demon Corps. Cada isla tiene 7 personajes, uno por rareza.
 - **Dificultad:** la vida de enemigos y jefes de cada isla es proporcional al daño de los personajes de esa isla.
-- **Economía:** Yenes se obtienen derrotando enemigos. Gemas se obtienen en Raids.
+- **Economía:** Yenes se obtienen derrotando enemigos, que los sueltan como monedas flotantes. Gemas se obtienen en Raids.
+- **Monedas de Yenes:** al morir un enemigo (de isla o de Raid), cada jugador que lo golpeó recibe su propia tanda de monedas donde estaba el enemigo (solo él las ve). Las monedas flotan y giran; al acercarse a menos de `Balance.Coins.magnetRadius` vuelan hacia el jugador y cada una suma su parte de Yenes en ese momento. Las que siguen en el suelo pasados `Balance.Coins.lifetime` segundos se pagan solas (vuelan si el jugador está cerca), y al salir del juego se pagan antes del guardado: nunca se pierden. `CoinService` lleva las tandas y valida cada recogida (la tanda es suya, la moneda no se recogió y el jugador está a menos de `collectRange`); `CoinOps` reparte la recompensa en monedas que suman exacto; `CoinController` las dibuja. Las Gemas de los Raids se suman directamente.
 - **Boosts:** Suerte, Dinero y Gemas, de 15 minutos. Se obtienen como drop de enemigos en los Raids o comprándolos con Gemas en la tienda.
 - **Gacha:** por isla, 7 rarezas, con pity para Legendario, Mítico y Secreto.
 - **Combate:** el jugador elige el objetivo. Daño y cooldown dependen del personaje y su rareza.
@@ -151,7 +157,7 @@ El diseño detallado (islas, personajes, probabilidades, pity) está en `docs/ga
 - **Portales:** rayos de luz entre islas. Se desbloquean con Yenes y cuestan más según la dificultad de la isla.
 - **Enemigos:** estáticos, con barra de vida. Cuatro rangos: Fácil, Medio, Difícil y Jefe. Los normales reaparecen a los 20 segundos y los jefes al minuto.
 - **Escala:** todo (daño, vida, Yenes, costos) se multiplica ×6 por isla.
-- **Raids:** lugar común con portal en Nameku, solo o en grupo (máximo 20 jugadores), 20 oleadas (mini jefe en la 10, jefe final en la 20) y 30 minutos de límite. Tres dificultades desbloqueadas desde el inicio, con más vida y mejores recompensas cuanto más difíciles. Espera independiente: Fácil 1 h, Medio 1 h 30 min, Difícil 2 h. No escalan con los jugadores. Cada enemigo da Gemas y Yenes según su tipo.
+- **Raids:** lugar común con portal en Nameku, solo o en grupo (máximo 20 jugadores), 20 oleadas (mini jefe en la 10, jefe final en la 20) y 30 minutos de límite. Tres dificultades desbloqueadas desde el inicio, con más vida y mejores recompensas cuanto más difíciles. Espera independiente: Fácil 1 h, Medio 1 h 30 min, Difícil 2 h. No escalan con los jugadores. Cada oleada trae enemigos débiles, medianos y fuertes (`Raids.WaveEnemies`) y es un poco más difícil que la anterior (vida y Yenes ×`Raids.WaveGrowth` = 1.03 por oleada, sin saltos); la 10 añade el mini jefe y la 20 el jefe final (`Raids.WaveExtras`). Las 20 oleadas se juegan siempre, también en Studio. Cada enemigo da Gemas y Yenes según su tipo. El mini jefe y el jefe final aparecen en el centro del coliseo (círculo dorado); los demás enemigos, en puntos aleatorios de la pista (nunca en las gradas), separados entre sí y lejos del jefe, del punto de llegada y del portal de salida. Un portal de salida dentro del coliseo deja abandonar el Raid y lleva al lobby de Raids.
 - **Pity:** contadores por isla, uno por rareza; cada uno se reinicia al obtener esa rareza.
 - **Guardado:** `src/server/Services/DataService.luau` (DataStore con bloqueo de sesión, autoguardado cada 2 min, guardado al salir y al cerrar el servidor). La forma de los datos, los valores iniciales y las migraciones están en `src/server/Data/PlayerRecord.luau`. Al añadir un campo, ponerlo en `newData()`; la reconciliación lo añade a las partidas existentes. Si se renombra o cambia de forma un campo, subir `CurrentVersion` y añadir una migración.
 - **Mundo:** las islas están en el mar (no flotan), en fila sobre +X a 2000 studs una de otra (Nameku en el origen), con el nivel del mar en y = 0 (`Shared/Config/World`). Cada isla ocupa un cuadrado de mar de 2000 studs con su orilla de espuma y una textura cartoon animada encima del agua Terrain; alrededor de todas, un océano (`Workspace.Map.Ocean`) llega 4000 studs más allá para que el mar alcance el horizonte. El lobby de Raids es un templo flotante en el cielo.
@@ -169,10 +175,10 @@ El diseño detallado (islas, personajes, probabilidades, pity) está en `docs/ga
   | `RaidLobbySpawn` | — | Punto de llegada al lobby de Raids |
   | `RaidPad` | `Difficulty` (`Easy`, `Medium`, `Hard`) | Plataforma para entrar a la fila de un Raid |
 
-  Modelos de enemigos en `ServerStorage.EnemyModels.<Isla>.<Rango>` y `EnemyModels.Raid.<Tipo>` (vienen de `assets/EnemyModels`, ver **Modelos**). La arena de Raid es `ServerStorage.RaidArena` (Model con PrimaryPart y pivote en el centro del suelo, una Part `PlayerSpawn` y una carpeta `EnemySpawns` de Parts con nombres en orden de aparición: `01` es el centro, para los jefes). La construye el plugin (botón *Arena de Raid*) con la medida y los puntos de `RaidArenaLayout`, y deja una copia `Workspace.RaidArenaPreview` para las fotos que `RaidService` borra al arrancar. Sin plantilla se usa una plataforma generada.
+  Modelos de enemigos en `ServerStorage.EnemyModels.<Isla>.<Rango>` y `EnemyModels.Raid.<Tipo>` (vienen de `assets/EnemyModels`, ver **Modelos**). La arena de Raid es `ServerStorage.RaidArena` (Model con PrimaryPart y pivote en el centro del suelo, el atributo `FieldRadius` con el radio de la pista, una Part `PlayerSpawn` y la Part `RaidExit` del portal de salida). La construye el plugin (botón *Arena de Raid*) con las medidas de `RaidArenaLayout`, y deja una copia `Workspace.RaidArenaPreview` para las fotos que `RaidService` borra al arrancar. Sin plantilla se usa una plataforma generada.
 
   En Studio, si no hay ningún `IslandSpawn`, `Dev/TestArena` construye un mundo de prueba con Nameku, Kono y el lobby de Raids. Si existe `Workspace.Map`, `Dev/MapValidator` lo valida al arrancar y muestra en la salida lo que falte. Para que el validador sepa en qué área está cada Part, las Parts hechas a mano van dentro de `Workspace.Map.<Área>`.
-- **Raids:** `RaidService` gestiona filas (empiezan 15 s después del primer jugador), una arena por grupo creada en el aire (`y = 1500`), oleadas, recompensas por enemigo para todos los jugadores del Raid y logros. El estado se replica en atributos del jugador (`RaidQueue`, `RaidSessionId`, `RaidWave`, `RaidEndsAt`, `RaidReady_<Dificultad>`); los tiempos son unix (comparar con `workspace:GetServerTimeNow()`). Las recompensas de enemigos de Raid las da `RaidService`, no `CombatService`.
+- **Raids:** `RaidService` gestiona filas (empiezan 15 s después del primer jugador), una arena por grupo creada en el aire (`y = 1500`), oleadas (`RaidOps.waveSpots`: jefes en el centro y el resto en puntos aleatorios de la pista con las distancias de `Raids.Arena`), el portal de salida (`RaidExit`, mantener 0.5 s: vuelve al lobby), recompensas por enemigo para todos los jugadores del Raid (Yenes como monedas) y logros. Salir del lobby saca de la fila. El estado se replica en atributos del jugador (`RaidQueue`, `RaidSessionId`, `RaidWave`, `RaidEndsAt`, `RaidReady_<Dificultad>`); los tiempos son unix (comparar con `workspace:GetServerTimeNow()`). Las recompensas de enemigos de Raid las da `RaidService`, no `CombatService`.
 - **Portales:** desbloquean islas en orden pagando `Formulas.portalCost` y llevan al `IslandSpawn` de la isla. Las islas desbloqueadas se replican como atributos `Unlocked_<IslandId>` del jugador. Al entrar o reaparecer, el jugador aparece en `LastIsland`.
 - **Enemigos en el mapa:** cada punto de spawn es una Part con la etiqueta `EnemySpawn` y los atributos `Island` (id de isla) y `Rank` (`Easy`, `Medium`, `Hard`, `Boss`). El modelo se toma de `ServerStorage.EnemyModels.<Island>.<Rank>` (ver **Modelos**); el ClickDetector va en el modelo, así que cualquier parte sirve para elegirlo. El servidor pone en el modelo los atributos `EnemyId`, `DisplayName`, `Health` y `MaxHealth`; el cliente dibuja la barra con ellos.
 - **Combate:** el jugador hace clic en un enemigo (ClickDetector) y el servidor lo fija como objetivo si la isla está desbloqueada. Los personajes equipados golpean según su cooldown mientras el jugador esté a menos de `Balance.Combat.range`. El objetivo se replica en el atributo `TargetEnemyId` del jugador.
@@ -182,6 +188,8 @@ El diseño detallado (islas, personajes, probabilidades, pity) está en `docs/ga
 - **Boosts:** `BoostService` activa boosts, los vende por Gemas y descuenta el tiempo cada segundo solo para jugadores conectados. Cualquier sistema que dé boosts usa `BoostService.grant`. Se replican como atributos `BoostOwned_<Id>` y `BoostTime_<Id>`. Los efectos se leen de `data.Boosts.Remaining.<Id> > 0` donde se calcula cada recompensa.
 - **Inventario:** toda la lógica está en `InventoryOps` (pura). Los cambios en personajes siempre pasan por `InventoryService` (por ejemplo `addCharacter`), que envía el estado al cliente por `Remotes.InventoryChanged`. El cliente pide acciones por `Remotes.InventoryAction` y recibe el resultado más un snapshot.
 - **Interfaz (estilo oficial Check-UI):** toda la UI de pantalla (HUD, inventario, gacha, boosts, Raids, avisos) sigue la skill `check-ui-clean-roblox`: tipografía `GothamBlack` con contorno negro, ventanas opacas `#3B5866` con borde oscuro, cabeceras con degradado por tipo de menú y divisor de dos líneas, botón de cerrar `[X]` con relieve, botones con relieve y tríada de estados (Reclamar, Reclamado, Bloqueado), iconos con `ScaleType.Fit`, interacciones desde el centro (`AnchorPoint` 0.5 y `UIScale`) y escalado según `ViewportSize`. Los colores y constructores viven en `src/client/UI/Theme`, que se adapta a Check-UI; los controladores no ponen colores a mano. Los textos en el mundo 3D (carteles, títulos de portales) mantienen su estilo propio. Antes de tocar la UI, cargar la skill.
+- **Intangibles:** los personajes (luchadores) y los enemigos no chocan con nada: el jugador los atraviesa. `Shared/Intangible` pone `CanCollide`/`CanTouch` a false y el grupo de colisión `Intangible` (necesario porque el `Humanoid` vuelve a activar la colisión del torso y la cabeza), y mete los personajes de los jugadores en el grupo `Players`, que no choca con `Intangible`. `Intangible` debe seguir chocando con `Default`: los clics (`ClickDetector`) y los raycasts usan el grupo `Default` e ignoran las partes de grupos que no chocan con él, y los enemigos dejarían de poder seleccionarse. El servidor lo arranca con `Intangible.start()` en `Main.server.luau`.
+- **Eventos entre servicios:** usar `Server.Signal`, nunca `BindableEvent`: un BindableEvent entrega copias de las tablas, así que comparar o usar como clave el enemigo o los datos recibidos falla (por eso los Raids no pasaban de la primera oleada). `EnemyService.Clicked`/`Died` y `DataService.Loaded`/`Releasing` son Signals.
 - **Remotes:** los crea el servidor con `Remotes.event(name)`; el cliente los espera con `ReplicatedStorage.Remotes:WaitForChild(name)`. Nunca confiar en datos del cliente sin validarlos en el servidor.
 - **Acceso a datos:** los demás servicios usan `DataService.getData`/`waitForData` y `addCurrency`/`spendCurrency`. Yenes y Gemas se replican al cliente como atributos del jugador (`Yen`, `Gems`).
 - **Fuente de verdad de datos:** las constantes viven en `src/shared/Config/` y el contenido (islas, personajes) en `src/shared/Data/`. Los valores derivados (daño, vida, Yenes, costos) se calculan siempre con `Shared.Formulas`; nunca escribir esos números a mano en otro sitio.
@@ -236,3 +244,8 @@ Decisiones cerradas. Las tareas pendientes están en `docs/tasks.md`.
 - [x] Plan de desarrollo aprobado (orden en `docs/plan.md`): cerrar la Fase 9, efectos y sonido, UI Check-UI, prueba temprana en servidor publicado, publicación; los modelos de Blender en paralelo.
 - [x] Check-UI (skill `check-ui-clean-roblox`) es el estilo oficial de la UI.
 - [x] Formato con StyLua y linter con selene; luau y luau-lsp también fijados en `rokit.toml`.
+- [x] Raids: portal de salida dentro del coliseo hacia el lobby de Raids; enemigos en puntos aleatorios de la pista en cada oleada.
+- [x] Yenes como monedas flotantes que el jugador recoge (se pagan solas a los 30 s y al salir del juego; nunca se pierden).
+- [x] Eventos entre servicios con `Signal` (no `BindableEvent`).
+- [x] Raids de 20 oleadas siempre (también en Studio): 4 débiles + 2 medianos + 1 fuerte por oleada, ×1.03 por oleada; mini jefe en la 10 y jefe final en la 20, en el centro del coliseo.
+- [x] Personajes y enemigos intangibles (grupo de colisión `Intangible`).

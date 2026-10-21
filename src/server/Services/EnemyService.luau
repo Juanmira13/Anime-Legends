@@ -19,7 +19,10 @@ local ServerStorage = game:GetService("ServerStorage")
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Balance = require(Shared.Config.Balance)
 local Formulas = require(Shared.Formulas)
+local Intangible = require(Shared.Intangible)
 local Islands = require(Shared.Data.Islands)
+
+local Signal = require(script.Parent.Parent.Signal)
 
 export type Enemy = {
 	id: string,
@@ -28,6 +31,7 @@ export type Enemy = {
 	alive: boolean,
 	model: Model,
 	root: BasePart,
+	ground: Vector3, -- point it stands on (coins drop here)
 	damagers: { [Player]: boolean },
 	-- Island enemies
 	island: string?,
@@ -36,13 +40,14 @@ export type Enemy = {
 	-- Raid enemies
 	raidSessionId: string?,
 	raidType: string?,
+	raidWave: number?,
 }
 
 export type SpawnSpec = {
 	cframe: CFrame, -- ground point the enemy stands on
 	maxHealth: number,
 	displayName: string,
-	look: string, -- placeholder look: Easy, Medium, Hard, Boss, Weak or MiniBoss
+	look: string, -- placeholder look: Easy, Medium, Hard, Boss, Weak, Strong or MiniBoss
 	template: { string }, -- path under ServerStorage.EnemyModels
 	parent: Instance?,
 	island: string?,
@@ -50,6 +55,7 @@ export type SpawnSpec = {
 	spawnPoint: BasePart?,
 	raidSessionId: string?,
 	raidType: string?,
+	raidWave: number?,
 }
 
 local SPAWN_TAG = "EnemySpawn"
@@ -60,14 +66,16 @@ local PLACEHOLDER_LOOK: { [string]: { size: number, color: Color3 } } = {
 	Weak = { size = 3, color = Color3.fromRGB(110, 200, 110) },
 	Medium = { size = 4, color = Color3.fromRGB(230, 200, 80) },
 	Hard = { size = 5, color = Color3.fromRGB(230, 110, 60) },
+	Strong = { size = 5, color = Color3.fromRGB(230, 110, 60) },
 	MiniBoss = { size = 7, color = Color3.fromRGB(220, 60, 60) },
 	Boss = { size = 9, color = Color3.fromRGB(170, 50, 200) },
 }
 
 local enemies: { [string]: Enemy } = {}
 local nextId = 0
-local clickedEvent = Instance.new("BindableEvent")
-local diedEvent = Instance.new("BindableEvent")
+-- Signals, not BindableEvents: listeners must get the same Enemy table (e.g. as a key).
+local clickedSignal = Signal.new()
+local diedSignal = Signal.new()
 
 local enemyFolder = Instance.new("Folder")
 enemyFolder.Name = "Enemies"
@@ -76,10 +84,10 @@ enemyFolder.Parent = workspace
 local EnemyService = {}
 
 -- Fires (player, enemy) when a player clicks an enemy.
-EnemyService.Clicked = clickedEvent.Event
+EnemyService.Clicked = clickedSignal
 
 -- Fires (enemy) when an enemy's health reaches 0, before its model is removed.
-EnemyService.Died = diedEvent.Event
+EnemyService.Died = diedSignal
 
 local function getTemplate(path: { string }): Model?
 	local node: Instance? = ServerStorage:FindFirstChild("EnemyModels")
@@ -128,6 +136,8 @@ function EnemyService.spawn(spec: SpawnSpec): Enemy
 	-- Stream the whole model at once so clients always get its PrimaryPart.
 	model.ModelStreamingMode = Enum.ModelStreamingMode.Atomic
 	model:PivotTo(spec.cframe * CFrame.new(0, heightAboveGround(model), 0))
+	-- Players walk through enemies; clicks still select them (CanQuery stays on).
+	Intangible.apply(model)
 	model:SetAttribute("EnemyId", id)
 	model:SetAttribute("DisplayName", spec.displayName)
 	model:SetAttribute("Health", spec.maxHealth)
@@ -140,12 +150,14 @@ function EnemyService.spawn(spec: SpawnSpec): Enemy
 		alive = true,
 		model = model,
 		root = root,
+		ground = spec.cframe.Position,
 		damagers = {},
 		island = spec.island,
 		rank = spec.rank,
 		spawnPoint = spec.spawnPoint,
 		raidSessionId = spec.raidSessionId,
 		raidType = spec.raidType,
+		raidWave = spec.raidWave,
 	}
 	enemies[id] = enemy
 
@@ -153,7 +165,7 @@ function EnemyService.spawn(spec: SpawnSpec): Enemy
 	clickDetector.MaxActivationDistance = Balance.Combat.range
 	clickDetector.MouseClick:Connect(function(player)
 		if enemy.alive then
-			clickedEvent:Fire(player, enemy)
+			clickedSignal:Fire(player, enemy)
 		end
 	end)
 	-- On the model so clicking any of its parts selects the enemy.
@@ -214,7 +226,7 @@ function EnemyService.damage(enemy: Enemy, player: Player, amount: number): bool
 
 	enemy.alive = false
 	enemies[enemy.id] = nil
-	diedEvent:Fire(enemy)
+	diedSignal:Fire(enemy)
 	enemy.model:Destroy()
 	local spawnPoint, rank = enemy.spawnPoint, enemy.rank
 	if spawnPoint and rank then

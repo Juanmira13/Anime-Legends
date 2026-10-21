@@ -44,6 +44,9 @@ Cantidad sugerida por isla: 10 Fáciles, 8 Medios y 5 Difíciles, cada grupo en 
 
 ## Enemigos: Yenes por derrota
 
+Los Yenes caen como monedas (`Balance.Coins`): la recompensa se reparte en 2 monedas si tiene una cifra y una más por cada cifra extra, hasta 8, y las monedas suman exacto. Se recogen a menos de 20 studs, el servidor acepta recogidas hasta 45 studs de la tanda, y a los 30 s se pagan solas.
+
+
 | Rango | Nameku | Kono | Clover Kingdom | Titan Village | Hero Academy | Demon Corps |
 |---|---|---|---|---|---|---|
 | Fácil | 5 | 30 | 180 | 1.1K | 6.5K | 39K |
@@ -109,37 +112,42 @@ Cada dificultad está calibrada para el equipo de referencia de una isla:
 
 | Oleadas | Enemigos |
 |---|---|
-| 1–5 | 10 débiles |
-| 6–9 | 6 débiles + 4 medianos |
-| 10 | Mini jefe + 4 medianos |
-| 11–15 | 4 débiles + 6 medianos |
-| 16–19 | 10 medianos |
-| 20 | Jefe final + 6 medianos |
+| Todas (1–20) | 4 débiles + 2 medianos + 1 fuerte |
+| 10 | además, el mini jefe |
+| 20 | además, el jefe final |
 
-En total: 94 débiles, 96 medianos, 1 mini jefe y 1 jefe final. Con el equipo de referencia, un jugador solo termina en unos 21 minutos, dentro del límite de 30. En grupo es más rápido.
+**Crecimiento por oleada:** ×1.03 de vida y de Yenes respecto a la oleada anterior (`Raids.WaveGrowth`), igual para todos los tipos: la oleada 20 es ×1.75 la 1. Las Gemas por enemigo no cambian con la oleada.
 
-### Vida de enemigos de Raid
+En total: 80 débiles, 40 medianos, 20 fuertes, 1 mini jefe y 1 jefe final. Con el equipo de referencia, un jugador solo termina en unos 24 minutos, dentro del límite de 30. En grupo es más rápido.
+
+Tiempo para derrotarlos con el equipo de referencia (oleada 1): débil 3 s, mediano 8 s, fuerte 12 s, mini jefe 60 s, jefe final 150 s.
+
+### Vida de enemigos de Raid (oleada 1; después ×1.03 por oleada)
 
 | Tipo | Fácil | Medio | Difícil |
 |---|---|---|---|
 | Débil | 780 | 28K | 1M |
 | Mediano | 2.1K | 75K | 2.7M |
+| Fuerte | 3.1K | 110K | 4M |
 | Mini jefe | 16K | 560K | 20M |
 | Jefe final | 39K | 1.4M | 51M |
 
+Con el crecimiento: un débil de la oleada 20 tiene 1.4K / 49K / 1.8M; el mini jefe (oleada 10), 20K / 730K / 26M; el jefe final (oleada 20), 68K / 2.5M / 89M.
+
 ### Recompensas por enemigo
 
-Cada jugador del Raid recibe la recompensa completa de cada enemigo.
+Cada jugador del Raid recibe la recompensa completa de cada enemigo. Yenes de la oleada 1 (después ×1.03 por oleada, como monedas); las Gemas no crecen.
 
 | Tipo | Fácil | Medio | Difícil |
 |---|---|---|---|
-| Débil | 1 Gema + 30 ¥ | 2 Gemas + 1.1K ¥ | 6 Gemas + 39K ¥ |
-| Mediano | 2 Gemas + 90 ¥ | 5 Gemas + 3.2K ¥ | 12 Gemas + 120K ¥ |
+| Débil | 1 Gema + 30 ¥ | 3 Gemas + 1.1K ¥ | 7 Gemas + 39K ¥ |
+| Mediano | 3 Gemas + 90 ¥ | 6 Gemas + 3.2K ¥ | 14 Gemas + 120K ¥ |
+| Fuerte | 5 Gemas + 180 ¥ | 12 Gemas + 6.5K ¥ | 30 Gemas + 230K ¥ |
 | Mini jefe | 20 Gemas + 1.4K ¥ | 50 Gemas + 49K ¥ | 120 Gemas + 1.7M ¥ |
 | Jefe final | 50 Gemas + 5.4K ¥ | 150 Gemas + 190K ¥ | 400 Gemas + 7M ¥ |
-| **Total del Raid completo** | **356 Gemas + 18K ¥** | **868 Gemas + 650K ¥** | **2,236 Gemas + 24M ¥** |
+| **Total del Raid completo** | **370 Gemas + 24K ¥** | **920 Gemas + 870K ¥** | **2,240 Gemas + 31M ¥** |
 
-Gemas por hora de espera: Fácil ~356, Medio ~579, Difícil ~1,118. Las dificultades altas siempre rinden más.
+Gemas por hora de espera: Fácil ~370, Medio ~613, Difícil ~1,120. Las dificultades altas siempre rinden más.
 
 ## Boosts
 
@@ -159,9 +167,10 @@ Cada enemigo derrotado tiene una probabilidad de soltar un boost al azar entre l
 |---|---|---|---|
 | Débil | 0.5% | 0.75% | 1% |
 | Mediano | 1% | 1.5% | 2% |
+| Fuerte | 2% | 3% | 4% |
 | Mini jefe | 25% | 37.5% | 50% |
 | Jefe final | 100% | 100% | 100% |
-| **Boosts esperados por Raid completo** | **~2.7** | **~3.5** | **~4.4** |
+| **Boosts esperados por Raid completo** | **~2.4** | **~3.2** | **~3.9** |
 
 Supuestos (a confirmar):
 - Cada jugador del Raid tira su propio drop.

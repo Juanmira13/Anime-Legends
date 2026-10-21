@@ -65,7 +65,7 @@ ENEMY_LOOKS = {
     "Weak": ((110, 200, 110), 1.0),
     "MiniBoss": ((220, 60, 60), 2.0),
 }
-RAID_LOOKS = {"Medium": ENEMY_LOOKS["Medium"], "Boss": ((170, 50, 200), 3.0)}
+RAID_LOOKS = {"Medium": ENEMY_LOOKS["Medium"], "Strong": ENEMY_LOOKS["Hard"], "Boss": ((170, 50, 200), 3.0)}
 
 
 def read(path: pathlib.Path) -> str:

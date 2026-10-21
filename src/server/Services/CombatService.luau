@@ -2,7 +2,8 @@
 -- Player-chosen targets and automatic attacks from equipped characters.
 -- Clicking an enemy selects it; equipped characters hit it on their cooldowns
 -- while the player stays in range. Everyone who hit an island enemy gets its
--- yen (raid rewards are handled by RaidService).
+-- yen as a drop of coins to collect (CoinService; raid rewards are handled by
+-- RaidService).
 -- The current target id is replicated as the player attribute "TargetEnemyId".
 -- Each frame with hits fires Remotes.CharacterHit (owner, enemyId, hits) to all
 -- clients, only so they can animate the hits.
@@ -19,6 +20,7 @@ local Server = script.Parent.Parent
 local AttackClock = require(Server.Combat.AttackClock)
 local InventoryOps = require(Server.Inventory.InventoryOps)
 local Remotes = require(Server.Remotes)
+local CoinService = require(script.Parent.CoinService)
 local DataService = require(script.Parent.DataService)
 local EnemyService = require(script.Parent.EnemyService)
 
@@ -107,7 +109,7 @@ local function onEnemyDied(enemy: EnemyService.Enemy)
 		local data = DataService.getData(player)
 		if data then
 			local moneyBoostActive = data.Boosts.Remaining.Money > 0
-			DataService.addCurrency(player, "Yen", Formulas.killReward(island, rank, moneyBoostActive))
+			CoinService.drop(player, enemy.ground, Formulas.killReward(island, rank, moneyBoostActive))
 		end
 	end
 end

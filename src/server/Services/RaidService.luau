@@ -7,10 +7,12 @@
 --   "RaidPad"           lobby pad with a Difficulty attribute (Easy, Medium, Hard)
 -- Using a pad joins that difficulty's queue; the raid starts QUEUE_TIME seconds
 -- after the first player joins, with everyone queued (up to Raids.MaxPlayers).
--- Each group plays in its own arena: a clone of ServerStorage.RaidArena (a Model
--- with a PrimaryPart, a "PlayerSpawn" part and an "EnemySpawns" folder of parts
--- named in spawn order; the Island Builder's coliseum) or a generated platform,
--- placed high above the map.
+-- Each group plays in its own arena, placed high above the map: a clone of
+-- ServerStorage.RaidArena (the Island Builder's coliseum: a Model pivoted on the
+-- center of its field, with a FieldRadius attribute, a "PlayerSpawn" part and a
+-- "RaidExit" part) or a generated platform. Every wave's enemies stand at random
+-- points on the field (RaidOps.randomSpots); the exit portal takes a player
+-- back to the lobby.
 --
 -- Replicated to the client as player attributes: RaidQueue, RaidQueueStartsAt,
 -- RaidSessionId, RaidDifficulty, RaidWave, RaidEndsAt, RaidReady_<Difficulty>,
@@ -30,6 +32,7 @@ local Server = script.Parent.Parent
 local RaidOps = require(Server.Raids.RaidOps)
 local Remotes = require(Server.Remotes)
 local BoostService = require(script.Parent.BoostService)
+local CoinService = require(script.Parent.CoinService)
 local DataService = require(script.Parent.DataService)
 local EnemyService = require(script.Parent.EnemyService)
 local InventoryService = require(script.Parent.InventoryService)
@@ -44,7 +47,9 @@ type Session = {
 	arena: Model,
 	slot: number,
 	playerSpawn: CFrame,
-	enemySpots: { CFrame },
+	center: CFrame, -- center of the field, at floor level
+	fieldRadius: number,
+	clearances: { RaidOps.Clearance }, -- arrival point and exit, relative to the center
 	enemies: { [Enemy]: boolean },
 	finished: boolean,
 }
@@ -60,6 +65,7 @@ local PAD_TAG = "RaidPad"
 local QUEUE_TIME = 15
 local NEXT_WAVE_DELAY = 3
 local PROMPT_DISTANCE = 10
+local EXIT_HOLD = 0.5 -- seconds; nobody leaves a raid by accident
 local MIN_TIME_BETWEEN_USES = 0.5
 local ARENA_ORIGIN = Vector3.new(0, 1500, 0)
 local ARENA_SPACING = 400
@@ -73,12 +79,6 @@ local playerSession: { [Player]: Session } = {}
 local usedSlots: { [number]: boolean } = {}
 local lastUseTime: { [Player]: number } = {}
 local nextSessionId = 0
-
--- Waves to play. Normally 1..WaveCount; DevCheats can shorten it in Studio.
-local waveSequence: { number } = {}
-for wave = 1, Raids.WaveCount do
-	table.insert(waveSequence, wave)
-end
 
 local RaidService = {}
 
@@ -131,72 +131,93 @@ local function clearSessionAttributes(player: Player)
 	end
 end
 
+local function addPrompt(
+	part: BasePart,
+	objectText: string,
+	actionText: string,
+	onTriggered: (Player) -> ()
+): ProximityPrompt
+	local prompt = Instance.new("ProximityPrompt")
+	prompt.ObjectText = objectText
+	prompt.ActionText = actionText
+	prompt.HoldDuration = 0
+	prompt.MaxActivationDistance = PROMPT_DISTANCE
+	prompt.RequiresLineOfSight = false
+	prompt.Triggered:Connect(onTriggered)
+	prompt.Parent = part
+	return prompt
+end
+
 -- Arena -----------------------------------------------------------------------
 
-local function generateArena(): (Model, CFrame, { CFrame })
+type Arena = {
+	model: Model,
+	playerSpawn: CFrame,
+	fieldRadius: number,
+	exit: BasePart?,
+}
+
+local GENERATED_FIELD_RADIUS = 80
+
+-- Plain platform used when there is no ServerStorage.RaidArena, pivoted (like
+-- the coliseum) on the center of its top face.
+local function generateArena(): Model
 	local arena = Instance.new("Model")
+	arena.Name = "RaidArena"
+	arena:SetAttribute("FieldRadius", GENERATED_FIELD_RADIUS)
 	local floor = Instance.new("Part")
 	floor.Name = "Floor"
-	floor.Size = Vector3.new(160, 2, 160)
+	floor.Size = Vector3.new(GENERATED_FIELD_RADIUS * 2, 2, GENERATED_FIELD_RADIUS * 2)
+	floor.CFrame = CFrame.new(0, -1, 0)
 	floor.Anchored = true
 	floor.Color = Color3.fromRGB(60, 50, 80)
 	floor.Material = Enum.Material.Slate
+	floor.PivotOffset = CFrame.new(0, 1, 0)
 	floor.Parent = arena
 	arena.PrimaryPart = floor
-
-	local top = floor.Size.Y / 2
-	local playerSpawn = CFrame.new(0, top, 60)
-	local spots = {}
-	-- Center first so bosses (spawned first) stand in the middle.
-	table.insert(spots, CFrame.new(0, top, -35))
-	for row = 0, 2 do
-		for column = -2, 2 do
-			if not (row == 1 and column == 0) then
-				table.insert(spots, CFrame.new(column * 22, top, -15 - row * 20))
-			end
-		end
+	for _, marker in { { name = "PlayerSpawn", z = 40 }, { name = "RaidExit", z = 66 } } do
+		local part = Instance.new("Part")
+		part.Name = marker.name
+		part.Size = Vector3.new(8, 1, 8)
+		part.CFrame = CFrame.new(0, -0.5, marker.z)
+		part.Anchored = true
+		part.CanCollide = false
+		part.Transparency = if marker.name == "RaidExit" then 0 else 1
+		part.Material = Enum.Material.Neon
+		part.Color = Color3.fromRGB(170, 80, 255)
+		part.Parent = arena
 	end
-	return arena, playerSpawn, spots
+	return arena
 end
 
-local function buildArena(slot: number): (Model, CFrame, { CFrame })
+local function buildArena(slot: number): Arena
 	local origin = CFrame.new(ARENA_ORIGIN + Vector3.new(slot * ARENA_SPACING, 0, 0))
 	local template = ServerStorage:FindFirstChild("RaidArena")
-	if template and template:IsA("Model") and template.PrimaryPart then
-		local arena = template:Clone()
-		arena:PivotTo(origin)
-		-- Markers are read after pivoting, so their CFrames are already in world space.
-		local spawnPart = arena:FindFirstChild("PlayerSpawn")
-		local spotsFolder = arena:FindFirstChild("EnemySpawns")
-		local spots = {}
-		if spotsFolder then
-			-- Spots are named in spawn order ("01", "02"...): bosses spawn first and take the first one.
-			local parts = {}
-			for _, part in spotsFolder:GetChildren() do
-				if part:IsA("BasePart") then
-					table.insert(parts, part)
-				end
-			end
-			table.sort(parts, function(a, b)
-				return a.Name < b.Name
-			end)
-			for _, part in parts do
-				table.insert(spots, part.CFrame * CFrame.new(0, part.Size.Y / 2, 0))
-			end
+	local model: Model
+	if template and template:IsA("Model") and template.PrimaryPart and template:FindFirstChild("PlayerSpawn") then
+		model = template:Clone()
+	else
+		if template then
+			warn("[RaidService] ServerStorage.RaidArena needs a PrimaryPart and a PlayerSpawn; using a generated arena")
 		end
-		if spawnPart and spawnPart:IsA("BasePart") and #spots > 0 then
-			return arena, spawnPart.CFrame * CFrame.new(0, spawnPart.Size.Y / 2, 0), spots
+		model = generateArena()
+	end
+	model:PivotTo(origin)
+	-- Markers are read after pivoting, so their CFrames are already in world space.
+	local spawnPart = model:FindFirstChild("PlayerSpawn") :: BasePart
+	local exit: BasePart? = nil
+	for _, descendant in model:GetDescendants() do
+		if descendant.Name == "RaidExit" and descendant:IsA("BasePart") then
+			exit = descendant
+			break
 		end
-		warn("[RaidService] ServerStorage.RaidArena needs PlayerSpawn and EnemySpawns; using a generated arena")
-		arena:Destroy()
 	end
-
-	local arena, playerSpawn, spots = generateArena()
-	arena:PivotTo(origin)
-	for index, spot in spots do
-		spots[index] = origin * spot
-	end
-	return arena, origin * playerSpawn, spots
+	return {
+		model = model,
+		playerSpawn = spawnPart.CFrame * CFrame.new(0, spawnPart.Size.Y / 2, 0),
+		fieldRadius = tonumber(model:GetAttribute("FieldRadius")) or GENERATED_FIELD_RADIUS,
+		exit = exit,
+	}
 end
 
 local function takeSlot(): number
@@ -269,9 +290,14 @@ local function onRaidEnemyDied(enemy: Enemy)
 		if data == nil then
 			continue
 		end
-		local yen, gems =
-			RaidOps.reward(session.difficulty, typeId, data.Boosts.Remaining.Money > 0, data.Boosts.Remaining.Gems > 0)
-		DataService.addCurrency(player, "Yen", yen)
+		local yen, gems = RaidOps.reward(
+			session.difficulty,
+			typeId,
+			enemy.raidWave or 1,
+			data.Boosts.Remaining.Money > 0,
+			data.Boosts.Remaining.Gems > 0
+		)
+		CoinService.drop(player, enemy.ground, yen) -- yen as coins to collect; gems go straight in
 		DataService.addCurrency(player, "Gems", gems)
 		local boostId = RaidOps.rollBoostDrop(session.difficulty, typeId, function()
 			return random:NextNumber()
@@ -284,24 +310,31 @@ local function onRaidEnemyDied(enemy: Enemy)
 end
 
 local function spawnWave(session: Session, wave: number)
-	for index, typeId in RaidOps.waveEnemies(wave) do
-		local spot = session.enemySpots[(index - 1) % #session.enemySpots + 1]
+	local typeIds = RaidOps.waveEnemies(wave)
+	local spots = RaidOps.waveSpots(typeIds, session.fieldRadius, session.clearances, function()
+		return random:NextNumber()
+	end)
+	for index, typeId in typeIds do
+		local spot = spots[index]
+		-- Face the players' side of the field (+Z).
+		local position = session.center * CFrame.new(spot[1], 0, spot[2])
 		local enemy = EnemyService.spawn({
-			cframe = spot,
-			maxHealth = Formulas.raidEnemyHealth(session.difficulty, typeId),
+			cframe = CFrame.lookAt(position.Position, (session.center * CFrame.new(spot[1], 0, spot[2] + 1)).Position),
+			maxHealth = Formulas.raidEnemyHealth(session.difficulty, typeId, wave),
 			displayName = Raids.getEnemyType(typeId).displayName,
 			look = typeId,
 			template = { "Raid", typeId },
 			parent = session.arena,
 			raidSessionId = session.id,
 			raidType = typeId,
+			raidWave = wave,
 		})
 		session.enemies[enemy] = true
 	end
 end
 
 local function runSession(session: Session, endsAt: number)
-	for _, wave in waveSequence do
+	for wave = 1, Raids.WaveCount do
 		if session.finished then
 			return
 		end
@@ -317,7 +350,7 @@ local function runSession(session: Session, endsAt: number)
 			end
 			task.wait(0.25)
 		end
-		if wave ~= waveSequence[#waveSequence] then
+		if wave < Raids.WaveCount then
 			task.wait(NEXT_WAVE_DELAY)
 		end
 	end
@@ -352,21 +385,42 @@ local function startQueue(difficultyId: string, queue: Queue)
 
 	nextSessionId += 1
 	local slot = takeSlot()
-	local arena, playerSpawn, spots = buildArena(slot)
-	arena.Name = `Raid_{difficultyId}_{nextSessionId}`
-	arena.Parent = workspace
+	local arena = buildArena(slot)
+	arena.model.Name = `Raid_{difficultyId}_{nextSessionId}`
+	arena.model.Parent = workspace
+	local center = arena.model:GetPivot()
+	local function relative(position: Vector3, radius: number): RaidOps.Clearance
+		local offset = center:PointToObjectSpace(position)
+		return { x = offset.X, z = offset.Z, radius = radius }
+	end
+	local clearances = { relative(arena.playerSpawn.Position, Raids.Arena.spawnClearance) }
+	if arena.exit then
+		table.insert(clearances, relative(arena.exit.Position, Raids.Arena.exitClearance))
+	end
 	local session: Session = {
 		id = tostring(nextSessionId),
 		difficulty = difficultyId,
 		players = {},
-		arena = arena,
+		arena = arena.model,
 		slot = slot,
-		playerSpawn = playerSpawn,
-		enemySpots = spots,
+		playerSpawn = arena.playerSpawn,
+		center = center,
+		fieldRadius = arena.fieldRadius,
+		clearances = clearances,
 		enemies = {},
 		finished = false,
 	}
 	sessions[session.id] = session
+	if arena.exit then
+		local exitPrompt = addPrompt(arena.exit, "Portal de salida", "Abandonar el Raid", function(player)
+			if playerSession[player] == session then
+				leaveSession(player)
+				sendToLobby(player)
+				send(player, { kind = "Left", difficulty = difficultyId })
+			end
+		end)
+		exitPrompt.HoldDuration = EXIT_HOLD
+	end
 
 	local endsAt = now() + Raids.TimeLimit
 	for _, player in members do
@@ -378,7 +432,7 @@ local function startQueue(difficultyId: string, queue: Queue)
 		player:SetAttribute("RaidSessionId", session.id)
 		player:SetAttribute("RaidDifficulty", difficultyId)
 		player:SetAttribute("RaidEndsAt", endsAt)
-		moveTo(player, playerSpawn, "Raid")
+		moveTo(player, arena.playerSpawn, "Raid")
 		send(player, { kind = "Started", difficulty = difficultyId })
 	end
 	task.spawn(runSession, session, endsAt)
@@ -447,17 +501,6 @@ end
 
 -- Map setup -------------------------------------------------------------------
 
-local function addPrompt(part: BasePart, objectText: string, actionText: string, onTriggered: (Player) -> ())
-	local prompt = Instance.new("ProximityPrompt")
-	prompt.ObjectText = objectText
-	prompt.ActionText = actionText
-	prompt.HoldDuration = 0
-	prompt.MaxActivationDistance = PROMPT_DISTANCE
-	prompt.RequiresLineOfSight = false
-	prompt.Triggered:Connect(onTriggered)
-	prompt.Parent = part
-end
-
 local function setupPortal(portal: Instance)
 	if portal:IsA("BasePart") then
 		addPrompt(portal, "Portal de Raids", "Viajar", function(player)
@@ -491,11 +534,6 @@ local function onTagged(tag: string, setup: (Instance) -> ())
 	CollectionService:GetInstanceAddedSignal(tag):Connect(setup)
 end
 
--- Studio testing: play only these waves (e.g. { 1, 10, 20 }).
-function RaidService.setWaveSequence(waves: { number })
-	waveSequence = waves
-end
-
 function RaidService.start()
 	-- The Island Builder leaves a copy of the arena for screenshots; the game only uses the template.
 	local preview = workspace:FindFirstChild("RaidArenaPreview")
@@ -511,6 +549,16 @@ function RaidService.start()
 		-- Respawning (e.g. resetting) during a raid leaves it.
 		player.CharacterAdded:Connect(function()
 			leaveSession(player)
+		end)
+		-- Leaving the lobby (a portal back to an island, or respawning) leaves the queue,
+		-- so nobody is pulled into a raid from elsewhere. Starting a raid sets "Raid"
+		-- after the queue is already cleared.
+		player:GetAttributeChangedSignal("CurrentArea"):Connect(function()
+			local difficultyId = playerQueue[player]
+			if difficultyId and player:GetAttribute("CurrentArea") ~= "RaidLobby" then
+				leaveQueue(player)
+				send(player, { kind = "LeftQueue", difficulty = difficultyId })
+			end
 		end)
 	end
 	Players.PlayerAdded:Connect(onPlayerAdded)

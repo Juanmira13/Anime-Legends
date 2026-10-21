@@ -1,11 +1,12 @@
 --!strict
 -- Raid arena: a stone coliseum floating in the sky at dusk. A sand floor ringed
 -- by a podium wall with torches, stepped stands, an outer wall with arches and
--- banners, two closed gates (the enemies' one glows red), a rocky underside and
--- clouds. Saved as ServerStorage.RaidArena, the template RaidService clones for
--- every raid group (PrimaryPart = Floor, a PlayerSpawn part and an EnemySpawns
--- folder). A copy is left at Workspace.RaidArenaPreview for screenshots; the
--- server deletes it when the game starts.
+-- banners, two closed gates (the enemies' one glows red), the exit portal, a
+-- rocky underside and clouds. Saved as ServerStorage.RaidArena, the template
+-- RaidService clones for every raid group: pivoted on the center of the field,
+-- with a FieldRadius attribute (enemies appear at random inside it), a
+-- PlayerSpawn part and the "RaidExit" portal pad. A copy is left at
+-- Workspace.RaidArenaPreview for screenshots; the server deletes it on start.
 
 local ServerStorage = game:GetService("ServerStorage")
 
@@ -14,6 +15,7 @@ local Shared = Root.Shared
 local World = require(Shared.Config.World)
 local Rng = require(Root.Gen.Rng)
 local Parts = require(Root.Kit.Parts)
+local Gameplay = require(Root.Kit.Gameplay)
 local IslandBuilder = require(Root.IslandBuilder)
 local RaidArenaLayout = require(Root.RaidArenaLayout)
 
@@ -166,14 +168,13 @@ local function buildModel(center: Vector3): Model
 	)
 	model.PrimaryPart = floor
 	floor.PivotOffset = CFrame.new(0, layout.floorThickness / 2, 0)
+	model:SetAttribute("FieldRadius", floorRadius)
 	-- Inlaid rings, built from segments to stay round: a wide dark band and a
-	-- golden circle where the bosses stand.
-	local bossSpot = layout.enemySpots[1]
-	local bossCenter = center + Vector3.new(bossSpot[1], 0, bossSpot[2])
+	-- golden circle in the middle.
 	for index = 0, segments - 1 do
 		local angle = index * step
 		ringBlock(center, angle, floorRadius * 0.7, 2.5, -0.1, 0.3, SAND_DARK, decor, { shadow = false })
-		ringBlock(bossCenter, angle, 12, 1.2, -0.1, 0.35, GOLD, decor, { shadow = false })
+		ringBlock(center, angle, 12, 1.2, -0.1, 0.35, GOLD, decor, { shadow = false })
 	end
 
 	-- Podium wall and stepped stands, then the outer wall with arches and crenellations.
@@ -277,12 +278,10 @@ local function buildModel(center: Vector3): Model
 		end
 	end
 
-	-- Where RaidService places players and enemies (spots named in spawn order).
+	-- Where players arrive, and the portal back to the lobby behind them.
 	marker("PlayerSpawn", center, layout.playerSpawn, model)
-	local spots = Parts.folder("EnemySpawns", model)
-	for index, spot in layout.enemySpots do
-		marker(string.format("%02d", index), center, spot, spots)
-	end
+	local exit = layout.exitPortal
+	Gameplay.raidExit(center.X + exit[1], center.Y, center.Z + exit[2], 0, model)
 	return model
 end
 

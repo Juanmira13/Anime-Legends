@@ -48,7 +48,7 @@ Todo está *inspirado en* cada anime, sin logotipos ni copias exactas.
 | **Demon Corps** | Japón tradicional de noche | Azul noche, glicinas moradas, faroles cálidos; luna llena | Glicinas con pétalos cayendo, bambú con niebla, toriis, aldea con faroles | Aldea de Faroles → Bosque de Bambú → Montaña de Toriis → Tren de la Luna |
 
 - **Lobby de Raids:** templo flotante en el cielo, con un altar por dificultad y nubes alrededor.
-- **Arena de Raid:** coliseo de piedra flotando en el cielo al atardecer. Piedra y arena claras y neutras (la luz del atardecer les da el tono cálido). Suelo de arena con un anillo incrustado y un círculo dorado donde salen los jefes, muro del podio con antorchas, gradas escalonadas, muralla exterior con arcos, almenas y estandartes, dos puertas cerradas (la de los enemigos, al norte, brilla en rojo), base rocosa y nubes debajo. Los jugadores aparecen al sur, con la primera fila de enemigos a su alcance; los jefes salen en el centro.
+- **Arena de Raid:** coliseo de piedra flotando en el cielo al atardecer. Piedra y arena claras y neutras (la luz del atardecer les da el tono cálido). Suelo de arena con un anillo incrustado y un círculo dorado en el centro, muro del podio con antorchas, gradas escalonadas, muralla exterior con arcos, almenas y estandartes, dos puertas cerradas (la de los enemigos, al norte, brilla en rojo), base rocosa y nubes debajo. Los jugadores aparecen al sur, con el portal de salida detrás; los enemigos aparecen en puntos aleatorios de la pista.
 - Partículas de ambiente por isla: polen (Nameku), hojas (Kono), chispas mágicas (Clover), polvo (Titan), pétalos (Demon Corps).
 ### Organización de cada isla
 
@@ -132,7 +132,7 @@ Reglas del pity:
 
 - El jugador elige el objetivo haciendo clic en un enemigo. Sus personajes equipados lo atacan automáticamente mientras esté a menos de 60 studs; si se aleja más, pierde el objetivo.
 - El primer golpe de cada personaje es inmediato; después golpea cada vez que termina su cooldown. Desequipar y volver a equipar no reinicia el cooldown.
-- Todos los jugadores que golpearon a un enemigo reciben la recompensa completa de Yenes cuando muere.
+- Todos los jugadores que golpearon a un enemigo reciben la recompensa completa de Yenes cuando muere, como **monedas flotantes**: cada uno ve su propia tanda de monedas doradas que salen disparadas alrededor del enemigo, flotan y giran. Al acercarse a menos de 20 studs vuelan hacia el jugador y cada moneda suma su parte en ese momento. Las que no recoge en 30 s vuelan solas (o desaparecen si está lejos) y se pagan igual; nunca se pierden.
 - Solo se puede atacar a enemigos de islas desbloqueadas.
 - Cada personaje tiene daño (según su rareza) y un cooldown entre golpes. Valores: pendientes.
 - Personajes equipados: 3 al inicio, hasta 6 con las ranuras extra de los logros de Raid (ver sección Raids).
@@ -144,7 +144,8 @@ Reglas del pity:
 - Sin objetivo, caminan detrás de su dueño en filas de 3 (la primera a 6 studs, 5 studs entre personajes y entre filas) y miran hacia donde mira él.
 - Con objetivo, caminan hasta un arco de 150° alrededor del enemigo, del lado del dueño, a 3 studs de su superficie.
 - Cada golpe que calcula el servidor dispara una embestida hacia el enemigo (0.12 s de ida y 0.3 s de vuelta), más corta que el cooldown más rápido (1 s), así que cada golpe se ve completo.
-- Son solo visuales: no chocan, no tapan los clics sobre enemigos y no influyen en el daño.
+- Son solo visuales: son intangibles (el jugador los atraviesa), no tapan los clics sobre enemigos y no influyen en el daño.
+- Los enemigos también son intangibles: el jugador los atraviesa, pero se pueden seleccionar con un clic.
 
 ## Inventario
 
@@ -202,9 +203,11 @@ Empieza en 3 personajes equipados. Cada logro se obtiene una sola vez y da +1 ra
 Los logros son independientes: se pueden conseguir en cualquier orden. Este sistema reemplaza la tabla anterior de Raids acumulados (10, 50, 100, 175 y 250).
 
 ### Formato
-- 20 oleadas de enemigos.
-- Mini jefe en la oleada 10.
-- Jefe final en la oleada 20.
+- 20 oleadas de enemigos. Todas traen enemigos de los tres tipos normales: 4 débiles, 2 medianos y 1 fuerte.
+- Cada oleada es un poco más difícil que la anterior: sus enemigos tienen un 3 % más de vida (y dan un 3 % más de Yenes), sin saltos. La oleada 20 es 1.75 veces la 1.
+- Mini jefe en la oleada 10, además de los normales.
+- Jefe final en la oleada 20, además de los normales.
+- El mini jefe y el jefe final aparecen en el centro del coliseo, sobre el círculo dorado.
 - Límite de tiempo: 30 minutos.
 
 ### Recompensas
@@ -214,6 +217,7 @@ Cada enemigo del Raid da Gemas y Yenes. La cantidad sube según el tipo:
 |---|---|
 | Débil | Baja |
 | Mediano | Mayor que los débiles |
+| Fuerte | Mayor que los medianos |
 | Mini jefe (oleada 10) | Mayor, en proporción a los anteriores |
 | Jefe final (oleada 20) | Suma grande por derrotarlo y completar el Raid |
 
@@ -221,16 +225,17 @@ Los enemigos del Raid también pueden soltar boosts (Suerte, Dinero o Gemas, 15 
 
 Funcionamiento:
 - **Lobby:** el portal de Raids de Nameku lleva al lobby, con una plataforma por dificultad y un portal de vuelta a Nameku.
-- **Fila:** usar una plataforma pone al jugador en la fila de esa dificultad (usarla otra vez lo saca). El Raid empieza 15 segundos después de que entra el primero, con todos los de la fila (máximo 20). La espera de la dificultad empieza a contar en ese momento.
+- **Fila:** usar una plataforma pone al jugador en la fila de esa dificultad (usarla otra vez lo saca, y también salir del lobby por un portal o al reaparecer). El Raid empieza 15 segundos después de que entra el primero, con todos los de la fila (máximo 20). La espera de la dificultad empieza a contar en ese momento.
 - **Arena:** cada grupo juega en su propia arena, así que varios grupos pueden hacer Raids a la vez.
+- **Posición de los enemigos:** el mini jefe y el jefe final, en el centro (círculo dorado). Los demás, en puntos aleatorios de la pista (dentro del muro del podio, nunca en las gradas), a 16 studs o más entre sí, lejos del jefe, del punto de llegada y del portal de salida.
+- **Salir:** un portal dentro del coliseo, detrás del punto de llegada, saca del Raid al mantenerlo pulsado medio segundo y lleva al lobby de Raids. La espera de esa dificultad ya cuenta.
 - **Oleadas:** la siguiente aparece 3 segundos después de derrotar a todos los enemigos de la actual.
 - **Recompensa en grupo:** cada jugador del Raid recibe la recompensa completa de cada enemigo que muere, sin repartirla, y tira su propio drop de boost.
 - **Fallo:** si se acaba el tiempo, los jugadores conservan lo ganado con los enemigos derrotados, pero el Raid no cuenta como completado.
 - **Salir:** desconectarse o reaparecer (por ejemplo, reiniciar el personaje) saca al jugador del Raid. Si no queda nadie, el Raid termina.
 - Al terminar (completado o fallido), los jugadores vuelven al lobby.
 
-Pendiente de definir:
-- Valores numéricos de vida de enemigos y recompensas por dificultad.
+Los valores de vida y recompensas por dificultad están en `docs/balance.md` (Raids).
 
 ## Portales
 

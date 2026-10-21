@@ -1,6 +1,8 @@
 -- Checks raid cooldowns, completions and achievements, rewards, boost drops
--- and wave composition.
+-- wave composition and random enemy spots on the arena field.
 local RaidOps = require(Server.Raids.RaidOps)
+local Raids = require(Shared.Config.Raids)
+local RaidArenaLayout = require(Builder.RaidArenaLayout)
 local PlayerRecord = require(Server.Data.PlayerRecord)
 
 local failures = 0
@@ -51,15 +53,18 @@ before, after = RaidOps.complete(slots, "Hard")
 check("hard achievement reaches max", after, 6)
 
 -- Rewards (docs/balance.md raid tables)
-local yen, gems = RaidOps.reward("Easy", "Weak", false, false)
+local yen, gems = RaidOps.reward("Easy", "Weak", 1, false, false)
 check("easy weak yen", yen, 30)
 check("easy weak gems", gems, 1)
-yen, gems = RaidOps.reward("Hard", "Boss", false, false)
+yen, gems = RaidOps.reward("Hard", "Boss", 1, false, false)
 check("hard boss yen", yen, 7000000)
 check("hard boss gems", gems, 400)
-yen, gems = RaidOps.reward("Medium", "MiniBoss", true, true)
+yen, gems = RaidOps.reward("Medium", "MiniBoss", 1, true, true)
 check("boosted yen", yen, 98000)
 check("boosted gems", gems, 100)
+yen, gems = RaidOps.reward("Easy", "Strong", 20, false, false)
+check("wave 20 yen grows", yen, 320) -- 180 x 1.03^19 = 315.8, to 2 significant digits
+check("wave 20 gems do not grow", gems, 5)
 
 -- Boost drops: Easy weak 0.5%, boss always drops
 check("no drop above chance", RaidOps.rollBoostDrop("Easy", "Weak", sequence({ 0.006 })), nil)
@@ -75,16 +80,93 @@ local function waveText(wave)
 	for _, typeId in RaidOps.waveEnemies(wave) do
 		counts[typeId] = (counts[typeId] or 0) + 1
 	end
-	return `{counts.Boss or 0}/{counts.MiniBoss or 0}/{counts.Medium or 0}/{counts.Weak or 0}`
+	return `{counts.Boss or 0}/{counts.MiniBoss or 0}/{counts.Strong or 0}/{counts.Medium or 0}/{counts.Weak or 0}`
 end
-check("wave 1", waveText(1), "0/0/0/10")
-check("wave 7", waveText(7), "0/0/4/6")
-check("wave 10 mini boss", waveText(10), "0/1/4/0")
-check("wave 12", waveText(12), "0/0/6/4")
-check("wave 18", waveText(18), "0/0/10/0")
-check("wave 20 boss", waveText(20), "1/0/6/0")
+for wave = 1, 20 do
+	local expected = if wave == 10 then "0/1/1/2/4" elseif wave == 20 then "1/0/1/2/4" else "0/0/1/2/4"
+	check(`wave {wave}`, waveText(wave), expected)
+end
 check("boss spawns first", RaidOps.waveEnemies(20)[1], "Boss")
 check("mini boss spawns first", RaidOps.waveEnemies(10)[1], "MiniBoss")
+
+-- Each wave a little tougher than the last: same small step, no jumps.
+local Formulas = require(Shared.Formulas)
+local function waveHealth(wave)
+	local total = 0
+	for _, typeId in RaidOps.waveEnemies(wave) do
+		if typeId ~= "Boss" and typeId ~= "MiniBoss" then
+			total += Raids.getEnemyType(typeId).timeToKill * Raids.waveScale(wave)
+		end
+	end
+	return total
+end
+for wave = 2, Raids.WaveCount do
+	local step = waveHealth(wave) / waveHealth(wave - 1)
+	check(`wave {wave} grows a little`, step > 1 and step <= 1.05, true)
+end
+check(
+	"wave 20 normal enemies tougher",
+	Formulas.raidEnemyHealth("Easy", "Weak", 20) > Formulas.raidEnemyHealth("Easy", "Weak", 1),
+	true
+)
+
+-- Bosses stand in the center (golden circle); the rest keep clear of it.
+local function fixed(value)
+	return function()
+		return value
+	end
+end
+for _, wave in { 10, 20 } do
+	local typeIds = RaidOps.waveEnemies(wave)
+	local spots = RaidOps.waveSpots(typeIds, RaidArenaLayout.floorRadius, {}, fixed(0.37))
+	check(`wave {wave} spot count`, #spots, #typeIds)
+	check(`wave {wave} boss in the center`, spots[1][1] == 0 and spots[1][2] == 0, true)
+end
+
+-- Random spots: inside the field edge, apart and clear of the arrival point
+-- and the exit portal, for the biggest wave, on many seeds.
+local function lcg(seed)
+	local state = seed
+	return function()
+		state = (state * 1103515245 + 12345) % 2147483648
+		return state / 2147483648
+	end
+end
+local biggestWave = 0
+for wave = 1, Raids.WaveCount do
+	biggestWave = math.max(biggestWave, #RaidOps.waveEnemies(wave))
+end
+local layout = RaidArenaLayout
+local clearances = {
+	{ x = layout.playerSpawn[1], z = layout.playerSpawn[2], radius = Raids.Arena.spawnClearance },
+	{ x = layout.exitPortal[1], z = layout.exitPortal[2], radius = Raids.Arena.exitClearance },
+}
+local inside, apart, clear, varied = true, true, true, false
+local firstSpot = nil
+for seed = 1, 200 do
+	local spots = RaidOps.randomSpots(biggestWave, layout.floorRadius, clearances, lcg(seed))
+	check(`random spots count seed {seed}`, #spots, biggestWave)
+	for index, spot in spots do
+		local x, z = spot[1], spot[2]
+		inside = inside and math.sqrt(x * x + z * z) <= layout.floorRadius - Raids.Arena.wallMargin + 1e-6
+		for _, zone in clearances do
+			clear = clear and (x - zone.x) ^ 2 + (z - zone.z) ^ 2 >= zone.radius ^ 2
+		end
+		for other = index + 1, #spots do
+			local gap = math.sqrt((x - spots[other][1]) ^ 2 + (z - spots[other][2]) ^ 2)
+			apart = apart and gap >= Raids.Arena.enemyGap
+		end
+	end
+	if firstSpot == nil then
+		firstSpot = spots[1]
+	elseif spots[1][1] ~= firstSpot[1] then
+		varied = true
+	end
+end
+check("random spots inside the field edge", inside, true)
+check("random spots apart", apart, true)
+check("random spots clear of arrival and exit", clear, true)
+check("random spots change between waves", varied, true)
 
 if failures == 0 then
 	print("OK: all checks passed")
