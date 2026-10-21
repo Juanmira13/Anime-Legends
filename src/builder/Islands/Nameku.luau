@@ -51,7 +51,15 @@ local function domeHouse(ground: Vector3, size: number, facing: Vector3, t: numb
 	local right = Vector3.new(-front.Z, 0, front.X)
 	-- Door: dark arch facing the path.
 	local doorPosition, doorNormal = onSphere(center, radius, front, math.rad(14))
-	Parts.cylinder(size * 0.24, 0.8, doorPosition - Vector3.new(0, size * 0.02, 0), doorNormal, WINDOW, model, { shadow = false })
+	Parts.cylinder(
+		size * 0.24,
+		0.8,
+		doorPosition - Vector3.new(0, size * 0.02, 0),
+		doorNormal,
+		WINDOW,
+		model,
+		{ shadow = false }
+	)
 	-- Round windows around the dome.
 	for index = 1, 5 do
 		local angle = math.rad(-130 + index * 52)
@@ -64,7 +72,14 @@ local function domeHouse(ground: Vector3, size: number, facing: Vector3, t: numb
 	end
 	-- Spire with a small ball on top.
 	local top = center + Vector3.new(0, radius, 0)
-	Parts.column(size * 0.08, size * 0.18, CFrame.new(top - Vector3.new(0, 0.5, 0)), DOME_TRIM, model, { shadow = false })
+	Parts.column(
+		size * 0.08,
+		size * 0.18,
+		CFrame.new(top - Vector3.new(0, 0.5, 0)),
+		DOME_TRIM,
+		model,
+		{ shadow = false }
+	)
 	Parts.ball(size * 0.12, top + Vector3.new(0, size * 0.2, 0), DOME, model, { shadow = false })
 	-- Smaller annex dome on one side.
 	if t > 0.4 then
@@ -83,7 +98,14 @@ local function spaceship(ground: Vector3, towardBoss: Vector3, parent: Instance)
 
 	Parts.ball(diameter, center, SHIP, model, { collide = true })
 	Parts.disc(diameter * 1.14, 2.6, center, SHIP_DARK, model, { collide = true })
-	Parts.disc(diameter * 1.18, 0.8, center + Vector3.new(0, 1.6, 0), SHIP_GLOW, model, { material = Enum.Material.Neon, shadow = false })
+	Parts.disc(
+		diameter * 1.18,
+		0.8,
+		center + Vector3.new(0, 1.6, 0),
+		SHIP_GLOW,
+		model,
+		{ material = Enum.Material.Neon, shadow = false }
+	)
 
 	-- Row of glowing windows above the ring.
 	for index = 0, 17 do
@@ -118,10 +140,23 @@ local function spaceship(ground: Vector3, towardBoss: Vector3, parent: Instance)
 	local rampTop = doorPosition + front * 1 - Vector3.new(0, 4, 0)
 	local rampBottom = ground + front * (radius + 16) + Vector3.new(0, 0.4, 0)
 	local length = (rampBottom - rampTop).Magnitude
-	Parts.block(Vector3.new(9, 0.8, length), CFrame.lookAt((rampTop + rampBottom) / 2, rampBottom), SHIP_DARK, model, { collide = true })
+	Parts.block(
+		Vector3.new(9, 0.8, length),
+		CFrame.lookAt((rampTop + rampBottom) / 2, rampBottom),
+		SHIP_DARK,
+		model,
+		{ collide = true }
+	)
 	for _, side in { -1, 1 } do
 		local offset = Vector3.new(-front.Z, 0, front.X) * side * 4.8
-		Parts.beam(rampTop + offset + Vector3.new(0, 0.8, 0), rampBottom + offset + Vector3.new(0, 0.8, 0), 0.6, SHIP_GLOW, model, { material = Enum.Material.Neon, shadow = false })
+		Parts.beam(
+			rampTop + offset + Vector3.new(0, 0.8, 0),
+			rampBottom + offset + Vector3.new(0, 0.8, 0),
+			0.6,
+			SHIP_GLOW,
+			model,
+			{ material = Enum.Material.Neon, shadow = false }
+		)
 	end
 end
 
@@ -129,8 +164,21 @@ end
 local function crystalPylon(ground: Vector3, accent: Color3, withLight: boolean, parent: Instance)
 	local model = Parts.model("Pylon", parent)
 	Parts.column(3.4, 1, CFrame.new(ground), STONE, model, { shadow = false })
-	Parts.column(2.2, 4.5, CFrame.new(ground + Vector3.new(0, 1, 0)), Parts.vary(STONE, 0.15, 0.3), model, { shadow = false })
-	local crystal = Parts.block(Vector3.new(1.6, 3.2, 1.6), CFrame.new(ground + Vector3.new(0, 7.4, 0)) * CFrame.Angles(math.rad(45), math.rad(45), 0), accent, model, { material = Enum.Material.Neon, shadow = false })
+	Parts.column(
+		2.2,
+		4.5,
+		CFrame.new(ground + Vector3.new(0, 1, 0)),
+		Parts.vary(STONE, 0.15, 0.3),
+		model,
+		{ shadow = false }
+	)
+	local crystal = Parts.block(
+		Vector3.new(1.6, 3.2, 1.6),
+		CFrame.new(ground + Vector3.new(0, 7.4, 0)) * CFrame.Angles(math.rad(45), math.rad(45), 0),
+		accent,
+		model,
+		{ material = Enum.Material.Neon, shadow = false }
+	)
 	if withLight then
 		Parts.light(crystal, accent, 14, 1.4)
 	end
@@ -144,9 +192,11 @@ local function decorate(context: IslandBuilder.Context)
 	local landmarks = Parts.folder("Landmarks", decor)
 
 	-- Trees across the open meadows.
-	for _, point in Scatter.inCircle(rng, 0, 0, layout.radius, 150, 14, function(x, z)
-		return context.isFree(x, z, 7)
-	end) do
+	for _, point in
+		Scatter.inCircle(rng, 0, 0, layout.radius, 150, 14, function(x, z)
+			return context.isFree(x, z, 7)
+		end)
+	do
 		Nature.roundTree(context.ground(point.x, point.z), Rng.range(rng, 16, 30), Rng.next(rng), TREE, nature)
 	end
 
@@ -171,14 +221,28 @@ local function decorate(context: IslandBuilder.Context)
 				local s = step / steps
 				local x, z = a[1] + dx * s, a[2] + dz * s
 				for _, side in { -1, 1 } do
-					local stoneX, stoneZ = x + nx * side * (path.width / 2 + 1.2), z + nz * side * (path.width / 2 + 1.2)
+					local stoneX, stoneZ =
+						x + nx * side * (path.width / 2 + 1.2), z + nz * side * (path.width / 2 + 1.2)
 					if context.isFree(stoneX, stoneZ, 0.5) then
-						Nature.rock(context.ground(stoneX, stoneZ), Rng.range(rng, 1.2, 1.8), Rng.next(rng), STONE, nature)
+						Nature.rock(
+							context.ground(stoneX, stoneZ),
+							Rng.range(rng, 1.2, 1.8),
+							Rng.next(rng),
+							STONE,
+							nature
+						)
 					end
 					if (step + (if side > 0 then 1 else 0)) % 2 == 0 then
-						local bushX, bushZ = x + nx * side * (path.width / 2 + 4.5), z + nz * side * (path.width / 2 + 4.5)
+						local bushX, bushZ =
+							x + nx * side * (path.width / 2 + 4.5), z + nz * side * (path.width / 2 + 4.5)
 						if context.isFree(bushX, bushZ, 2) then
-							Nature.bush(context.ground(bushX, bushZ), Rng.range(rng, 3, 5), Rng.next(rng), BUSHES, nature)
+							Nature.bush(
+								context.ground(bushX, bushZ),
+								Rng.range(rng, 3, 5),
+								Rng.next(rng),
+								BUSHES,
+								nature
+							)
 						end
 					end
 				end
@@ -187,14 +251,18 @@ local function decorate(context: IslandBuilder.Context)
 	end
 
 	-- Rocks and flowers.
-	for _, point in Scatter.inCircle(rng, 0, 0, layout.radius, 40, 18, function(x, z)
-		return context.isFree(x, z, 4)
-	end) do
+	for _, point in
+		Scatter.inCircle(rng, 0, 0, layout.radius, 40, 18, function(x, z)
+			return context.isFree(x, z, 4)
+		end)
+	do
 		Nature.rock(context.ground(point.x, point.z), Rng.range(rng, 3, 7), Rng.next(rng), ROCK, nature)
 	end
-	for _, point in Scatter.inCircle(rng, 0, 0, layout.radius, 130, 9, function(x, z)
-		return context.isFree(x, z, 3)
-	end) do
+	for _, point in
+		Scatter.inCircle(rng, 0, 0, layout.radius, 130, 9, function(x, z)
+			return context.isFree(x, z, 3)
+		end)
+	do
 		Nature.flowers(context.ground(point.x, point.z), Rng.next(rng), FLOWERS, nature)
 	end
 
@@ -211,7 +279,14 @@ local function decorate(context: IslandBuilder.Context)
 
 	-- Village of domes around the medium zone and near the plaza.
 	local medium = layout.zones[2]
-	local function placeHouses(cx: number, cz: number, ringRadius: number, count: number, sizeMin: number, sizeMax: number)
+	local function placeHouses(
+		cx: number,
+		cz: number,
+		ringRadius: number,
+		count: number,
+		sizeMin: number,
+		sizeMax: number
+	)
 		for index = 1, count do
 			local angle = index / count * 2 * math.pi + Rng.range(rng, -0.2, 0.2)
 			local distance = ringRadius + Rng.range(rng, -4, 8)

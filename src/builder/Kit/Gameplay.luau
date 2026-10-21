@@ -72,8 +72,21 @@ function Gameplay.gacha(islandId: string, x: number, ground: number, z: number, 
 	local base = CFrame.new(x, ground, z)
 	Parts.column(12, 1.2, base, STONE, model, { collide = true })
 	Parts.column(8, 4, base * CFrame.new(0, 1.2, 0), Parts.vary(STONE, 0.2, 0.3), model, { collide = true })
-	Parts.column(9.5, 0.8, base * CFrame.new(0, 5.2, 0), accent, model, { material = Enum.Material.Neon, shadow = false })
-	local orb = Parts.ball(6, Vector3.new(x, ground + 9.2, z), accent, model, { material = Enum.Material.Neon, transparency = 0.15, name = `GachaStand_{islandId}` })
+	Parts.column(
+		9.5,
+		0.8,
+		base * CFrame.new(0, 5.2, 0),
+		accent,
+		model,
+		{ material = Enum.Material.Neon, shadow = false }
+	)
+	local orb = Parts.ball(
+		6,
+		Vector3.new(x, ground + 9.2, z),
+		accent,
+		model,
+		{ material = Enum.Material.Neon, transparency = 0.15, name = `GachaStand_{islandId}` }
+	)
 	orb.CanQuery = true -- the prompt lives here
 	Parts.light(orb, accent, 18, 2)
 	tag(orb, "GachaStand", { Island = islandId })
@@ -81,29 +94,78 @@ function Gameplay.gacha(islandId: string, x: number, ground: number, z: number, 
 end
 
 -- Portal: glowing pad (tagged) under a column of light, framed by an arch.
-local function portal(name: string, tagName: string, attributes: { [string]: any }, title: string, x: number, ground: number, z: number, facing: number, color: Color3, parent: Instance)
+local function portal(
+	name: string,
+	tagName: string,
+	attributes: { [string]: any },
+	title: string,
+	x: number,
+	ground: number,
+	z: number,
+	facing: number,
+	color: Color3,
+	parent: Instance
+)
 	local model = Parts.model(name, parent)
 	local base = CFrame.new(x, ground, z) * CFrame.Angles(0, facing, 0)
-	local pad = Parts.disc(11, 0.8, Vector3.new(x, ground + 0.4, z), color, model, { material = Enum.Material.Neon, shadow = false, name = name })
+	local pad = Parts.disc(
+		11,
+		0.8,
+		Vector3.new(x, ground + 0.4, z),
+		color,
+		model,
+		{ material = Enum.Material.Neon, shadow = false, name = name }
+	)
 	pad.CanQuery = true
 	tag(pad, tagName, attributes)
 	Parts.disc(13, 0.6, Vector3.new(x, ground + 0.2, z), STONE, model, { collide = true })
 
-	local beam = Parts.column(7, 38, CFrame.new(x, ground + 0.8, z), color, model, { material = Enum.Material.Neon, transparency = 0.55, shadow = false, name = "LightBeam" })
+	local beam = Parts.column(
+		7,
+		38,
+		CFrame.new(x, ground + 0.8, z),
+		color,
+		model,
+		{ material = Enum.Material.Neon, transparency = 0.55, shadow = false, name = "LightBeam" }
+	)
 	Parts.light(beam, color, 24, 2.5)
 
 	for _, side in { -1, 1 } do
 		Parts.block(Vector3.new(2.4, 16, 2.4), base * CFrame.new(side * 7.5, 8, 0), STONE, model, { collide = true })
-		Parts.block(Vector3.new(3.2, 1.2, 3.2), base * CFrame.new(side * 7.5, 16.6, 0), color, model, { material = Enum.Material.Neon, shadow = false })
+		Parts.block(
+			Vector3.new(3.2, 1.2, 3.2),
+			base * CFrame.new(side * 7.5, 16.6, 0),
+			color,
+			model,
+			{ material = Enum.Material.Neon, shadow = false }
+		)
 	end
 	local top = Parts.block(Vector3.new(19, 2, 3), base * CFrame.new(0, 17.6, 0), STONE, model, { collide = true })
 	label(top, title, color, 4, 120, 16)
 end
 
-function Gameplay.islandPortal(targetIslandId: string, x: number, ground: number, z: number, facing: number, parent: Instance)
+function Gameplay.islandPortal(
+	targetIslandId: string,
+	x: number,
+	ground: number,
+	z: number,
+	facing: number,
+	parent: Instance
+)
 	local island = Islands.get(targetIslandId)
 	local color = Parts.rgb(World.AccentColors[targetIslandId])
-	portal(`Portal_{targetIslandId}`, "Portal", { TargetIsland = targetIslandId }, island.displayName, x, ground, z, facing, color, parent)
+	portal(
+		`Portal_{targetIslandId}`,
+		"Portal",
+		{ TargetIsland = targetIslandId },
+		island.displayName,
+		x,
+		ground,
+		z,
+		facing,
+		color,
+		parent
+	)
 end
 
 function Gameplay.raidPortal(x: number, ground: number, z: number, facing: number, parent: Instance)
@@ -111,10 +173,24 @@ function Gameplay.raidPortal(x: number, ground: number, z: number, facing: numbe
 end
 
 -- Raid pad: altar platform the player stands on to queue.
-function Gameplay.raidPad(difficultyId: string, title: string, x: number, ground: number, z: number, color: Color3, parent: Instance)
+function Gameplay.raidPad(
+	difficultyId: string,
+	title: string,
+	x: number,
+	ground: number,
+	z: number,
+	color: Color3,
+	parent: Instance
+)
 	local model = Parts.model(`RaidPad_{difficultyId}`, parent)
 	Parts.column(16, 1.5, CFrame.new(x, ground, z), STONE, model, { collide = true })
-	local pad = Parts.block(Vector3.new(11, 1, 11), CFrame.new(x, ground + 1.8, z), color, model, { material = Enum.Material.Neon, collide = true, shadow = false, name = `RaidPad_{difficultyId}` })
+	local pad = Parts.block(
+		Vector3.new(11, 1, 11),
+		CFrame.new(x, ground + 1.8, z),
+		color,
+		model,
+		{ material = Enum.Material.Neon, collide = true, shadow = false, name = `RaidPad_{difficultyId}` }
+	)
 	pad.CanQuery = true
 	tag(pad, "RaidPad", { Difficulty = difficultyId })
 	Parts.light(pad, color, 20, 2)
@@ -126,13 +202,28 @@ function Gameplay.enemySpawn(islandId: string, rankId: string, x: number, ground
 end
 
 -- Wooden sign with the zone name and its rank, facing `facing` (yaw).
-function Gameplay.zoneSign(title: string, rankId: string, x: number, ground: number, z: number, facing: number, accent: Color3, parent: Instance)
+function Gameplay.zoneSign(
+	title: string,
+	rankId: string,
+	x: number,
+	ground: number,
+	z: number,
+	facing: number,
+	accent: Color3,
+	parent: Instance
+)
 	local model = Parts.model(`Sign_{rankId}`, parent)
 	local base = CFrame.new(x, ground, z) * CFrame.Angles(0, facing, 0)
 	for _, side in { -1, 1 } do
 		Parts.block(Vector3.new(0.8, 7, 0.8), base * CFrame.new(side * 4.2, 3.5, 0), WOOD, model, { shadow = false })
 	end
-	local board = Parts.block(Vector3.new(10, 3.6, 0.6), base * CFrame.new(0, 6, 0), Parts.vary(WOOD, 0.3, 0.8), model, { name = "Board" })
+	local board = Parts.block(
+		Vector3.new(10, 3.6, 0.6),
+		base * CFrame.new(0, 6, 0),
+		Parts.vary(WOOD, 0.3, 0.8),
+		model,
+		{ name = "Board" }
+	)
 	Parts.block(Vector3.new(10.4, 0.5, 0.8), base * CFrame.new(0, 8, 0), accent, model, { shadow = false })
 
 	for _, face in { Enum.NormalId.Front, Enum.NormalId.Back } do

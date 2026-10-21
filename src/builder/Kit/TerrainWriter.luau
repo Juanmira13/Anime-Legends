@@ -47,7 +47,16 @@ local function landHalfSize(layout: Shape.Layout): number
 	return math.min(World.AreaSize / 2, math.ceil(reach / chunkSize) * chunkSize)
 end
 
-local function writeChunk(terrain: Terrain, layout: Shape.Layout, cx: number, cz: number, x0: number, z0: number, yMin: number, yMax: number)
+local function writeChunk(
+	terrain: Terrain,
+	layout: Shape.Layout,
+	cx: number,
+	cz: number,
+	x0: number,
+	z0: number,
+	yMin: number,
+	yMax: number
+)
 	local seaLevel = World.SeaLevel
 	local sizeY = (yMax - yMin) // VOXEL
 	local solidMaterial, solidOccupancy, liquidOccupancy = {}, {}, {}
@@ -116,14 +125,26 @@ function TerrainWriter.writeIsland(layout: Shape.Layout, cx: number, cz: number,
 
 	-- Wipe whatever was here (previous builds), from below the sea floor up high.
 	local clearTop = math.max(400, yMax + 40)
-	terrain:FillBlock(CFrame.new(cx, (yMin + clearTop) / 2, cz), Vector3.new(World.AreaSize, clearTop - yMin, World.AreaSize), Enum.Material.Air)
+	terrain:FillBlock(
+		CFrame.new(cx, (yMin + clearTop) / 2, cz),
+		Vector3.new(World.AreaSize, clearTop - yMin, World.AreaSize),
+		Enum.Material.Air
+	)
 
 	-- Open sea around the land square: water down to the sea floor.
 	local band = half - landHalf
 	if band > 0 then
 		local function sea(x: number, z: number, sizeX: number, sizeZ: number)
-			terrain:FillBlock(CFrame.new(cx + x, (seaFloor + seaLevel) / 2, cz + z), Vector3.new(sizeX, seaLevel - seaFloor, sizeZ), Enum.Material.Water)
-			terrain:FillBlock(CFrame.new(cx + x, seaFloor - VOXEL / 2, cz + z), Vector3.new(sizeX, VOXEL, sizeZ), material(layout.materials.seabed))
+			terrain:FillBlock(
+				CFrame.new(cx + x, (seaFloor + seaLevel) / 2, cz + z),
+				Vector3.new(sizeX, seaLevel - seaFloor, sizeZ),
+				Enum.Material.Water
+			)
+			terrain:FillBlock(
+				CFrame.new(cx + x, seaFloor - VOXEL / 2, cz + z),
+				Vector3.new(sizeX, VOXEL, sizeZ),
+				material(layout.materials.seabed)
+			)
 		end
 		local middle = landHalf + band / 2
 		sea(0, -middle, World.AreaSize, band)

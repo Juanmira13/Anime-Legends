@@ -27,7 +27,7 @@ local function getBanner(): (TextLabel, UIStroke)
 
 	local label = Instance.new("TextLabel")
 	label.AnchorPoint = Vector2.new(0.5, 0)
-	label.Position = UDim2.new(0.5, 0, 0.12, 0)
+	label.Position = UDim2.fromScale(0.5, 0.12)
 	label.Size = UDim2.fromOffset(420, 56)
 	label.BackgroundColor3 = Theme.Background
 	label.BackgroundTransparency = 0.15

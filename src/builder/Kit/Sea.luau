@@ -23,11 +23,17 @@ local function surface(cx: number, cz: number, parent: Instance)
 	local seaConfig = World.Sea
 	-- Transparent carrier part; only its texture shows.
 	local size = math.min(World.AreaSize, MAX_PART_SIZE)
-	local part = Parts.block(Vector3.new(size, 0.2, size), CFrame.new(cx, World.SeaLevel + SURFACE_HEIGHT, cz), Color3.new(1, 1, 1), parent, {
-		transparency = 1,
-		shadow = false,
-		name = "SeaSurface",
-	})
+	local part = Parts.block(
+		Vector3.new(size, 0.2, size),
+		CFrame.new(cx, World.SeaLevel + SURFACE_HEIGHT, cz),
+		Color3.new(1, 1, 1),
+		parent,
+		{
+			transparency = 1,
+			shadow = false,
+			name = "SeaSurface",
+		}
+	)
 	part.Locked = true -- no Studio hover outline or accidental selection when clicking the sea
 	if seaConfig.textureId ~= "" then
 		local texture = Instance.new("Texture")
@@ -42,7 +48,14 @@ local function surface(cx: number, cz: number, parent: Instance)
 end
 
 -- Foam ring around a shoreline given as radius(angle) around (ox, oz).
-local function foamRing(shoreRadius: (number) -> number, ox: number, oz: number, cx: number, cz: number, parent: Instance)
+local function foamRing(
+	shoreRadius: (number) -> number,
+	ox: number,
+	oz: number,
+	cx: number,
+	cz: number,
+	parent: Instance
+)
 	local seaConfig = World.Sea
 	local averageRadius = shoreRadius(0) + seaConfig.foamOffset
 	local segments = math.max(12, math.floor(2 * math.pi * averageRadius / FOAM_SEGMENT))
@@ -50,8 +63,10 @@ local function foamRing(shoreRadius: (number) -> number, ox: number, oz: number,
 		local a0 = index / segments * 2 * math.pi
 		local a1 = (index + 1) / segments * 2 * math.pi
 		local r0, r1 = shoreRadius(a0) + seaConfig.foamOffset, shoreRadius(a1) + seaConfig.foamOffset
-		local p0 = Vector3.new(cx + ox + math.cos(a0) * r0, World.SeaLevel + SURFACE_HEIGHT, cz + oz + math.sin(a0) * r0)
-		local p1 = Vector3.new(cx + ox + math.cos(a1) * r1, World.SeaLevel + SURFACE_HEIGHT, cz + oz + math.sin(a1) * r1)
+		local p0 =
+			Vector3.new(cx + ox + math.cos(a0) * r0, World.SeaLevel + SURFACE_HEIGHT, cz + oz + math.sin(a0) * r0)
+		local p1 =
+			Vector3.new(cx + ox + math.cos(a1) * r1, World.SeaLevel + SURFACE_HEIGHT, cz + oz + math.sin(a1) * r1)
 		local length = (p1 - p0).Magnitude * 1.15
 		local cframe = CFrame.lookAt((p0 + p1) / 2, p1)
 		local foam = Parts.block(Vector3.new(seaConfig.foamWidth, 0.2, length), cframe, FOAM_COLOR, parent, {
@@ -88,7 +103,11 @@ function Sea.buildOcean(parent: Instance, onStatus: (string) -> ())
 	for x = minX - tiles * size, maxX + tiles * size, size do
 		for z = -tiles * size, tiles * size, size do
 			if not islandSquares[`{x},{z}`] then
-				terrain:FillBlock(CFrame.new(x, (floor + World.SeaLevel) / 2, z), Vector3.new(size, World.SeaLevel - floor, size), Enum.Material.Water)
+				terrain:FillBlock(
+					CFrame.new(x, (floor + World.SeaLevel) / 2, z),
+					Vector3.new(size, World.SeaLevel - floor, size),
+					Enum.Material.Water
+				)
 				terrain:FillBlock(CFrame.new(x, floor - 2, z), Vector3.new(size, 4, size), Enum.Material.Mud)
 				surface(x, z, folder)
 			end

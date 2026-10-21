@@ -68,10 +68,33 @@ local function townHouse(ground: Vector3, yaw: number, t: number, parent: Instan
 	for _, x in { -width / 2 - 0.4, 0, width / 2 + 0.4 } do
 		Parts.block(Vector3.new(0.7, 6.5, depth + 1), base * CFrame.new(x, 9.25, 0), TIMBER, model, { shadow = false })
 	end
-	Buildings.windows(base * CFrame.new(0, 6, 0), width + 0.8, depth + 0.8, 3.4, 2, Vector2.new(1.8, 2.2), WINDOW, model)
+	Buildings.windows(
+		base * CFrame.new(0, 6, 0),
+		width + 0.8,
+		depth + 0.8,
+		3.4,
+		2,
+		Vector2.new(1.8, 2.2),
+		WINDOW,
+		model
+	)
 	Buildings.door(base, depth, 2.6, 4.6, TIMBER, model)
-	Buildings.gableRoof(base * CFrame.new(0, 12.5, 0), width + 0.8, depth + 0.8, depth * 0.85, pick(ROOFS, (t * 3.1) % 1), model, 1)
-	Parts.block(Vector3.new(1.8, 6, 1.8), base * CFrame.new(-width * 0.3, 15, -depth * 0.1), HOUSE_STONE, model, { shadow = false })
+	Buildings.gableRoof(
+		base * CFrame.new(0, 12.5, 0),
+		width + 0.8,
+		depth + 0.8,
+		depth * 0.85,
+		pick(ROOFS, (t * 3.1) % 1),
+		model,
+		1
+	)
+	Parts.block(
+		Vector3.new(1.8, 6, 1.8),
+		base * CFrame.new(-width * 0.3, 15, -depth * 0.1),
+		HOUSE_STONE,
+		model,
+		{ shadow = false }
+	)
 end
 
 local function church(ground: Vector3, yaw: number, parent: Instance)
@@ -79,22 +102,48 @@ local function church(ground: Vector3, yaw: number, parent: Instance)
 	local base = CFrame.new(ground) * CFrame.Angles(0, yaw, 0)
 	Buildings.foundation(base, 22, 34, HOUSE_STONE, model)
 	Buildings.walls(base, 22, 34, 18, rgb({ 214, 208, 196 }), model)
-	Buildings.gableRoof(base * CFrame.new(0, 18, 0) * CFrame.Angles(0, math.pi / 2, 0), 34, 22, 12, rgb({ 88, 92, 104 }), model, 1)
+	Buildings.gableRoof(
+		base * CFrame.new(0, 18, 0) * CFrame.Angles(0, math.pi / 2, 0),
+		34,
+		22,
+		12,
+		rgb({ 88, 92, 104 }),
+		model,
+		1
+	)
 	local tower = base * CFrame.new(0, 0, -21)
 	Buildings.foundation(tower, 10, 10, HOUSE_STONE, model)
 	Buildings.walls(tower, 10, 10, 40, rgb({ 204, 198, 186 }), model)
 	Parts.block(Vector3.new(4, 6, 10.4), tower * CFrame.new(0, 33, 0), IRON, model, { shadow = false })
 	Parts.block(Vector3.new(10.4, 6, 4), tower * CFrame.new(0, 33, 0), IRON, model, { shadow = false })
 	Buildings.coneRoof(tower * CFrame.new(0, 40, 0), 12, 22, rgb({ 88, 92, 104 }), model, 8)
-	Parts.block(Vector3.new(0.6, 5, 0.6), tower * CFrame.new(0, 64, 0), rgb({ 210, 180, 90 }), model, { shadow = false })
-	Parts.block(Vector3.new(3, 0.6, 0.6), tower * CFrame.new(0, 65, 0), rgb({ 210, 180, 90 }), model, { shadow = false })
+	Parts.block(
+		Vector3.new(0.6, 5, 0.6),
+		tower * CFrame.new(0, 64, 0),
+		rgb({ 210, 180, 90 }),
+		model,
+		{ shadow = false }
+	)
+	Parts.block(
+		Vector3.new(3, 0.6, 0.6),
+		tower * CFrame.new(0, 65, 0),
+		rgb({ 210, 180, 90 }),
+		model,
+		{ shadow = false }
+	)
 	Buildings.windows(base, 22, 34, 10, 3, Vector2.new(2.4, 6), rgb({ 120, 150, 210 }), model)
 	Buildings.door(tower, 10, 4, 8, TIMBER, model)
 end
 
 local function cannon(top: Vector3, outward: Vector3, parent: Instance)
 	local model = Parts.model("Cannon", parent)
-	Parts.block(Vector3.new(4, 1.6, 5), CFrame.lookAt(top + Vector3.new(0, 0.8, 0), top + Vector3.new(0, 0.8, 0) + outward), TIMBER, model, { shadow = false })
+	Parts.block(
+		Vector3.new(4, 1.6, 5),
+		CFrame.lookAt(top + Vector3.new(0, 0.8, 0), top + Vector3.new(0, 0.8, 0) + outward),
+		TIMBER,
+		model,
+		{ shadow = false }
+	)
 	Parts.cylinder(1.8, 7, top + Vector3.new(0, 2.4, 0) + outward * 2, outward, IRON, model, { shadow = false })
 end
 
@@ -128,22 +177,55 @@ local function ringWall(context: IslandBuilder.Context, gateAngles: { number }, 
 			local height = segmentTop - bottom
 			local position = Vector3.new(ground.X, bottom + height / 2, ground.Z)
 			local frame = CFrame.lookAt(position, position + Vector3.new(sample.dx, 0, sample.dz))
-			Parts.block(Vector3.new(12, height, 10.6), frame, Parts.vary(WALL_STONE, 0.08, (index % 5) / 5), model, stone)
+			Parts.block(
+				Vector3.new(12, height, 10.6),
+				frame,
+				Parts.vary(WALL_STONE, 0.08, (index % 5) / 5),
+				model,
+				stone
+			)
 			-- Darker stone courses every 14 studs.
 			for y = bottom + 14, segmentTop - 4, 14 do
-				Parts.block(Vector3.new(12.05, 1.2, 10.9), CFrame.new(position.X, y, position.Z) * frame.Rotation, Parts.vary(WALL_STONE, 0.25, 0.1), model, { shadow = false })
+				Parts.block(
+					Vector3.new(12.05, 1.2, 10.9),
+					CFrame.new(position.X, y, position.Z) * frame.Rotation,
+					Parts.vary(WALL_STONE, 0.25, 0.1),
+					model,
+					{ shadow = false }
+				)
 			end
 			if segmentTop == top then
 				local outward = Vector3.new(sample.x - WALL_X, 0, sample.z - WALL_Z).Unit
 				local crown = CFrame.new(position.X, top, position.Z) * frame.Rotation
-				Parts.block(Vector3.new(12.4, 1.4, 11.6), crown * CFrame.new(0, 0.7, 0), Parts.vary(WALL_STONE, 0.15, 0.8), model, { shadow = false })
+				Parts.block(
+					Vector3.new(12.4, 1.4, 11.6),
+					crown * CFrame.new(0, 0.7, 0),
+					Parts.vary(WALL_STONE, 0.15, 0.8),
+					model,
+					{ shadow = false }
+				)
 				if index % 2 == 0 then
-					Parts.block(Vector3.new(2.4, 3.4, 5), crown * CFrame.new(-5, 3.1, 0), WALL_STONE, model, { shadow = false })
+					Parts.block(
+						Vector3.new(2.4, 3.4, 5),
+						crown * CFrame.new(-5, 3.1, 0),
+						WALL_STONE,
+						model,
+						{ shadow = false }
+					)
 				end
 				if index % 4 == 0 then
 					-- Buttress on the outer face.
 					local foot = Vector3.new(ground.X, bottom, ground.Z) + outward * 8
-					Parts.block(Vector3.new(5, top - bottom - 6, 6), CFrame.lookAt((foot + Vector3.new(ground.X, top - 6, ground.Z) + outward * 5.5) / 2, (foot + Vector3.new(ground.X, top - 6, ground.Z) + outward * 5.5) / 2 + outward) * CFrame.Angles(math.rad(-4), 0, 0), Parts.vary(WALL_STONE, 0.18, 0.4), model, stone)
+					Parts.block(
+						Vector3.new(5, top - bottom - 6, 6),
+						CFrame.lookAt(
+							(foot + Vector3.new(ground.X, top - 6, ground.Z) + outward * 5.5) / 2,
+							(foot + Vector3.new(ground.X, top - 6, ground.Z) + outward * 5.5) / 2 + outward
+						) * CFrame.Angles(math.rad(-4), 0, 0),
+						Parts.vary(WALL_STONE, 0.18, 0.4),
+						model,
+						stone
+					)
 				end
 				if index % 9 == 0 then
 					cannon(crown.Position + Vector3.new(0, 1.4, 0), outward, model)
@@ -159,14 +241,40 @@ local function ringWall(context: IslandBuilder.Context, gateAngles: { number }, 
 		local side = Vector3.new(-outward.Z, 0, outward.X)
 		local frame = CFrame.lookAt(ground, ground + side)
 		local opening = ground.Y + 34
-		Parts.block(Vector3.new(12, top - opening, 30), CFrame.new(ground.X, (opening + top) / 2, ground.Z) * frame.Rotation, Parts.vary(WALL_STONE, 0.1, 0.6), model, stone)
+		Parts.block(
+			Vector3.new(12, top - opening, 30),
+			CFrame.new(ground.X, (opening + top) / 2, ground.Z) * frame.Rotation,
+			Parts.vary(WALL_STONE, 0.1, 0.6),
+			model,
+			stone
+		)
 		for _, offset in { -1, 1 } do
 			local towerTop = top + 8
-			Parts.block(Vector3.new(18, towerTop - ground.Y + 8, 10), CFrame.new(ground.X, (ground.Y - 8 + towerTop) / 2, ground.Z) * frame.Rotation * CFrame.new(0, 0, offset * 19), Parts.vary(WALL_STONE, 0.12, 0.2), model, stone)
-			Parts.block(Vector3.new(19, 2, 11), CFrame.new(ground.X, towerTop + 1, ground.Z) * frame.Rotation * CFrame.new(0, 0, offset * 19), Parts.vary(WALL_STONE, 0.2, 0.7), model, { shadow = false })
+			Parts.block(
+				Vector3.new(18, towerTop - ground.Y + 8, 10),
+				CFrame.new(ground.X, (ground.Y - 8 + towerTop) / 2, ground.Z)
+					* frame.Rotation
+					* CFrame.new(0, 0, offset * 19),
+				Parts.vary(WALL_STONE, 0.12, 0.2),
+				model,
+				stone
+			)
+			Parts.block(
+				Vector3.new(19, 2, 11),
+				CFrame.new(ground.X, towerTop + 1, ground.Z) * frame.Rotation * CFrame.new(0, 0, offset * 19),
+				Parts.vary(WALL_STONE, 0.2, 0.7),
+				model,
+				{ shadow = false }
+			)
 		end
 		Parts.block(Vector3.new(2, 4, 26), frame * CFrame.new(-6.4, 32, 0), IRON, model, { shadow = false })
-		Parts.block(Vector3.new(0.4, 14, 9), frame * CFrame.new(-6.6, 22, 0), rgb({ 70, 90, 130 }), model, { shadow = false, name = "Banner" })
+		Parts.block(
+			Vector3.new(0.4, 14, 9),
+			frame * CFrame.new(-6.6, 22, 0),
+			rgb({ 70, 90, 130 }),
+			model,
+			{ shadow = false, name = "Banner" }
+		)
 	end
 end
 
@@ -178,10 +286,24 @@ local function rubble(context: IslandBuilder.Context, breachAngle: number, rng: 
 		local x, z = WALL_X + math.cos(angle) * distance, WALL_Z + math.sin(angle) * distance
 		local size = Rng.range(rng, 4, 13)
 		local ground = context.ground(x, z)
-		Parts.block(Vector3.new(size, size * 0.7, size * 0.9), CFrame.new(ground + Vector3.new(0, size * 0.2, 0)) * CFrame.Angles(Rng.range(rng, -0.6, 0.6), Rng.range(rng, 0, 6.28), Rng.range(rng, -0.6, 0.6)), Parts.vary(WALL_STONE, 0.2, Rng.next(rng)), model, { collide = size > 7 })
+		Parts.block(
+			Vector3.new(size, size * 0.7, size * 0.9),
+			CFrame.new(ground + Vector3.new(0, size * 0.2, 0))
+				* CFrame.Angles(Rng.range(rng, -0.6, 0.6), Rng.range(rng, 0, 6.28), Rng.range(rng, -0.6, 0.6)),
+			Parts.vary(WALL_STONE, 0.2, Rng.next(rng)),
+			model,
+			{ collide = size > 7 }
+		)
 	end
-	local center = context.ground(WALL_X + math.cos(breachAngle) * WALL_RADIUS, WALL_Z + math.sin(breachAngle) * WALL_RADIUS)
-	local anchor = Parts.block(Vector3.new(40, 2, 20), CFrame.new(center + Vector3.new(0, 2, 0)), WALL_STONE, model, { transparency = 1, shadow = false, name = "Dust" })
+	local center =
+		context.ground(WALL_X + math.cos(breachAngle) * WALL_RADIUS, WALL_Z + math.sin(breachAngle) * WALL_RADIUS)
+	local anchor = Parts.block(
+		Vector3.new(40, 2, 20),
+		CFrame.new(center + Vector3.new(0, 2, 0)),
+		WALL_STONE,
+		model,
+		{ transparency = 1, shadow = false, name = "Dust" }
+	)
 	local dust = Instance.new("ParticleEmitter")
 	dust.Texture = "rbxasset://textures/particles/smoke_main.dds"
 	dust.Color = ColorSequence.new(rgb({ 200, 190, 170 }))
@@ -201,7 +323,13 @@ local function cropField(context: IslandBuilder.Context, x: number, z: number, y
 		for column = -12, 12, 4 do
 			local offset = frame * Vector3.new(column, 0, row)
 			local ground = context.ground(x + offset.X, z + offset.Z)
-			Parts.ball(2.4, ground + Vector3.new(0, 0.8, 0), Parts.vary(CROP, 0.2, ((row + column) % 7) / 7), model, { shadow = false })
+			Parts.ball(
+				2.4,
+				ground + Vector3.new(0, 0.8, 0),
+				Parts.vary(CROP, 0.2, ((row + column) % 7) / 7),
+				model,
+				{ shadow = false }
+			)
 		end
 	end
 end
@@ -221,15 +349,16 @@ local function decorate(context: IslandBuilder.Context)
 	ringWall(context, { southGate, eastGate }, breach, landmarks)
 	rubble(context, breach, rng, landmarks)
 
-	local function insideWall(x: number, z: number, margin: number): boolean
-		return math.sqrt((x - WALL_X) ^ 2 + (z - WALL_Z) ^ 2) < WALL_RADIUS - margin
-	end
 	local function outsideWall(x: number, z: number, margin: number): boolean
 		return math.sqrt((x - WALL_X) ^ 2 + (z - WALL_Z) ^ 2) > WALL_RADIUS + margin
 	end
 
 	-- Town: houses packed inside the wall, a church near the square.
-	church(context.groundMin(medium.x + 20, medium.z - 82, 14), IslandBuilder.yawToward(medium.x + 20, medium.z - 82, medium.x, medium.z), landmarks)
+	church(
+		context.groundMin(medium.x + 20, medium.z - 82, 14),
+		IslandBuilder.yawToward(medium.x + 20, medium.z - 82, medium.x, medium.z),
+		landmarks
+	)
 	for ring = 46, WALL_RADIUS - 24, 26 do
 		local count = math.floor(2 * math.pi * ring / 17)
 		for index = 0, count - 1 do
@@ -260,10 +389,18 @@ local function decorate(context: IslandBuilder.Context)
 			cropField(context, field[1], field[2], field[3], town)
 		end
 	end
-	for _, point in Scatter.inCircle(rng, easy.x, easy.z, 120, 12, 14, function(x, z)
-		return context.isFree(x, z, 3)
-	end) do
-		Parts.ball(Rng.range(rng, 3, 5), context.ground(point.x, point.z) + Vector3.new(0, 1.2, 0), Parts.vary(HAY, 0.15, Rng.next(rng)), town, { shadow = false })
+	for _, point in
+		Scatter.inCircle(rng, easy.x, easy.z, 120, 12, 14, function(x, z)
+			return context.isFree(x, z, 3)
+		end)
+	do
+		Parts.ball(
+			Rng.range(rng, 3, 5),
+			context.ground(point.x, point.z) + Vector3.new(0, 1.2, 0),
+			Parts.vary(HAY, 0.15, Rng.next(rng)),
+			town,
+			{ shadow = false }
+		)
 	end
 
 	-- Giant forest on the eastern plateau.
@@ -277,14 +414,18 @@ local function decorate(context: IslandBuilder.Context)
 	end
 
 	-- Pines outside the wall, rocks on the north-west hills.
-	for _, point in Scatter.inCircle(rng, 0, 0, 440, 170, 15, function(x, z)
-		return outsideWall(x, z, 22) and context.isFree(x, z, 6) and Shape.height(layout, x, z) < 50
-	end) do
+	for _, point in
+		Scatter.inCircle(rng, 0, 0, 440, 170, 15, function(x, z)
+			return outsideWall(x, z, 22) and context.isFree(x, z, 6) and Shape.height(layout, x, z) < 50
+		end)
+	do
 		Nature.pineTree(context.ground(point.x, point.z), Rng.range(rng, 18, 32), Rng.next(rng), PINES, nature)
 	end
-	for _, point in Scatter.inCircle(rng, -250, -150, 180, 30, 20, function(x, z)
-		return Shape.height(layout, x, z) > 20 and Shape.pathInside(layout, x, z) < -4 and outsideWall(x, z, 10)
-	end) do
+	for _, point in
+		Scatter.inCircle(rng, -250, -150, 180, 30, 20, function(x, z)
+			return Shape.height(layout, x, z) > 20 and Shape.pathInside(layout, x, z) < -4 and outsideWall(x, z, 10)
+		end)
+	do
 		Nature.rock(context.ground(point.x, point.z), Rng.range(rng, 5, 10), Rng.next(rng), ROCK, nature)
 	end
 end

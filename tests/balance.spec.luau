@@ -59,8 +59,26 @@ for i, islandId in islandIds do
 end
 
 local inventoryCosts = {
-	10000, 15000, 23000, 34000, 51000, 76000, 110000, 170000, 260000, 380000,
-	580000, 860000, 1300000, 1900000, 2900000, 4400000, 6600000, 9900000, 15000000, 22000000,
+	10000,
+	15000,
+	23000,
+	34000,
+	51000,
+	76000,
+	110000,
+	170000,
+	260000,
+	380000,
+	580000,
+	860000,
+	1300000,
+	1900000,
+	2900000,
+	4400000,
+	6600000,
+	9900000,
+	15000000,
+	22000000,
 }
 check("max inventory upgrades", Formulas.maxInventoryUpgrades(), 20)
 check("inventory slots after 20", Formulas.inventorySlots(20), 250)
@@ -92,7 +110,11 @@ for difficultyId, row in raidHealth do
 	check(`raid {difficultyId} total gems`, totalGems, raidTotalGems[difficultyId])
 	for enemyTypeId, expected in row do
 		check(`raid health {difficultyId} {enemyTypeId}`, Formulas.raidEnemyHealth(difficultyId, enemyTypeId), expected)
-		check(`raid yen {difficultyId} {enemyTypeId}`, Formulas.raidEnemyYen(difficultyId, enemyTypeId), raidYen[difficultyId][enemyTypeId])
+		check(
+			`raid yen {difficultyId} {enemyTypeId}`,
+			Formulas.raidEnemyYen(difficultyId, enemyTypeId),
+			raidYen[difficultyId][enemyTypeId]
+		)
 	end
 end
 

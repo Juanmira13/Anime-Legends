@@ -29,8 +29,15 @@ function Nature.roundTree(ground: Vector3, height: number, t: number, palette: T
 	Parts.ball(canopy, top, leaf, model)
 	for index = 1, 3 do
 		local angle = t * 6.28 + index * 2.1
-		local offset = Vector3.new(math.cos(angle) * canopy * 0.38, -canopy * 0.12 + index * 0.3, math.sin(angle) * canopy * 0.38)
-		Parts.ball(canopy * (0.55 + 0.08 * index), top + offset, Parts.vary(leaf, 0.18, (t * 7 + index) % 1), model, { shadow = index == 1 })
+		local offset =
+			Vector3.new(math.cos(angle) * canopy * 0.38, -canopy * 0.12 + index * 0.3, math.sin(angle) * canopy * 0.38)
+		Parts.ball(
+			canopy * (0.55 + 0.08 * index),
+			top + offset,
+			Parts.vary(leaf, 0.18, (t * 7 + index) % 1),
+			model,
+			{ shadow = index == 1 }
+		)
 	end
 	return model
 end
@@ -39,7 +46,14 @@ end
 function Nature.pineTree(ground: Vector3, height: number, t: number, palette: TreePalette, parent: Instance): Model
 	local model = Parts.model("Pine", parent)
 	local base = CFrame.new(ground) * CFrame.Angles(0, t * 6.28, 0)
-	Parts.column(math.max(1.2, height * 0.08), height * 0.45, base * CFrame.new(0, -1, 0), palette.trunk, model, { collide = true })
+	Parts.column(
+		math.max(1.2, height * 0.08),
+		height * 0.45,
+		base * CFrame.new(0, -1, 0),
+		palette.trunk,
+		model,
+		{ collide = true }
+	)
 	local leaf = pick(palette.leaves, t)
 	for tier = 0, 2 do
 		local width = height * (0.55 - tier * 0.13)
@@ -47,7 +61,13 @@ function Nature.pineTree(ground: Vector3, height: number, t: number, palette: Tr
 		local y = height * 0.3 + tier * height * 0.2
 		for quarter = 0, 3 do
 			local rotation = CFrame.Angles(0, quarter * math.pi / 2, 0)
-			Parts.wedge(Vector3.new(width, tierHeight, width / 2), base * CFrame.new(0, y + tierHeight / 2, 0) * rotation * CFrame.new(0, 0, -width / 4), Parts.vary(leaf, 0.15, tier / 3), model, { shadow = tier == 0 })
+			Parts.wedge(
+				Vector3.new(width, tierHeight, width / 2),
+				base * CFrame.new(0, y + tierHeight / 2, 0) * rotation * CFrame.new(0, 0, -width / 4),
+				Parts.vary(leaf, 0.15, tier / 3),
+				model,
+				{ shadow = tier == 0 }
+			)
 		end
 	end
 	return model
@@ -64,15 +84,32 @@ function Nature.giantTree(ground: Vector3, height: number, t: number, palette: T
 		local out = Vector3.new(math.cos(angle), 0, math.sin(angle))
 		local foot = ground + out * trunk * 1.3 - Vector3.new(0, 0.5, 0)
 		local top = ground + out * trunk * 0.3 + Vector3.new(0, trunk * 1.4, 0)
-		Parts.beam(foot, top, trunk * 0.4, Parts.vary(palette.trunk, 0.15, index / 5), model, { collide = true, shadow = false })
+		Parts.beam(
+			foot,
+			top,
+			trunk * 0.4,
+			Parts.vary(palette.trunk, 0.15, index / 5),
+			model,
+			{ collide = true, shadow = false }
+		)
 	end
 	local crown = ground + Vector3.new(0, height, 0)
 	local leaf = pick(palette.leaves, t)
 	Parts.ball(height * 0.55, crown, leaf, model)
 	for index = 1, 4 do
 		local angle = t * 6.28 + index * 1.57
-		local offset = Vector3.new(math.cos(angle) * height * 0.28, -height * 0.08 + (index % 2) * height * 0.08, math.sin(angle) * height * 0.28)
-		Parts.ball(height * 0.4, crown + offset, Parts.vary(leaf, 0.2, (t + index * 0.23) % 1), model, { shadow = index <= 2 })
+		local offset = Vector3.new(
+			math.cos(angle) * height * 0.28,
+			-height * 0.08 + (index % 2) * height * 0.08,
+			math.sin(angle) * height * 0.28
+		)
+		Parts.ball(
+			height * 0.4,
+			crown + offset,
+			Parts.vary(leaf, 0.2, (t + index * 0.23) % 1),
+			model,
+			{ shadow = index <= 2 }
+		)
 	end
 	return model
 end
@@ -84,7 +121,13 @@ function Nature.bush(ground: Vector3, size: number, t: number, colors: { Color3 
 	for index = 1, 2 do
 		local angle = t * 6.28 + index * 2.6
 		local offset = Vector3.new(math.cos(angle) * size * 0.4, size * 0.15, math.sin(angle) * size * 0.4)
-		Parts.ball(size * 0.7, ground + offset, Parts.vary(color, 0.2, (t + index * 0.37) % 1), model, { shadow = false })
+		Parts.ball(
+			size * 0.7,
+			ground + offset,
+			Parts.vary(color, 0.2, (t + index * 0.37) % 1),
+			model,
+			{ shadow = false }
+		)
 	end
 	return model
 end
@@ -93,8 +136,20 @@ end
 function Nature.rock(ground: Vector3, size: number, t: number, color: Color3, parent: Instance): Model
 	local model = Parts.model("Rock", parent)
 	local spin = CFrame.Angles(t * 3, t * 6.28, t * 1.7)
-	Parts.block(Vector3.new(size, size * 0.7, size * 0.85), CFrame.new(ground + Vector3.new(0, size * 0.2, 0)) * spin, color, model, { collide = size > 4 })
-	Parts.block(Vector3.new(size * 0.7, size * 0.6, size * 0.6), CFrame.new(ground + Vector3.new(size * 0.35, size * 0.1, -size * 0.2)) * spin:Inverse(), Parts.vary(color, 0.25, 0.3), model, { shadow = false })
+	Parts.block(
+		Vector3.new(size, size * 0.7, size * 0.85),
+		CFrame.new(ground + Vector3.new(0, size * 0.2, 0)) * spin,
+		color,
+		model,
+		{ collide = size > 4 }
+	)
+	Parts.block(
+		Vector3.new(size * 0.7, size * 0.6, size * 0.6),
+		CFrame.new(ground + Vector3.new(size * 0.35, size * 0.1, -size * 0.2)) * spin:Inverse(),
+		Parts.vary(color, 0.25, 0.3),
+		model,
+		{ shadow = false }
+	)
 	return model
 end
 

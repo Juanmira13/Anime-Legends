@@ -20,7 +20,8 @@ local function createCounter(parent: Instance, order: number, icon: string, colo
 	frame.Parent = parent
 	Theme.corner(frame)
 
-	local iconLabel = Theme.label({ text = icon, size = UDim2.new(0, 30, 1, -8), position = UDim2.fromOffset(6, 4), color = color })
+	local iconLabel =
+		Theme.label({ text = icon, size = UDim2.new(0, 30, 1, -8), position = UDim2.fromOffset(6, 4), color = color })
 	iconLabel.Parent = frame
 
 	local value = Theme.label({ size = UDim2.new(1, -44, 1, -10), position = UDim2.fromOffset(38, 5) })

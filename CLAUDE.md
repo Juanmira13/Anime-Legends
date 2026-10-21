@@ -36,7 +36,8 @@ Este archivo es la guía que Claude Code sigue en este proyecto. Mantenerlo cort
 - **Motor / framework:** Roblox Studio.
 - **Lenguaje:** Luau.
 - **Plataformas de destino:** Roblox (PC, móvil, consola y VR según lo soporte la experiencia).
-- **Herramientas:** Rojo 7.7.1 (fijado en `rokit.toml`, gestionado con Rokit) para sincronizar los archivos `.luau` con Studio.
+- **Herramientas** (versiones fijadas en `rokit.toml`, gestionadas con Rokit): Rojo 7.7.1 para sincronizar los archivos `.luau` con Studio, luau 0.743 (pruebas), luau-lsp 1.70.1 (tipos), StyLua 2.6.0 (formato) y selene 0.32.0 (linter).
+- **Estilo de la UI:** Check-UI, de la skill `check-ui-clean-roblox` (ver sección 6, Interfaz).
 - **Servicios de Roblox:** DataStoreService para el guardado.
 
 ## 3. Estructura del repositorio
@@ -49,6 +50,9 @@ AnimeLegends/
 ├── default.project.json      # Mapeo de Rojo: carpetas → servicios de Roblox
 ├── builder.project.json      # Plugin "Island Builder" de Studio (src/builder + src/shared)
 ├── rokit.toml                # Versiones fijadas de las herramientas
+├── stylua.toml               # Formato (StyLua)
+├── selene.toml               # Linter (selene, std de Roblox + tests.yml)
+├── tests.yml                 # Globales de las pruebas para selene
 ├── src/
 │   ├── server/               # ServerScriptService.Server — lógica del servidor
 │   │   ├── Main.server.luau  # Arranca los servicios en orden
@@ -93,13 +97,16 @@ AnimeLegends/
 ├── tools/
 │   ├── build_rigs.py         # Genera los rigs R6 provisionales que falten
 │   ├── build_textures.py     # Genera la textura cartoon del mar
+│   ├── selene_std.py         # Genera la std de Roblox para selene
 │   └── typecheck.py          # Revisión de tipos del juego y del plugin
 └── tests/                    # Pruebas (*.spec.luau, run.py, bundle.py)
 ```
 
 ## 4. Comandos
 
-- **Instalar herramientas:** `rokit install` (instala la versión de Rojo fijada en `rokit.toml`).
+- **Instalar herramientas:** `rokit install` (instala en `~/.rokit/bin`, que está en el PATH, las versiones fijadas en `rokit.toml`). Los tipos de Roblox para `luau-lsp` están en `~/.local/share/luau-lsp/globalTypes.d.luau`, indicados por la variable de usuario `LUAU_DEFINITIONS`. En este equipo el antivirus AVG analiza HTTPS: los dominios de GitHub (`github.com`, `api.github.com`, `raw.githubusercontent.com`, `objects.githubusercontent.com`, `release-assets.githubusercontent.com`) tienen excepción para que Rokit pueda descargar.
+- **Formato:** `stylua src tests` (comprobar sin cambiar: `stylua --check src tests`).
+- **Linter:** `selene src tests` (`std = "roblox+tests"`; `tests.yml` declara los globales que inyecta `tests/bundle.py`). La primera vez, y cuando cambie la versión de selene, `python tools/selene_std.py` genera `roblox_base.yml` y `roblox.yml` (en `.gitignore`); sustituye a `selene generate-roblox-std`, que se rinde si la descarga de la API de Roblox es lenta. Debe terminar con 0 errores y 0 avisos.
 - **Ejecutar en desarrollo:** `rojo serve`, y en Roblox Studio conectar desde el plugin de Rojo (pestaña Plugins → Rojo → Connect).
 - **Build / exportar:** `rojo build -o AnimeLegends.rbxlx` (los `.rbxl`/`.rbxlx` están en `.gitignore`).
 - **Pruebas:** `python tests/run.py` ejecuta todos los `tests/*.spec.luau`. Requiere Python y el CLI de Luau (`luau`, de github.com/luau-lang/luau/releases; si no está en el PATH, indicar su ruta en la variable `LUAU`). `tests/bundle.py` empaqueta `src/shared`, `src/server`, `src/client` y `src/builder` con una imitación de `script` para que los `require` por instancia funcionen fuera de Studio; solo sirve para módulos puros, sin servicios de Roblox.
@@ -124,7 +131,8 @@ AnimeLegends/
 - Seguir el estilo del código existente en cada archivo antes de introducir uno nuevo.
 - Nombres en inglés para código y comentarios técnicos; los textos del juego pueden ir en español.
 - Archivos Luau con extensión `.luau`. Sufijos de Rojo: `.server.luau` (Script), `.client.luau` (LocalScript), sin sufijo (ModuleScript). `init.luau` convierte una carpeta en módulo.
-- TBD: formato y linter.
+- **Formato:** StyLua con `stylua.toml` (tabs, 120 columnas, comillas dobles, paréntesis siempre). Todo el código pasa `stylua --check src tests`.
+- **Linter:** selene con `selene.toml`. Todo el código pasa `selene src tests` sin errores ni avisos.
 
 ## 6. Diseño de juego (reglas para Claude)
 
@@ -171,6 +179,7 @@ El diseño detallado (islas, personajes, probabilidades, pity) está en `docs/ga
 - **Gacha en el mapa:** cada máquina es una Part con la etiqueta `GachaStand` y el atributo `Island`. El servidor le añade un ProximityPrompt; al activarlo valida (isla desbloqueada, espacio en inventario, Yenes), tira con `GachaRoll` y envía el resultado por `Remotes.GachaResult`.
 - **Boosts:** `BoostService` activa boosts, los vende por Gemas y descuenta el tiempo cada segundo solo para jugadores conectados. Cualquier sistema que dé boosts usa `BoostService.grant`. Se replican como atributos `BoostOwned_<Id>` y `BoostTime_<Id>`. Los efectos se leen de `data.Boosts.Remaining.<Id> > 0` donde se calcula cada recompensa.
 - **Inventario:** toda la lógica está en `InventoryOps` (pura). Los cambios en personajes siempre pasan por `InventoryService` (por ejemplo `addCharacter`), que envía el estado al cliente por `Remotes.InventoryChanged`. El cliente pide acciones por `Remotes.InventoryAction` y recibe el resultado más un snapshot.
+- **Interfaz (estilo oficial Check-UI):** toda la UI de pantalla (HUD, inventario, gacha, boosts, Raids, avisos) sigue la skill `check-ui-clean-roblox`: tipografía `GothamBlack` con contorno negro, ventanas opacas `#3B5866` con borde oscuro, cabeceras con degradado por tipo de menú y divisor de dos líneas, botón de cerrar `[X]` con relieve, botones con relieve y tríada de estados (Reclamar, Reclamado, Bloqueado), iconos con `ScaleType.Fit`, interacciones desde el centro (`AnchorPoint` 0.5 y `UIScale`) y escalado según `ViewportSize`. Los colores y constructores viven en `src/client/UI/Theme`, que se adapta a Check-UI; los controladores no ponen colores a mano. Los textos en el mundo 3D (carteles, títulos de portales) mantienen su estilo propio. Antes de tocar la UI, cargar la skill.
 - **Remotes:** los crea el servidor con `Remotes.event(name)`; el cliente los espera con `ReplicatedStorage.Remotes:WaitForChild(name)`. Nunca confiar en datos del cliente sin validarlos en el servidor.
 - **Acceso a datos:** los demás servicios usan `DataService.getData`/`waitForData` y `addCurrency`/`spendCurrency`. Yenes y Gemas se replican al cliente como atributos del jugador (`Yen`, `Gems`).
 - **Fuente de verdad de datos:** las constantes viven en `src/shared/Config/` y el contenido (islas, personajes) en `src/shared/Data/`. Los valores derivados (daño, vida, Yenes, costos) se calculan siempre con `Shared.Formulas`; nunca escribir esos números a mano en otro sitio.
@@ -221,3 +230,7 @@ Decisiones cerradas. Las tareas pendientes están en `docs/tasks.md`.
 - [x] Las islas están en el mar (no flotan), con mar de estilo cartoon (textura animada y espuma en la orilla).
 - [x] La ambientación por isla (luz, cielo, niebla, partículas) entra en la Fase 9.
 - [x] Cada isla con su propia organización, terreno (no reutilizado), relieve y decoración; nada de islas planas.
+- [x] Las 6 islas aprobadas tal cual tras dos rondas de capturas (incluido el estilo de Nameku).
+- [x] Plan de desarrollo aprobado (orden en `docs/plan.md`): cerrar la Fase 9, efectos y sonido, UI Check-UI, prueba temprana en servidor publicado, publicación; los modelos de Blender en paralelo.
+- [x] Check-UI (skill `check-ui-clean-roblox`) es el estilo oficial de la UI.
+- [x] Formato con StyLua y linter con selene; luau y luau-lsp también fijados en `rokit.toml`.

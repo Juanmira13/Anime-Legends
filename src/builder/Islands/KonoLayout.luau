@@ -83,7 +83,14 @@ local layout: Shape.Layout = {
 	lakes = {
 		{ x = 58, z = -190, radius = 26, level = 20, depth = 5 }, -- pool under the waterfall
 	},
-	materials = { grass = "Grass", path = "Ground", plaza = "Cobblestone", cliff = "Rock", beach = "Sand", seabed = "Mud" },
+	materials = {
+		grass = "Grass",
+		path = "Ground",
+		plaza = "Cobblestone",
+		cliff = "Rock",
+		beach = "Sand",
+		seabed = "Mud",
+	},
 }
 
 return layout

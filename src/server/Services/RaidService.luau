@@ -260,12 +260,8 @@ local function onRaidEnemyDied(enemy: Enemy)
 		if data == nil then
 			continue
 		end
-		local yen, gems = RaidOps.reward(
-			session.difficulty,
-			typeId,
-			data.Boosts.Remaining.Money > 0,
-			data.Boosts.Remaining.Gems > 0
-		)
+		local yen, gems =
+			RaidOps.reward(session.difficulty, typeId, data.Boosts.Remaining.Money > 0, data.Boosts.Remaining.Gems > 0)
 		DataService.addCurrency(player, "Yen", yen)
 		DataService.addCurrency(player, "Gems", gems)
 		local boostId = RaidOps.rollBoostDrop(session.difficulty, typeId, function()
@@ -332,7 +328,12 @@ local function startQueue(difficultyId: string, queue: Queue)
 		player:SetAttribute("RaidQueue", nil)
 		player:SetAttribute("RaidQueueStartsAt", nil)
 		local data = DataService.getData(player)
-		if player.Parent and data and playerSession[player] == nil and RaidOps.canStart(data, difficultyId, startTime) then
+		if
+			player.Parent
+			and data
+			and playerSession[player] == nil
+			and RaidOps.canStart(data, difficultyId, startTime)
+		then
 			table.insert(members, player)
 		end
 	end

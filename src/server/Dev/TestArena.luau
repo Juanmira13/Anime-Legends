@@ -67,7 +67,12 @@ local function buildEnemies(islandId: string, origin: Vector3, parent: Instance)
 	for _, entry in ENEMIES do
 		for _ = 1, entry.count do
 			local offset = Vector3.new((index - (total - 1) / 2) * ENEMY_SPACING, 0.5, -ENEMY_DISTANCE)
-			tagged(marker(`Spawn_{entry.rank}`, origin + offset), "EnemySpawn", { Island = islandId, Rank = entry.rank }, parent)
+			tagged(
+				marker(`Spawn_{entry.rank}`, origin + offset),
+				"EnemySpawn",
+				{ Island = islandId, Rank = entry.rank },
+				parent
+			)
 			index += 1
 		end
 	end
@@ -85,7 +90,14 @@ local function buildGacha(islandId: string, origin: Vector3, color: Color3, pare
 end
 
 -- A portal is a pad on the ground (holds the prompt) under a column of light.
-local function buildPortal(name: string, tag: string, attributes: { [string]: any }, position: Vector3, color: Color3, parent: Instance)
+local function buildPortal(
+	name: string,
+	tag: string,
+	attributes: { [string]: any },
+	position: Vector3,
+	color: Color3,
+	parent: Instance
+)
 	local pad = Instance.new("Part")
 	pad.Name = name
 	pad.Shape = Enum.PartType.Cylinder
@@ -121,12 +133,24 @@ local function buildIsland(index: number, folder: Folder)
 	islandFolder.Name = entry.island
 	islandFolder.Parent = folder
 
-	tagged(marker("Arrival", entry.origin + Vector3.new(0, 0.5, 8)), ISLAND_SPAWN_TAG, { Island = entry.island }, islandFolder)
+	tagged(
+		marker("Arrival", entry.origin + Vector3.new(0, 0.5, 8)),
+		ISLAND_SPAWN_TAG,
+		{ Island = entry.island },
+		islandFolder
+	)
 	buildEnemies(entry.island, entry.origin, islandFolder)
 	buildGacha(entry.island, entry.origin, entry.color, islandFolder)
 
 	local function islandPortal(target, offset: Vector3)
-		buildPortal(`Portal_{target.island}`, "Portal", { TargetIsland = target.island }, entry.origin + offset, target.color, islandFolder)
+		buildPortal(
+			`Portal_{target.island}`,
+			"Portal",
+			{ TargetIsland = target.island },
+			entry.origin + offset,
+			target.color,
+			islandFolder
+		)
 	end
 	local nextEntry = LAYOUT[index + 1]
 	if nextEntry then
@@ -158,7 +182,14 @@ local function buildRaidLobby(folder: Folder)
 		tagged(part, "RaidPad", { Difficulty = pad.difficulty }, lobbyFolder)
 	end
 	local first = LAYOUT[1]
-	buildPortal(`Portal_{first.island}`, "Portal", { TargetIsland = first.island }, RAID_LOBBY_ORIGIN + Vector3.new(-30, 0, 12), first.color, lobbyFolder)
+	buildPortal(
+		`Portal_{first.island}`,
+		"Portal",
+		{ TargetIsland = first.island },
+		RAID_LOBBY_ORIGIN + Vector3.new(-30, 0, 12),
+		first.color,
+		lobbyFolder
+	)
 end
 
 function TestArena.buildIfNeeded()

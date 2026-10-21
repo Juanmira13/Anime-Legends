@@ -124,7 +124,9 @@ local function nearestOnPolyline(points: { { number } }, px: number, pz: number)
 		local a, b = points[index], points[index + 1]
 		local abx, abz = b[1] - a[1], b[2] - a[2]
 		local lengthSquared = abx * abx + abz * abz
-		local t = if lengthSquared > 0 then math.clamp(((px - a[1]) * abx + (pz - a[2]) * abz) / lengthSquared, 0, 1) else 0
+		local t = if lengthSquared > 0
+			then math.clamp(((px - a[1]) * abx + (pz - a[2]) * abz) / lengthSquared, 0, 1)
+			else 0
 		local cx, cz = a[1] + abx * t, a[2] + abz * t
 		local distance = math.sqrt((px - cx) ^ 2 + (pz - cz) ^ 2)
 		if distance < bestDistance then
@@ -244,7 +246,13 @@ function Shape.height(layout: Layout, x: number, z: number): number
 	-- Rivers and lakes.
 	for _, river: River in list(layout.rivers) do
 		local distance, index, along = nearestOnPolyline(river.points, x, z)
-		height = carveWater(height, river.width / 2 - distance, river.width / 2, valueAlong(river.points, index, along), river.depth)
+		height = carveWater(
+			height,
+			river.width / 2 - distance,
+			river.width / 2,
+			valueAlong(river.points, index, along),
+			river.depth
+		)
 	end
 	for _, lake: Lake in list(layout.lakes) do
 		local distance = math.sqrt((x - lake.x) ^ 2 + (z - lake.z) ^ 2)

@@ -132,7 +132,8 @@ function PlayerRecord.acquire(stored: Record?, jobId: string, now: number): Reco
 	if isLockedByOther(stored, jobId, now) then
 		return nil
 	end
-	local record: Record = stored or { version = PlayerRecord.CurrentVersion, data = PlayerRecord.newData(), lock = nil }
+	local record: Record = stored
+		or { version = PlayerRecord.CurrentVersion, data = PlayerRecord.newData(), lock = nil }
 	PlayerRecord.migrate(record)
 	PlayerRecord.reconcile(record.data :: any)
 	record.lock = { jobId = jobId, time = now }

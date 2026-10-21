@@ -54,7 +54,14 @@ local layout: Shape.Layout = {
 		{ x = -230, z = -210, radius = 170, height = 62, sharpness = 1.3 },
 		{ x = -330, z = -40, radius = 110, height = 34, sharpness = 1.2 },
 	},
-	materials = { grass = "Grass", path = "Ground", plaza = "Cobblestone", cliff = "Rock", beach = "Sand", seabed = "Mud" },
+	materials = {
+		grass = "Grass",
+		path = "Ground",
+		plaza = "Cobblestone",
+		cliff = "Rock",
+		beach = "Sand",
+		seabed = "Mud",
+	},
 }
 
 return layout

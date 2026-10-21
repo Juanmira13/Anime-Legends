@@ -62,7 +62,14 @@ local layout = {
 	},
 	paths = { { points = { { 0, 200 }, { 0, -180 } }, width = 10 } },
 	mesas = { { x = 420, z = 0, radius = 40, height = 60 } },
-	materials = { grass = "Grass", path = "Ground", plaza = "Pavement", cliff = "Rock", beach = "Sand", seabed = "Sand" },
+	materials = {
+		grass = "Grass",
+		path = "Ground",
+		plaza = "Pavement",
+		cliff = "Rock",
+		beach = "Sand",
+		seabed = "Sand",
+	},
 }
 
 near("plaza is flat at its height", Shape.height(layout, 0, 200), 6)
@@ -200,7 +207,13 @@ local relief = {
 	},
 	mesas = {},
 	mountains = { { x = 0, z = -200, radius = 150, height = 90 } },
-	rivers = { { width = 14, depth = 4, points = { { -100, -150, 40 }, { -120, -100, 38 }, { -125, -90, 10 }, { -250, 0, 3 }, { -420, 0, 0 } } } },
+	rivers = {
+		{
+			width = 14,
+			depth = 4,
+			points = { { -100, -150, 40 }, { -120, -100, 38 }, { -125, -90, 10 }, { -250, 0, 3 }, { -420, 0, 0 } },
+		},
+	},
 	lakes = { { x = 150, z = 200, radius = 30, level = 9, depth = 5 } },
 	materials = { grass = "Grass", path = "Ground", plaza = "Pavement", cliff = "Rock", beach = "Sand", seabed = "Mud" },
 }
@@ -227,7 +240,10 @@ flooded.lakes = { { x = -150, z = 120, radius = 20, level = 9, depth = 4 } }
 check("catches a lake in a zone", hasProblemIn(LayoutCheck.run(flooded), "lake 1 is too close"), true)
 
 local paved = table.clone(relief)
-paved.surfaces = { { x = -150, z = 150, radius = 120, material = "Pavement" }, { x = -200, z = 200, radius = 20, material = "Grass" } }
+paved.surfaces = {
+	{ x = -150, z = 150, radius = 120, material = "Pavement" },
+	{ x = -200, z = 200, radius = 20, material = "Grass" },
+}
 check("surface paves the ground", Shape.material(paved, -100, 220, Shape.height(paved, -100, 220), 0), "Pavement")
 check("later surface wins", Shape.material(paved, -200, 200, Shape.height(paved, -200, 200), 0), "Grass")
 check("paths keep their material", Shape.material(paved, -75, 125, Shape.height(paved, -75, 125), 0), "Ground")
@@ -237,8 +253,16 @@ stretched.coast = { elongation = 0.3, angle = 0 }
 check("elongated along x", Shape.coastRadius(stretched, 0) > Shape.coastRadius(stretched, math.pi / 2) * 1.6, true)
 local bay = table.clone(relief)
 bay.coast = { bays = { { angle = math.pi / 2, width = 0.3, depth = 0.4 } } }
-check("bay pulls the coast in", Shape.coastRadius(bay, math.pi / 2) < Shape.coastRadius(relief, math.pi / 2) * 0.65, true)
-check("bay is local", math.abs(Shape.coastRadius(bay, -math.pi / 2) - Shape.coastRadius(relief, -math.pi / 2)) < 1, true)
+check(
+	"bay pulls the coast in",
+	Shape.coastRadius(bay, math.pi / 2) < Shape.coastRadius(relief, math.pi / 2) * 0.65,
+	true
+)
+check(
+	"bay is local",
+	math.abs(Shape.coastRadius(bay, -math.pi / 2) - Shape.coastRadius(relief, -math.pi / 2)) < 1,
+	true
+)
 local lobed = table.clone(relief)
 lobed.coast = { lobes = 4, lobeDepth = 0.12 }
 check("lobes bulge", Shape.coastRadius(lobed, 0) > Shape.coastRadius(lobed, math.pi / 4), true)

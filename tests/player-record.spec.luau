@@ -39,10 +39,18 @@ check("new record version", created and created.version, PlayerRecord.CurrentVer
 
 -- Locks
 local function lockedRecord(jobId, time)
-	return { version = PlayerRecord.CurrentVersion, data = PlayerRecord.newData(), lock = { jobId = jobId, time = time } }
+	return {
+		version = PlayerRecord.CurrentVersion,
+		data = PlayerRecord.newData(),
+		lock = { jobId = jobId, time = time },
+	}
 end
 check("live lock blocks", PlayerRecord.acquire(lockedRecord("server-b", NOW - 10), "server-a", NOW), nil)
-check("lock just under timeout blocks", PlayerRecord.acquire(lockedRecord("server-b", NOW - TIMEOUT + 1), "server-a", NOW), nil)
+check(
+	"lock just under timeout blocks",
+	PlayerRecord.acquire(lockedRecord("server-b", NOW - TIMEOUT + 1), "server-a", NOW),
+	nil
+)
 local stolen = PlayerRecord.acquire(lockedRecord("server-b", NOW - TIMEOUT), "server-a", NOW)
 check("expired lock is taken", stolen and stolen.lock and stolen.lock.jobId, "server-a")
 local reacquired = PlayerRecord.acquire(lockedRecord("server-a", NOW - 10), "server-a", NOW)
@@ -83,8 +91,16 @@ check("save refreshes lock", saved and saved.lock and saved.lock.time, NOW)
 check("save keeps data", saved and saved.data, fresh)
 local released = PlayerRecord.write(lockedRecord("server-a", NOW - 100), fresh, "server-a", NOW, true)
 check("release clears lock", released ~= nil and released.lock == nil, true)
-check("other server cannot save", PlayerRecord.write(lockedRecord("server-b", NOW - 100), fresh, "server-a", NOW, false), nil)
-check("other server cannot save even if expired", PlayerRecord.write(lockedRecord("server-b", NOW - TIMEOUT * 2), fresh, "server-a", NOW, true), nil)
+check(
+	"other server cannot save",
+	PlayerRecord.write(lockedRecord("server-b", NOW - 100), fresh, "server-a", NOW, false),
+	nil
+)
+check(
+	"other server cannot save even if expired",
+	PlayerRecord.write(lockedRecord("server-b", NOW - TIMEOUT * 2), fresh, "server-a", NOW, true),
+	nil
+)
 check("save to unlocked record", PlayerRecord.write(nil, fresh, "server-a", NOW, false) ~= nil, true)
 
 if failures == 0 then

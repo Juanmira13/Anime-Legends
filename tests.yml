@@ -1,0 +1,13 @@
+# selene globals for tests/*.spec.luau: the source roots that tests/bundle.py
+# injects so that `require(Shared.Formulas)` works outside Studio.
+---
+name: tests
+globals:
+  Builder:
+    any: true
+  Client:
+    any: true
+  Server:
+    any: true
+  Shared:
+    any: true

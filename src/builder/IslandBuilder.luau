@@ -158,16 +158,39 @@ end
 local function buildZones(context: Context, gameplay: Folder)
 	local layout = context.layout
 	for _, zone in layout.zones do
-		local points = Scatter.spawnPoints(context.rng, zone.x, zone.z, zone.radius * LayoutCheck.SPAWN_AREA, zone.count, ENEMY_SPACING)
+		local points = Scatter.spawnPoints(
+			context.rng,
+			zone.x,
+			zone.z,
+			zone.radius * LayoutCheck.SPAWN_AREA,
+			zone.count,
+			ENEMY_SPACING
+		)
 		for _, point in points do
-			Gameplay.enemySpawn(context.islandId, zone.rank, context.cx + point.x, zone.height, context.cz + point.z, gameplay)
+			Gameplay.enemySpawn(
+				context.islandId,
+				zone.rank,
+				context.cx + point.x,
+				zone.height,
+				context.cz + point.z,
+				gameplay
+			)
 		end
 		-- Sign at the zone's edge on the plaza side, readable on the way in.
 		local dx, dz = layout.plaza.x - zone.x, layout.plaza.z - zone.z
 		local length = math.max(1, math.sqrt(dx * dx + dz * dz))
 		local sx, sz = zone.x + dx / length * (zone.radius + 4), zone.z + dz / length * (zone.radius + 4)
 		local ground = context.ground(sx, sz)
-		Gameplay.zoneSign(zone.name, zone.rank, ground.X, ground.Y, ground.Z, yawToward(sx, sz, layout.plaza.x, layout.plaza.z), context.accent, gameplay)
+		Gameplay.zoneSign(
+			zone.name,
+			zone.rank,
+			ground.X,
+			ground.Y,
+			ground.Z,
+			yawToward(sx, sz, layout.plaza.x, layout.plaza.z),
+			context.accent,
+			gameplay
+		)
 	end
 end
 

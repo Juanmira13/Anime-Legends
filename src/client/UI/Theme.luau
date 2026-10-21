@@ -31,7 +31,9 @@ function Theme.corner(parent: GuiObject, radius: number?)
 	corner.Parent = parent
 end
 
-function Theme.label(props: { text: string?, size: UDim2?, position: UDim2?, color: Color3?, bold: boolean? }): TextLabel
+function Theme.label(
+	props: { text: string?, size: UDim2?, position: UDim2?, color: Color3?, bold: boolean? }
+): TextLabel
 	local label = Instance.new("TextLabel")
 	label.BackgroundTransparency = 1
 	label.Font = if props.bold == false then Enum.Font.Gotham else Enum.Font.GothamBold

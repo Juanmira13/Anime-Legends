@@ -7,6 +7,8 @@ Cómo está construido el juego y en qué orden se hace. Las reglas que hay que 
 - Roblox Studio + Luau, sincronizado con Rojo 7.7.1 (`default.project.json`, versión fijada en `rokit.toml`).
 - Guardado con DataStoreService.
 - Pruebas de lógica pura con el CLI de Luau (`python tests/run.py`) y revisión de tipos con `luau-lsp` (ver `CLAUDE.md`, sección 4).
+- Formato con StyLua (`stylua.toml`) y linter con selene (`selene.toml`); todas las herramientas fijadas en `rokit.toml`.
+- UI con el estilo Check-UI (skill `check-ui-clean-roblox`), implementado en `src/client/UI/Theme`.
 
 ## Arquitectura
 
@@ -61,9 +63,13 @@ El código no depende de posiciones: lee Parts etiquetadas (`IslandSpawn`, `Enem
 | 6 | Raids | ✅ | `2d3c102` |
 | 7 | Boosts y tienda de Gemas | ✅ | `d1afd9a` |
 | 8 | Personajes visibles (estilo AFS), rigs R6 | ✅ | ver `docs/tasks.md` |
-| 9 | Islas de alta calidad, mar, ambientación, modelos | 🟡 en curso (Nameku v1, resto v0) | — |
+| 9 | Islas de alta calidad, mar, ambientación, modelos | 🟡 en curso (6 islas aprobadas) | ver `docs/tasks.md` |
 | 10 | Efectos, números de daño, sonido | ⏳ | — |
-| 11 | Preparar publicación | ⏳ | — |
+| 11 | UI con el estilo Check-UI | ⏳ | — |
+| 12 | Prueba temprana en servidor publicado | ⏳ | — |
+| 13 | Preparar publicación | ⏳ | — |
+
+**Orden aprobado:** cerrar la Fase 9 (arena de Raid, textura del mar, lista de hitos para Blender) → 10 → 11 → 12 → 13. Los modelos finales de Blender avanzan en paralelo: no bloquean nada porque el código los acepta con el mismo nombre y ruta.
 
 ### Fase 8 — Personajes visibles
 
@@ -118,10 +124,26 @@ Los enemigos escalados multiplican tamaños, centros y puntos de giro por su esc
 
 **Ciclo de calidad:** construir → *Siguiente foto* en el panel (cámaras fijas por área) → capturas → ajustes en el código de la isla → reconstruir. Nameku primero; luego una isla detallada por commit.
 
-**Pendiente de la fase:** subir la textura del mar, iterar Kono, Clover Kingdom, Titan Village, Hero Academy y Demon Corps con capturas, arena de Raid, lista de piezas para Blender (estatuas de Kono y otros hitos difíciles con Parts).
+**Pendiente de la fase:** las 6 islas están aprobadas. Faltan la arena de Raid (coliseo construido por el plugin, como el lobby), subir la textura del mar y la lista de piezas para Blender (estatuas de Kono y otros hitos difíciles con Parts).
 
-### Fase 11 — Publicación
+### Fase 10 — Efectos y sonido
 
-- Eliminar `Dev/DevCheats` y su llamada.
+- Números de daño y efectos de golpe en el cliente a partir de `Remotes.CharacterHit` (ya lleva el daño).
+- Animación de la tirada del gacha según la rareza.
+- Sonidos (golpes, tiradas, portales) y música por área.
+
+### Fase 11 — UI Check-UI
+
+- `UI/Theme` adopta las constantes y constructores de Check-UI (skill `check-ui-clean-roblox`): ventanas, cabeceras por tipo de menú, botón de cerrar, botones con tríada de estados, escalado por `ViewportSize`.
+- Rehacer con esos constructores el HUD, el inventario, el gacha, los boosts, los Raids y los avisos, sin cambiar los Remotes ni la lógica del servidor.
+
+### Fase 12 — Prueba temprana en servidor publicado
+
+- Publicar en privado y comprobar guardado entre sesiones, bloqueo de sesión y un Raid con varios jugadores, para encontrar fallos de red y DataStore antes de la publicación.
+
+### Fase 13 — Publicación
+
+- Eliminar `Dev/DevCheats` y su llamada (con él desaparecen los Raids cortos de Studio).
+- Revisar el balance con partidas reales y ajustar `docs/balance.md` y las pruebas.
 - Borrar los datos de prueba del DataStore.
 - Comprobar en un servidor publicado: guardado, bloqueo de sesión, Raids con varios jugadores.

@@ -26,7 +26,10 @@ function PathWalk.samples(points: { { number } }, spacing: number, start: number
 			local ux, uz = dx / length, dz / length
 			while nextAt <= travelled + length do
 				local along = nextAt - travelled
-				table.insert(samples, { x = a[1] + ux * along, z = a[2] + uz * along, dx = ux, dz = uz, distance = nextAt })
+				table.insert(
+					samples,
+					{ x = a[1] + ux * along, z = a[2] + uz * along, dx = ux, dz = uz, distance = nextAt }
+				)
 				nextAt += spacing
 			end
 			travelled += length
@@ -39,7 +42,9 @@ end
 function PathWalk.length(points: { { number } }): number
 	local total = 0
 	for index = 1, #points - 1 do
-		total += math.sqrt((points[index + 1][1] - points[index][1]) ^ 2 + (points[index + 1][2] - points[index][2]) ^ 2)
+		total += math.sqrt(
+			(points[index + 1][1] - points[index][1]) ^ 2 + (points[index + 1][2] - points[index][2]) ^ 2
+		)
 	end
 	return total
 end

@@ -69,6 +69,7 @@ Simulador de progresión de Roblox al estilo Anime Fighters Simulator. El jugado
 - Botones "Inventario" y "Boosts" en el borde izquierdo (no tapan el joystick en móvil).
 - Avisos en pantalla para gacha, portales, Raids y boosts.
 - Interacciones con ProximityPrompt y clic/toque: funcionan en PC, móvil y consola.
+- Estilo oficial Check-UI (ventanas opacas, tipografía GothamBlack con contorno, botones con relieve, escalado según el tamaño de pantalla). Ver `CLAUDE.md` (sección 6, Interfaz); la migración de la UI actual es la Fase 11 de `docs/plan.md`.
 
 ### R9. Presentación 🟡
 - Personajes equipados visibles para todos los jugadores, que siguen a su dueño caminando por el suelo y van hasta el enemigo a golpear (estilo AFS). Ver `docs/game-design.md` (Combate → Personajes visibles).
@@ -85,7 +86,7 @@ Simulador de progresión de Roblox al estilo Anime Fighters Simulator. El jugado
 - **Autoridad del servidor:** el cliente solo envía peticiones; el servidor valida y calcula daño, monedas, gacha, pity e inventario.
 - **Balance proporcional:** todos los valores derivan de las constantes de `src/shared/Config/` mediante `Shared.Formulas` (×6 por isla).
 - **Construcción de mapas sin código:** el juego lee Parts etiquetadas (ver tabla en `CLAUDE.md`).
-- **Pruebas:** la lógica pura tiene pruebas automáticas (`python tests/run.py`) y el código con APIs de Roblox pasa la revisión de tipos de `luau-lsp`.
+- **Pruebas:** la lógica pura tiene pruebas automáticas (`python tests/run.py`) y el código con APIs de Roblox pasa la revisión de tipos de `luau-lsp`. Todo el código pasa el formato de StyLua y el linter selene.
 
 ## Fuera de alcance
 

@@ -14,7 +14,14 @@ export type Rarity = {
 
 local List: { Rarity } = {
 	{ id = "Common", displayName = "Común", order = 1, damageMultiplier = 1, cooldown = 2.0, gachaChance = 50 },
-	{ id = "Uncommon", displayName = "Poco común", order = 2, damageMultiplier = 1.6, cooldown = 1.9, gachaChance = 25 },
+	{
+		id = "Uncommon",
+		displayName = "Poco común",
+		order = 2,
+		damageMultiplier = 1.6,
+		cooldown = 1.9,
+		gachaChance = 25,
+	},
 	{ id = "Rare", displayName = "Raro", order = 3, damageMultiplier = 2.6, cooldown = 1.8, gachaChance = 13.9 },
 	{ id = "Epic", displayName = "Épico", order = 4, damageMultiplier = 4.5, cooldown = 1.6, gachaChance = 8 },
 	{ id = "Legendary", displayName = "Legendario", order = 5, damageMultiplier = 8, cooldown = 1.4, gachaChance = 2 },

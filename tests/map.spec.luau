@@ -68,35 +68,126 @@ local function withExtra(entry)
 	return MapCheck.run(entries).errors
 end
 
-check("missing arrival", contains(without(function(e)
-	return e.tag == "IslandSpawn" and e.area == "Kono"
-end), "Kono: needs exactly one IslandSpawn (found 0)"), true)
-check("two arrivals", contains(withExtra({ tag = "IslandSpawn", name = "x", area = "Kono", attributes = { Island = "Kono" } }), "Kono: needs exactly one IslandSpawn (found 2)"), true)
-check("missing boss", contains(without(function(e)
-	return e.tag == "EnemySpawn" and e.area == "Nameku" and e.attributes.Rank == "Boss"
-end), "Nameku: no EnemySpawn with Rank Boss"), true)
-check("bad rank", contains(withExtra({ tag = "EnemySpawn", name = "bad", area = "Kono", attributes = { Island = "Kono", Rank = "Huge" } }), 'bad: EnemySpawn has unknown Rank "Huge"'), true)
-check("bad island", contains(withExtra({ tag = "GachaStand", name = "g", attributes = { Island = "Atlantis" } }), 'g: GachaStand has unknown Island "Atlantis"'), true)
-check("missing gacha", contains(without(function(e)
-	return e.tag == "GachaStand" and e.area == "DemonCorps"
-end), "DemonCorps: no GachaStand"), true)
-check("missing forward portal", contains(without(function(e)
-	return e.tag == "Portal" and e.area == "Kono" and e.attributes.TargetIsland == "CloverKingdom"
-end), "Kono: no Portal to CloverKingdom"), true)
-check("missing back portal", contains(without(function(e)
-	return e.tag == "Portal" and e.area == "Kono" and e.attributes.TargetIsland == "Nameku"
-end), "Kono: no Portal to Nameku"), true)
-check("bad portal target", contains(withExtra({ tag = "Portal", name = "p", area = "Kono", attributes = { TargetIsland = "Mars" } }), 'p: Portal has unknown TargetIsland "Mars"'), true)
-check("missing raid portal", contains(without(function(e)
-	return e.tag == "RaidPortal"
-end), "No RaidPortal"), true)
-check("missing pad", contains(without(function(e)
-	return e.tag == "RaidPad" and e.attributes.Difficulty == "Hard"
-end), "exactly one RaidPad for Hard (found 0)"), true)
-check("bad difficulty", contains(withExtra({ tag = "RaidPad", name = "pad", area = "RaidLobby", attributes = { Difficulty = "Insane" } }), 'pad: RaidPad has unknown Difficulty "Insane"'), true)
-check("missing lobby portal", contains(without(function(e)
-	return e.tag == "Portal" and e.area == "RaidLobby"
-end), "RaidLobby: no Portal back to Nameku"), true)
+check(
+	"missing arrival",
+	contains(
+		without(function(e)
+			return e.tag == "IslandSpawn" and e.area == "Kono"
+		end),
+		"Kono: needs exactly one IslandSpawn (found 0)"
+	),
+	true
+)
+check(
+	"two arrivals",
+	contains(
+		withExtra({ tag = "IslandSpawn", name = "x", area = "Kono", attributes = { Island = "Kono" } }),
+		"Kono: needs exactly one IslandSpawn (found 2)"
+	),
+	true
+)
+check(
+	"missing boss",
+	contains(
+		without(function(e)
+			return e.tag == "EnemySpawn" and e.area == "Nameku" and e.attributes.Rank == "Boss"
+		end),
+		"Nameku: no EnemySpawn with Rank Boss"
+	),
+	true
+)
+check(
+	"bad rank",
+	contains(
+		withExtra({ tag = "EnemySpawn", name = "bad", area = "Kono", attributes = { Island = "Kono", Rank = "Huge" } }),
+		'bad: EnemySpawn has unknown Rank "Huge"'
+	),
+	true
+)
+check(
+	"bad island",
+	contains(
+		withExtra({ tag = "GachaStand", name = "g", attributes = { Island = "Atlantis" } }),
+		'g: GachaStand has unknown Island "Atlantis"'
+	),
+	true
+)
+check(
+	"missing gacha",
+	contains(
+		without(function(e)
+			return e.tag == "GachaStand" and e.area == "DemonCorps"
+		end),
+		"DemonCorps: no GachaStand"
+	),
+	true
+)
+check(
+	"missing forward portal",
+	contains(
+		without(function(e)
+			return e.tag == "Portal" and e.area == "Kono" and e.attributes.TargetIsland == "CloverKingdom"
+		end),
+		"Kono: no Portal to CloverKingdom"
+	),
+	true
+)
+check(
+	"missing back portal",
+	contains(
+		without(function(e)
+			return e.tag == "Portal" and e.area == "Kono" and e.attributes.TargetIsland == "Nameku"
+		end),
+		"Kono: no Portal to Nameku"
+	),
+	true
+)
+check(
+	"bad portal target",
+	contains(
+		withExtra({ tag = "Portal", name = "p", area = "Kono", attributes = { TargetIsland = "Mars" } }),
+		'p: Portal has unknown TargetIsland "Mars"'
+	),
+	true
+)
+check(
+	"missing raid portal",
+	contains(
+		without(function(e)
+			return e.tag == "RaidPortal"
+		end),
+		"No RaidPortal"
+	),
+	true
+)
+check(
+	"missing pad",
+	contains(
+		without(function(e)
+			return e.tag == "RaidPad" and e.attributes.Difficulty == "Hard"
+		end),
+		"exactly one RaidPad for Hard (found 0)"
+	),
+	true
+)
+check(
+	"bad difficulty",
+	contains(
+		withExtra({ tag = "RaidPad", name = "pad", area = "RaidLobby", attributes = { Difficulty = "Insane" } }),
+		'pad: RaidPad has unknown Difficulty "Insane"'
+	),
+	true
+)
+check(
+	"missing lobby portal",
+	contains(
+		without(function(e)
+			return e.tag == "Portal" and e.area == "RaidLobby"
+		end),
+		"RaidLobby: no Portal back to Nameku"
+	),
+	true
+)
 
 -- Part budget
 local budget = MapCheck.run(completeMap(), { Nameku = MapCheck.PartBudget + 1, Kono = 10 })
@@ -131,7 +222,15 @@ for _, area in areas do
 	local ambience = Ambience.Areas[area]
 	check(`ambience for {area}`, ambience ~= nil, true)
 	if ambience then
-		local colors = { ambience.ambient, ambience.outdoorAmbient, ambience.colorShiftTop, ambience.atmosphere.color, ambience.atmosphere.decay, ambience.colorCorrection.tint, ambience.water.color }
+		local colors = {
+			ambience.ambient,
+			ambience.outdoorAmbient,
+			ambience.colorShiftTop,
+			ambience.atmosphere.color,
+			ambience.atmosphere.decay,
+			ambience.colorCorrection.tint,
+			ambience.water.color,
+		}
 		for _, rgb in ambience.terrain do
 			table.insert(colors, rgb)
 		end

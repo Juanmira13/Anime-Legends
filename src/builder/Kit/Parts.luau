@@ -18,7 +18,14 @@ local function rgb(color: { number }): Color3
 end
 Parts.rgb = rgb
 
-local function make(shape: Enum.PartType, size: Vector3, cframe: CFrame, color: Color3, parent: Instance, options: Options?): Part
+local function make(
+	shape: Enum.PartType,
+	size: Vector3,
+	cframe: CFrame,
+	color: Color3,
+	parent: Instance,
+	options: Options?
+): Part
 	local part = Instance.new("Part")
 	part.Shape = shape
 	part.Size = size
@@ -48,14 +55,29 @@ function Parts.ball(diameter: number, position: Vector3, color: Color3, parent: 
 end
 
 -- Upright cylinder whose base center is at `base` (rotated by `tilt` if given).
-function Parts.column(diameter: number, height: number, base: CFrame, color: Color3, parent: Instance, options: Options?): Part
+function Parts.column(
+	diameter: number,
+	height: number,
+	base: CFrame,
+	color: Color3,
+	parent: Instance,
+	options: Options?
+): Part
 	-- Roblox cylinders run along X; turn them upright.
 	local cframe = base * CFrame.new(0, height / 2, 0) * CFrame.Angles(0, 0, math.rad(90))
 	return make(Enum.PartType.Cylinder, Vector3.new(height, diameter, diameter), cframe, color, parent, options)
 end
 
 -- Cylinder along `axis` (a direction) centered at `position`.
-function Parts.cylinder(diameter: number, length: number, position: Vector3, axis: Vector3, color: Color3, parent: Instance, options: Options?): Part
+function Parts.cylinder(
+	diameter: number,
+	length: number,
+	position: Vector3,
+	axis: Vector3,
+	color: Color3,
+	parent: Instance,
+	options: Options?
+): Part
 	-- lookAt points -Z along the axis; turning 90° about Y puts the cylinder's X there.
 	local cframe = CFrame.lookAt(position, position + axis) * CFrame.Angles(0, math.rad(90), 0)
 	return make(Enum.PartType.Cylinder, Vector3.new(length, diameter, diameter), cframe, color, parent, options)
@@ -69,7 +91,14 @@ function Parts.beam(from: Vector3, to: Vector3, width: number, color: Color3, pa
 end
 
 -- Flat disc (cylinder lying down) centered at `position`.
-function Parts.disc(diameter: number, thickness: number, position: Vector3, color: Color3, parent: Instance, options: Options?): Part
+function Parts.disc(
+	diameter: number,
+	thickness: number,
+	position: Vector3,
+	color: Color3,
+	parent: Instance,
+	options: Options?
+): Part
 	local cframe = CFrame.new(position) * CFrame.Angles(0, 0, math.rad(90))
 	return make(Enum.PartType.Cylinder, Vector3.new(thickness, diameter, diameter), cframe, color, parent, options)
 end

@@ -83,9 +83,7 @@ Lista de trabajo. Cada tarea hecha indica su commit. Las fases están descritas 
 - [x] Kono, Clover Kingdom, Titan Village, Hero Academy y Demon Corps con trazado, terreno y decoración propios (`Islands/<Isla>Layout` + `Islands/<Isla>`); `Kit/Buildings`, `Gen/PathWalk` y árboles gigantes; se elimina `Generic`.
 - [x] Primera ronda de capturas de las 5 islas nuevas. Ajustes: títulos de portales y gacha con tamaño en studs (no se pisan), cámaras de foto despejadas (Kono, Clover, Demon), suelo pavimentado en la ciudad de Hero (`surfaces`), oficinas sin rayas y menos farolas, muralla de Titan con la parte superior nivelada, piedra con textura, hiladas, contrafuertes y estandartes, ciudad de Titan en anillos de calles, glicinas moradas y noche más clara en Demon Corps.
 - [x] Segunda ronda de capturas de las 5 islas nuevas: Titan Village y Demon Corps correctas; el rectángulo claro al este de Clover Kingdom desapareció al reconstruir el mundo entero. Ajustes: cascada de Kono orientada a lo largo de la caída (estaba inclinada al revés, medio enterrada y medio flotando), casas de Clover solo en terreno suave (pendiente < 0.3), suelo de Hero más oscuro (`Pavement`, `Concrete`), farolas de Hero cada 50 studs y ninguna en las ruinas, ruinas con ventanas en vez de rayas oscuras.
-- [x] Mapas de las 6 islas aceptados tal cual tras la segunda ronda (sin tercera ronda de capturas).
-- [ ] Iterar Nameku con capturas (*Siguiente foto*) hasta aprobar el estilo.
-- [ ] Versión detallada de Kono, Clover Kingdom, Titan Village, Hero Academy y Demon Corps (una por commit).
+- [x] Mapas de las 6 islas aprobados tal cual tras la segunda ronda (sin tercera ronda ni versiones detalladas aparte; Nameku cerrada).
 - [ ] Arena de Raid (coliseo).
 - [ ] Lista de hitos para Blender (estatuas del valle, etc.).
 - [ ] Exportar un rig con *Export Selection* y abrirlo en Blender (primer paso del flujo).
@@ -96,11 +94,25 @@ Lista de trabajo. Cada tarea hecha indica su commit. Las fases están descritas 
 - [ ] Animación/efectos de tirada de gacha por rareza.
 - [ ] Sonidos y música.
 
-### Fase 11 — Publicación
-- [ ] Eliminar `src/server/Dev/DevCheats.luau` y su llamada en `Main.server.luau`.
+### Fase 11 — UI Check-UI · R8
+- [ ] `UI/Theme` con las constantes y constructores de Check-UI (ventana, cabecera por menú, botón de cerrar, botones con estados, escalado por pantalla).
+- [ ] HUD, inventario, gacha, boosts, Raids y avisos rehechos con esos constructores.
+- [ ] Probado en Studio en PC y en el emulador de móvil.
+
+### Fase 12 — Prueba temprana en servidor publicado
+- [ ] Publicar en privado y probar guardado entre sesiones, bloqueo de sesión y un Raid con varios jugadores.
+
+### Fase 13 — Publicación
+- [ ] Eliminar `src/server/Dev/DevCheats.luau` y su llamada en `Main.server.luau` (también quita los Raids cortos de Studio).
 - [ ] Borrar los datos de prueba del DataStore.
-- [ ] Probar en un servidor publicado: guardado entre sesiones, bloqueo de sesión, Raids con varios jugadores.
+- [ ] Revisión final en un servidor publicado.
 - [ ] Revisar balance con partidas reales y ajustar `docs/balance.md` + pruebas.
+
+### Herramientas
+- [x] Constitución revisada: plan aprobado, Check-UI como estilo oficial, StyLua y selene.
+- [x] luau, luau-lsp, StyLua y selene fijados en `rokit.toml` e instalados con `rokit install` (excepciones de GitHub en AVG); `LUAU_DEFINITIONS` de usuario. `tools/typecheck.py` falla si no encuentra los tipos de Roblox.
+- [x] `stylua.toml` (tabs, 120 columnas) y todo el código formateado; pruebas y tipos sin cambios.
+- [x] selene con `std = "roblox+tests"`: `tools/selene_std.py` genera la std de Roblox (la descarga de selene se rinde con la red lenta), `tests.yml` declara los globales de las pruebas. Corregido: variable sin usar en Titan Village, `UDim2.fromScale` en `Notify`. 0 errores y 0 avisos.
 
 ### Pendientes de verificar en Studio
 - [ ] Guardado entre sesiones con "Enable Studio Access to API Services".

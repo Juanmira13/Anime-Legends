@@ -53,19 +53,43 @@ local function cottage(ground: Vector3, yaw: number, t: number, parent: Instance
 	local base = CFrame.new(ground) * CFrame.Angles(0, yaw, 0)
 	local width, depth, height = 12 + t * 6, 9 + t * 3, 9
 	Buildings.foundation(base, width, depth, STONE, model)
-	Parts.block(Vector3.new(width + 0.4, 3, depth + 0.4), base * CFrame.new(0, 1.5, 0), STONE, model, { collide = true })
+	Parts.block(
+		Vector3.new(width + 0.4, 3, depth + 0.4),
+		base * CFrame.new(0, 1.5, 0),
+		STONE,
+		model,
+		{ collide = true }
+	)
 	Buildings.walls(base * CFrame.new(0, 3, 0), width, depth, height - 3, pick(PLASTER, t), model)
 	for _, x in { -width / 2, 0, width / 2 } do
 		for _, z in { -depth / 2, depth / 2 } do
-			Parts.block(Vector3.new(0.8, height - 3, 0.8), base * CFrame.new(x, 3 + (height - 3) / 2, z), TIMBER, model, { shadow = false })
+			Parts.block(
+				Vector3.new(0.8, height - 3, 0.8),
+				base * CFrame.new(x, 3 + (height - 3) / 2, z),
+				TIMBER,
+				model,
+				{ shadow = false }
+			)
 		end
 	end
-	Parts.block(Vector3.new(width + 0.6, 0.7, depth + 0.6), base * CFrame.new(0, height - 0.3, 0), TIMBER, model, { shadow = false })
+	Parts.block(
+		Vector3.new(width + 0.6, 0.7, depth + 0.6),
+		base * CFrame.new(0, height - 0.3, 0),
+		TIMBER,
+		model,
+		{ shadow = false }
+	)
 	Buildings.windows(base, width, depth, 5.5, 2, Vector2.new(2, 2.4), WINDOW, model)
 	Buildings.door(base, depth, 2.8, 5.2, TIMBER, model)
 	local roof = pick(ROOFS, (t * 2.3) % 1)
 	Buildings.gableRoof(base * CFrame.new(0, height, 0), width, depth, depth * 0.75, roof, model, 1.4)
-	Parts.block(Vector3.new(2, 6, 2), base * CFrame.new(width * 0.3, height + depth * 0.45, depth * 0.15), STONE, model, { shadow = false })
+	Parts.block(
+		Vector3.new(2, 6, 2),
+		base * CFrame.new(width * 0.3, height + depth * 0.45, depth * 0.15),
+		STONE,
+		model,
+		{ shadow = false }
+	)
 end
 
 local function windmill(ground: Vector3, yaw: number, parent: Instance)
@@ -76,22 +100,52 @@ local function windmill(ground: Vector3, yaw: number, parent: Instance)
 	Buildings.coneRoof(base * CFrame.new(0, 23, 0), 11, 8, rgb({ 172, 74, 52 }), model)
 	Buildings.door(base, 9, 3, 5.5, TIMBER, model)
 	local hub = (base * CFrame.new(0, 19, -5.2)).Position
-	Parts.cylinder(2, 1.6, hub, (base * CFrame.new(0, 0, -1)).Position - base.Position, TIMBER, model, { shadow = false })
+	Parts.cylinder(
+		2,
+		1.6,
+		hub,
+		(base * CFrame.new(0, 0, -1)).Position - base.Position,
+		TIMBER,
+		model,
+		{ shadow = false }
+	)
 	for index = 0, 3 do
-		local blade = base * CFrame.new(0, 19, -5.8) * CFrame.Angles(0, 0, index * math.pi / 2 + math.rad(20)) * CFrame.new(0, 8, 0)
+		local blade = base
+			* CFrame.new(0, 19, -5.8)
+			* CFrame.Angles(0, 0, index * math.pi / 2 + math.rad(20))
+			* CFrame.new(0, 8, 0)
 		Parts.block(Vector3.new(0.6, 16, 0.4), blade, TIMBER, model, { shadow = false })
-		Parts.block(Vector3.new(3.4, 12, 0.2), blade * CFrame.new(1.8, 1, 0), rgb({ 244, 240, 226 }), model, { shadow = false })
+		Parts.block(
+			Vector3.new(3.4, 12, 0.2),
+			blade * CFrame.new(1.8, 1, 0),
+			rgb({ 244, 240, 226 }),
+			model,
+			{ shadow = false }
+		)
 	end
 end
 
 -- Field of wheat rows inside a fence, aligned with `yaw`.
-local function wheatField(center: Vector3, yaw: number, width: number, depth: number, context: IslandBuilder.Context, parent: Instance)
+local function wheatField(
+	center: Vector3,
+	yaw: number,
+	width: number,
+	depth: number,
+	context: IslandBuilder.Context,
+	parent: Instance
+)
 	local model = Parts.model("WheatField", parent)
 	local frame = CFrame.new(center) * CFrame.Angles(0, yaw, 0)
 	for row = -depth / 2 + 1.5, depth / 2 - 1.5, 2.6 do
 		local mid = (frame * CFrame.new(0, 0, row)).Position
 		local ground = context.ground(mid.X - context.cx, mid.Z - context.cz)
-		Parts.block(Vector3.new(width - 2, 1.4, 1.3), CFrame.new(ground + Vector3.new(0, 0.6, 0)) * CFrame.Angles(0, yaw, 0), Parts.vary(WHEAT, 0.12, (row % 3) / 3), model, { shadow = false })
+		Parts.block(
+			Vector3.new(width - 2, 1.4, 1.3),
+			CFrame.new(ground + Vector3.new(0, 0.6, 0)) * CFrame.Angles(0, yaw, 0),
+			Parts.vary(WHEAT, 0.12, (row % 3) / 3),
+			model,
+			{ shadow = false }
+		)
 	end
 	local corners = {}
 	for _, corner in { { -1, -1 }, { 1, -1 }, { 1, 1 }, { -1, 1 } } do
@@ -108,24 +162,60 @@ local function bridge(sample: PathWalk.Sample, height: number, context: IslandBu
 	local model = Parts.model("StoneBridge", parent)
 	local position = Vector3.new(context.cx + sample.x, height, context.cz + sample.z)
 	local frame = CFrame.lookAt(position, position + Vector3.new(sample.dx, 0, sample.dz))
-	Parts.block(Vector3.new(14, 1.6, 36), frame * CFrame.new(0, -0.8, 0), STONE, model, { collide = true, name = "Deck" })
+	Parts.block(
+		Vector3.new(14, 1.6, 36),
+		frame * CFrame.new(0, -0.8, 0),
+		STONE,
+		model,
+		{ collide = true, name = "Deck" }
+	)
 	for _, side in { -1, 1 } do
-		Parts.block(Vector3.new(1.4, 2.6, 36), frame * CFrame.new(side * 6.6, 1.3, 0), Parts.vary(STONE, 0.15, 0.7), model, { collide = true })
+		Parts.block(
+			Vector3.new(1.4, 2.6, 36),
+			frame * CFrame.new(side * 6.6, 1.3, 0),
+			Parts.vary(STONE, 0.15, 0.7),
+			model,
+			{ collide = true }
+		)
 		for _, along in { -18, 18 } do
-			Parts.block(Vector3.new(2.2, 4, 2.2), frame * CFrame.new(side * 6.6, 2, along), Parts.vary(STONE, 0.2, 0.3), model, { collide = true })
+			Parts.block(
+				Vector3.new(2.2, 4, 2.2),
+				frame * CFrame.new(side * 6.6, 2, along),
+				Parts.vary(STONE, 0.2, 0.3),
+				model,
+				{ collide = true }
+			)
 		end
 	end
 	for _, along in { -9, 9 } do
-		Parts.block(Vector3.new(10, 10, 3), frame * CFrame.new(0, -6.5, along), Parts.vary(STONE, 0.2, 0.5), model, { collide = true })
+		Parts.block(
+			Vector3.new(10, 10, 3),
+			frame * CFrame.new(0, -6.5, along),
+			Parts.vary(STONE, 0.2, 0.5),
+			model,
+			{ collide = true }
+		)
 	end
 end
 
 local function lampPost(ground: Vector3, parent: Instance)
 	local model = Parts.model("LampPost", parent)
 	Parts.column(0.7, 9, CFrame.new(ground - Vector3.new(0, 0.5, 0)), rgb({ 50, 50, 56 }), model, { shadow = false })
-	local lamp = Parts.block(Vector3.new(1.6, 1.8, 1.6), CFrame.new(ground + Vector3.new(0, 9.2, 0)), LAMP, model, { material = Enum.Material.Neon, shadow = false })
+	local lamp = Parts.block(
+		Vector3.new(1.6, 1.8, 1.6),
+		CFrame.new(ground + Vector3.new(0, 9.2, 0)),
+		LAMP,
+		model,
+		{ material = Enum.Material.Neon, shadow = false }
+	)
 	Parts.light(lamp, LAMP, 14, 1)
-	Parts.block(Vector3.new(2.2, 0.4, 2.2), CFrame.new(ground + Vector3.new(0, 10.3, 0)), rgb({ 50, 50, 56 }), model, { shadow = false })
+	Parts.block(
+		Vector3.new(2.2, 0.4, 2.2),
+		CFrame.new(ground + Vector3.new(0, 10.3, 0)),
+		rgb({ 50, 50, 56 }),
+		model,
+		{ shadow = false }
+	)
 end
 
 -- White castle: curtain wall with a gate, round corner towers and a keep.
@@ -136,9 +226,18 @@ local function castle(center: Vector3, gateYaw: number, parent: Instance)
 	for _, sample in PathWalk.circle(center.X, center.Z, radius, 8) do
 		local out = Vector3.new(sample.x - center.X, 0, sample.z - center.Z).Unit
 		if out:Dot(gateDirection) < 0.97 then
-			local base = CFrame.lookAt(Vector3.new(sample.x, center.Y, sample.z), Vector3.new(sample.x, center.Y, sample.z) + Vector3.new(sample.dx, 0, sample.dz))
+			local base = CFrame.lookAt(
+				Vector3.new(sample.x, center.Y, sample.z),
+				Vector3.new(sample.x, center.Y, sample.z) + Vector3.new(sample.dx, 0, sample.dz)
+			)
 			Parts.block(Vector3.new(4, 16, 8.6), base * CFrame.new(0, 6, 0), CASTLE_STONE, model, { collide = true })
-			Parts.block(Vector3.new(4.6, 2.4, 3), base * CFrame.new(0, 15.2, 0), Parts.vary(CASTLE_STONE, 0.08, 0.3), model, { shadow = false })
+			Parts.block(
+				Vector3.new(4.6, 2.4, 3),
+				base * CFrame.new(0, 15.2, 0),
+				Parts.vary(CASTLE_STONE, 0.08, 0.3),
+				model,
+				{ shadow = false }
+			)
 		end
 	end
 	-- Gatehouse towers.
@@ -154,7 +253,14 @@ local function castle(center: Vector3, gateYaw: number, parent: Instance)
 		local angle = math.atan2(gateDirection.Z, gateDirection.X) + math.pi / 4 + index * math.pi / 2
 		local base = CFrame.new(center + Vector3.new(math.cos(angle), 0, math.sin(angle)) * radius)
 		Parts.column(13, 30, base * CFrame.new(0, -2, 0), CASTLE_STONE, model, { collide = true })
-		Parts.column(14.5, 2.2, base * CFrame.new(0, 27, 0), Parts.vary(CASTLE_STONE, 0.08, 0.4), model, { shadow = false })
+		Parts.column(
+			14.5,
+			2.2,
+			base * CFrame.new(0, 27, 0),
+			Parts.vary(CASTLE_STONE, 0.08, 0.4),
+			model,
+			{ shadow = false }
+		)
 		Buildings.coneRoof(base * CFrame.new(0, 29, 0), 15, 12, CASTLE_ROOF, model)
 	end
 	-- Keep with turrets and the great tower.
@@ -171,20 +277,45 @@ local function castle(center: Vector3, gateYaw: number, parent: Instance)
 	Parts.column(12, 22, tower, CASTLE_STONE, model, { collide = true })
 	Buildings.coneRoof(tower * CFrame.new(0, 22, 0), 15, 16, CASTLE_ROOF, model)
 	Parts.column(0.4, 8, tower * CFrame.new(0, 37, 0), rgb({ 60, 60, 60 }), model, { shadow = false })
-	Parts.block(Vector3.new(0.2, 2.6, 4.4), tower * CFrame.new(0, 43.6, 2.2), rgb({ 200, 50, 60 }), model, { shadow = false })
+	Parts.block(
+		Vector3.new(0.2, 2.6, 4.4),
+		tower * CFrame.new(0, 43.6, 2.2),
+		rgb({ 200, 50, 60 }),
+		model,
+		{ shadow = false }
+	)
 end
 
 local function mushroom(ground: Vector3, size: number, t: number, parent: Instance)
 	local model = Parts.model("GlowMushroom", parent)
-	Parts.column(size * 0.3, size, CFrame.new(ground - Vector3.new(0, 0.3, 0)), rgb({ 232, 226, 214 }), model, { shadow = false })
-	local cap = Parts.ball(size * 1.1, ground + Vector3.new(0, size, 0), pick(MUSHROOM_CAPS, t), model, { material = Enum.Material.Neon, shadow = false })
+	Parts.column(
+		size * 0.3,
+		size,
+		CFrame.new(ground - Vector3.new(0, 0.3, 0)),
+		rgb({ 232, 226, 214 }),
+		model,
+		{ shadow = false }
+	)
+	local cap = Parts.ball(
+		size * 1.1,
+		ground + Vector3.new(0, size, 0),
+		pick(MUSHROOM_CAPS, t),
+		model,
+		{ material = Enum.Material.Neon, shadow = false }
+	)
 	if t > 0.6 then
 		Parts.light(cap, cap.Color, 12, 1)
 	end
 end
 
 local function mist(ground: Vector3, parent: Instance)
-	local anchor = Parts.block(Vector3.new(30, 2, 30), CFrame.new(ground + Vector3.new(0, 2, 0)), rgb({ 160, 120, 220 }), parent, { transparency = 1, shadow = false, name = "VioletMist" })
+	local anchor = Parts.block(
+		Vector3.new(30, 2, 30),
+		CFrame.new(ground + Vector3.new(0, 2, 0)),
+		rgb({ 160, 120, 220 }),
+		parent,
+		{ transparency = 1, shadow = false, name = "VioletMist" }
+	)
 	local emitter = Instance.new("ParticleEmitter")
 	emitter.Texture = "rbxasset://textures/particles/smoke_main.dds"
 	emitter.Color = ColorSequence.new(rgb({ 170, 120, 230 }))
@@ -213,17 +344,42 @@ local function grimoireAltar(ground: Vector3, facing: number, parent: Instance)
 	for _, side in { -1, 1 } do
 		local page = book * CFrame.new(side * 2.4, 0, 0) * CFrame.Angles(0, 0, side * math.rad(-12))
 		Parts.block(Vector3.new(4.8, 0.5, 6), page, rgb({ 40, 30, 46 }), model, { shadow = false })
-		Parts.block(Vector3.new(4.4, 0.3, 5.6), page * CFrame.new(0, 0.4, 0), rgb({ 250, 244, 226 }), model, { shadow = false })
+		Parts.block(
+			Vector3.new(4.4, 0.3, 5.6),
+			page * CFrame.new(0, 0.4, 0),
+			rgb({ 250, 244, 226 }),
+			model,
+			{ shadow = false }
+		)
 	end
-	local glow = Parts.block(Vector3.new(0.6, 0.6, 6), book * CFrame.new(0, 0.2, 0), rgb({ 240, 200, 90 }), model, { material = Enum.Material.Neon, shadow = false })
+	local glow = Parts.block(
+		Vector3.new(0.6, 0.6, 6),
+		book * CFrame.new(0, 0.2, 0),
+		rgb({ 240, 200, 90 }),
+		model,
+		{ material = Enum.Material.Neon, shadow = false }
+	)
 	Parts.light(glow, MAGIC, 30, 2)
 	local clover = book * CFrame.new(0, 9, 0)
 	for index = 0, 3 do
 		local leaf = clover * CFrame.Angles(0, 0, index * math.pi / 2 + math.pi / 4) * CFrame.new(0, 2.2, 0)
 		Parts.ball(3.6, leaf.Position, CLOVER, model, { material = Enum.Material.Neon, shadow = false })
 	end
-	Parts.block(Vector3.new(0.5, 4, 0.5), clover * CFrame.new(0, -3.5, 0), CLOVER, model, { material = Enum.Material.Neon, shadow = false })
-	local beam = Parts.column(3, 60, book * CFrame.new(0, 1, 0), MAGIC, model, { material = Enum.Material.Neon, transparency = 0.7, shadow = false })
+	Parts.block(
+		Vector3.new(0.5, 4, 0.5),
+		clover * CFrame.new(0, -3.5, 0),
+		CLOVER,
+		model,
+		{ material = Enum.Material.Neon, shadow = false }
+	)
+	local beam = Parts.column(
+		3,
+		60,
+		book * CFrame.new(0, 1, 0),
+		MAGIC,
+		model,
+		{ material = Enum.Material.Neon, transparency = 0.7, shadow = false }
+	)
 	local sparkles = Instance.new("ParticleEmitter")
 	sparkles.Texture = "rbxasset://textures/particles/sparkles_main.dds"
 	sparkles.Color = ColorSequence.new(MAGIC)
@@ -237,8 +393,20 @@ local function grimoireAltar(ground: Vector3, facing: number, parent: Instance)
 	for index = 0, 5 do
 		local angle = index / 6 * 2 * math.pi
 		local pillar = base * CFrame.new(math.cos(angle) * 15, 0, math.sin(angle) * 15)
-		Parts.block(Vector3.new(3, 9, 3), pillar * CFrame.new(0, 3.5, 0), Parts.vary(STONE, 0.2, index / 6), model, { collide = true })
-		Parts.block(Vector3.new(1.6, 3, 1.6), pillar * CFrame.new(0, 11.5, 0) * CFrame.Angles(math.rad(45), 0, math.rad(45)), MAGIC, model, { material = Enum.Material.Neon, shadow = false })
+		Parts.block(
+			Vector3.new(3, 9, 3),
+			pillar * CFrame.new(0, 3.5, 0),
+			Parts.vary(STONE, 0.2, index / 6),
+			model,
+			{ collide = true }
+		)
+		Parts.block(
+			Vector3.new(1.6, 3, 1.6),
+			pillar * CFrame.new(0, 11.5, 0) * CFrame.Angles(math.rad(45), 0, math.rad(45)),
+			MAGIC,
+			model,
+			{ material = Enum.Material.Neon, shadow = false }
+		)
 	end
 end
 
@@ -268,10 +436,18 @@ local function decorate(context: IslandBuilder.Context)
 			wheatField(context.ground(x, z), field[3], 26, 18, context, village)
 		end
 	end
-	for _, point in Scatter.inCircle(rng, easy.x, easy.z, 110, 10, 12, function(x, z)
-		return context.isFree(x, z, 3)
-	end) do
-		Parts.ball(Rng.range(rng, 3, 4.5), context.ground(point.x, point.z) + Vector3.new(0, 1, 0), Parts.vary(WHEAT, 0.15, Rng.next(rng)), village, { shadow = false })
+	for _, point in
+		Scatter.inCircle(rng, easy.x, easy.z, 110, 10, 12, function(x, z)
+			return context.isFree(x, z, 3)
+		end)
+	do
+		Parts.ball(
+			Rng.range(rng, 3, 4.5),
+			context.ground(point.x, point.z) + Vector3.new(0, 1, 0),
+			Parts.vary(WHEAT, 0.15, Rng.next(rng)),
+			village,
+			{ shadow = false }
+		)
 	end
 
 	-- Stone bridge where the road crosses the river.
@@ -300,9 +476,11 @@ local function decorate(context: IslandBuilder.Context)
 	end
 
 	-- Meadow trees away from the haunted forest.
-	for _, point in Scatter.inCircle(rng, 0, 0, 480, 170, 15, function(x, z)
-		return x < 150 and context.isFree(x, z, 6) and Shape.height(layout, x, z) < 44
-	end) do
+	for _, point in
+		Scatter.inCircle(rng, 0, 0, 480, 170, 15, function(x, z)
+			return x < 150 and context.isFree(x, z, 6) and Shape.height(layout, x, z) < 44
+		end)
+	do
 		Nature.roundTree(context.ground(point.x, point.z), Rng.range(rng, 15, 26), Rng.next(rng), MEADOW, nature)
 	end
 	for _, sample in PathWalk.samples(road.points, 16, 8) do
@@ -312,21 +490,27 @@ local function decorate(context: IslandBuilder.Context)
 			Nature.bush(context.ground(x, z), Rng.range(rng, 3, 4.5), Rng.next(rng), BUSHES, nature)
 		end
 	end
-	for _, point in Scatter.inCircle(rng, -100, 60, 380, 110, 9, function(x, z)
-		return x < 150 and context.isFree(x, z, 3)
-	end) do
+	for _, point in
+		Scatter.inCircle(rng, -100, 60, 380, 110, 9, function(x, z)
+			return x < 150 and context.isFree(x, z, 3)
+		end)
+	do
 		Nature.flowers(context.ground(point.x, point.z), Rng.next(rng), FLOWERS, nature)
 	end
 
 	-- Haunted forest: dark trees, glowing mushrooms and violet mist.
-	for _, point in Scatter.inCircle(rng, hard.x, hard.z, 190, 120, 11, function(x, z)
-		return x > 150 and context.isFree(x, z, 5)
-	end) do
+	for _, point in
+		Scatter.inCircle(rng, hard.x, hard.z, 190, 120, 11, function(x, z)
+			return x > 150 and context.isFree(x, z, 5)
+		end)
+	do
 		Nature.roundTree(context.ground(point.x, point.z), Rng.range(rng, 18, 32), Rng.next(rng), HAUNTED, nature)
 	end
-	for _, point in Scatter.inCircle(rng, hard.x, hard.z, 150, 40, 8, function(x, z)
-		return x > 150 and context.isFree(x, z, 2)
-	end) do
+	for _, point in
+		Scatter.inCircle(rng, hard.x, hard.z, 150, 40, 8, function(x, z)
+			return x > 150 and context.isFree(x, z, 2)
+		end)
+	do
 		mushroom(context.ground(point.x, point.z), Rng.range(rng, 1.5, 4), Rng.next(rng), nature)
 	end
 	for index = 0, 5 do
@@ -344,10 +528,25 @@ local function decorate(context: IslandBuilder.Context)
 	-- Heraldic banners around the plaza.
 	for _, degrees in { 230, 310 } do
 		local angle = math.rad(degrees)
-		local ground = context.ground(plaza.x + math.cos(angle) * (plaza.radius - 3), plaza.z + math.sin(angle) * (plaza.radius - 3))
+		local ground = context.ground(
+			plaza.x + math.cos(angle) * (plaza.radius - 3),
+			plaza.z + math.sin(angle) * (plaza.radius - 3)
+		)
 		Parts.column(0.6, 14, CFrame.new(ground), rgb({ 70, 70, 76 }), village, { shadow = false })
-		Parts.block(Vector3.new(0.3, 7, 4), CFrame.new(ground + Vector3.new(0, 10, 2.1)), CASTLE_ROOF, village, { shadow = false })
-		Parts.block(Vector3.new(0.35, 2, 2), CFrame.new(ground + Vector3.new(0, 10.5, 2.1)), CLOVER, village, { material = Enum.Material.Neon, shadow = false })
+		Parts.block(
+			Vector3.new(0.3, 7, 4),
+			CFrame.new(ground + Vector3.new(0, 10, 2.1)),
+			CASTLE_ROOF,
+			village,
+			{ shadow = false }
+		)
+		Parts.block(
+			Vector3.new(0.35, 2, 2),
+			CFrame.new(ground + Vector3.new(0, 10.5, 2.1)),
+			CLOVER,
+			village,
+			{ material = Enum.Material.Neon, shadow = false }
+		)
 	end
 end
 

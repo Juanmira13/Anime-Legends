@@ -42,6 +42,10 @@ def analyze(paths: list[str], sourcemap: str | None) -> str:
 
 
 def main() -> int:
+    if not (PROJECT / DEFINITIONS).is_file():
+        # Without Roblox types every pass reports noise or, worse, hides real errors.
+        print(f"FAIL: Roblox type definitions not found at '{DEFINITIONS}' (set LUAU_DEFINITIONS)")
+        return 1
     run([ROJO, "sourcemap", "default.project.json", "-o", "sourcemap.json"])
     run([ROJO, "sourcemap", "builder.project.json", "-o", "builder-sourcemap.json"])
 

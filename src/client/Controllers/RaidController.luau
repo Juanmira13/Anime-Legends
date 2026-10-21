@@ -57,7 +57,8 @@ local function updateStatus(serverNow: number)
 	if type(difficulty) == "string" then
 		local wave = player:GetAttribute("RaidWave") or 0
 		local endsAt = tonumber(player:GetAttribute("RaidEndsAt")) or serverNow
-		statusLabel.Text = `Raid {difficultyName(difficulty)}  ·  Oleada {wave}/{Raids.WaveCount}  ·  {clock(endsAt - serverNow)}`
+		statusLabel.Text =
+			`Raid {difficultyName(difficulty)}  ·  Oleada {wave}/{Raids.WaveCount}  ·  {clock(endsAt - serverNow)}`
 		statusLabel.Visible = true
 	elseif type(queued) == "string" then
 		local startsAt = tonumber(player:GetAttribute("RaidQueueStartsAt")) or serverNow
@@ -105,7 +106,10 @@ local function onEvent(event: any)
 	elseif kind == "BoostDrop" then
 		Notify.show(`Obtuviste un Boost de {Boosts.get(event.boost).displayName}`, Color3.fromRGB(120, 220, 255))
 	elseif kind == "Achievement" then
-		Notify.show(`¡Nueva ranura! Ahora puedes equipar {event.equipSlots} personajes`, Theme.rarityColor("Legendary"))
+		Notify.show(
+			`¡Nueva ranura! Ahora puedes equipar {event.equipSlots} personajes`,
+			Theme.rarityColor("Legendary")
+		)
 	elseif kind == "Completed" then
 		Notify.show("¡Raid completado!", Theme.rarityColor("Uncommon"))
 	elseif kind == "Failed" then

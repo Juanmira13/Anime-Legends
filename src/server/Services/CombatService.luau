@@ -58,7 +58,9 @@ local function isInRange(player: Player, enemy: EnemyService.Enemy): boolean
 end
 
 -- Equipped characters that can attack, and the slot of each one.
-local function getAttackers(data: DataService.Data): ({ AttackClock.Attacker }, { [string]: string }, { [string]: number })
+local function getAttackers(
+	data: DataService.Data
+): ({ AttackClock.Attacker }, { [string]: string }, { [string]: number })
 	local attackers = {}
 	local characterIds = {}
 	local slotsByUid = {}

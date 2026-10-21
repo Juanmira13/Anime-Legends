@@ -46,7 +46,14 @@ end
 
 -- Exactly `count` points inside a circle for enemy spawns: the boss rank uses
 -- the center; others are scattered with `spacing`, falling back to a ring.
-function Scatter.spawnPoints(rng: Rng.Rng, cx: number, cz: number, radius: number, count: number, spacing: number): { Point }
+function Scatter.spawnPoints(
+	rng: Rng.Rng,
+	cx: number,
+	cz: number,
+	radius: number,
+	count: number,
+	spacing: number
+): { Point }
 	if count == 1 then
 		return { { x = cx, z = cz } }
 	end

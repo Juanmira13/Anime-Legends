@@ -300,7 +300,13 @@ end
 
 -- Moves a character toward its goal at the team's speed. Returns the studs
 -- moved and the direction it moved in.
-local function walk(follower: Follower, goal: Vector3, speed: number, dt: number, ownerGround: number): (number, Vector3)
+local function walk(
+	follower: Follower,
+	goal: Vector3,
+	speed: number,
+	dt: number,
+	ownerGround: number
+): (number, Vector3)
 	local position = follower.position
 	if position == nil then
 		follower.position = Vector3.new(goal.X, ownerGround, goal.Z)

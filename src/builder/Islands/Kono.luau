@@ -59,12 +59,33 @@ local function house(ground: Vector3, yaw: number, t: number, parent: Instance)
 	Buildings.foundation(base, width, depth, STONE, model)
 	Buildings.walls(base, width, depth, height, wall, model)
 	for floor = 1, floors do
-		Parts.block(Vector3.new(width + 0.4, 0.8, depth + 0.4), base * CFrame.new(0, floor * 8 - 0.4, 0), DARK_WOOD, model, { shadow = false })
-		Buildings.windows(base * CFrame.new(0, (floor - 1) * 8, 0), width, depth, 4.5, math.max(2, math.floor(width / 5)), Vector2.new(2.2, 2.2), WINDOW, model)
+		Parts.block(
+			Vector3.new(width + 0.4, 0.8, depth + 0.4),
+			base * CFrame.new(0, floor * 8 - 0.4, 0),
+			DARK_WOOD,
+			model,
+			{ shadow = false }
+		)
+		Buildings.windows(
+			base * CFrame.new(0, (floor - 1) * 8, 0),
+			width,
+			depth,
+			4.5,
+			math.max(2, math.floor(width / 5)),
+			Vector2.new(2.2, 2.2),
+			WINDOW,
+			model
+		)
 	end
 	Buildings.door(base, depth, 3, 5.5, DARK_WOOD, model)
 	Buildings.gableRoof(base * CFrame.new(0, height, 0), width, depth, 4.5, roof, model, 2.2)
-	Parts.block(Vector3.new(width + 4.6, 0.7, 1), base * CFrame.new(0, height + 4.6, 0), Parts.vary(roof, 0.3, 0.2), model, { shadow = false })
+	Parts.block(
+		Vector3.new(width + 4.6, 0.7, 1),
+		base * CFrame.new(0, height + 4.6, 0),
+		Parts.vary(roof, 0.3, 0.2),
+		model,
+		{ shadow = false }
+	)
 
 	if t > 0.35 then
 		-- Rooftop water tank, a village signature.
@@ -73,7 +94,13 @@ local function house(ground: Vector3, yaw: number, t: number, parent: Instance)
 		Parts.disc(3.6, 0.5, (tank * CFrame.new(0, 3.8, 0)).Position, roof, model, { shadow = false })
 	end
 	if t < 0.6 then
-		local lantern = Parts.ball(1.3, (base * CFrame.new(2.6, 5.4, -depth / 2 - 0.9)).Position, LANTERN, model, { material = Enum.Material.Neon, shadow = false })
+		local lantern = Parts.ball(
+			1.3,
+			(base * CFrame.new(2.6, 5.4, -depth / 2 - 0.9)).Position,
+			LANTERN,
+			model,
+			{ material = Enum.Material.Neon, shadow = false }
+		)
 		Parts.light(lantern, rgb({ 255, 170, 110 }), 12, 1.2)
 	end
 end
@@ -99,12 +126,24 @@ local function gate(sample: PathWalk.Sample, context: IslandBuilder.Context, par
 	local yaw = math.atan2(-sample.dx, -sample.dz)
 	local base = CFrame.new(ground) * CFrame.Angles(0, yaw, 0)
 	for _, side in { -1, 1 } do
-		Parts.block(Vector3.new(3.4, 22, 3.4), base * CFrame.new(side * 11, 9, 0), rgb({ 230, 222, 200 }), model, { collide = true })
+		Parts.block(
+			Vector3.new(3.4, 22, 3.4),
+			base * CFrame.new(side * 11, 9, 0),
+			rgb({ 230, 222, 200 }),
+			model,
+			{ collide = true }
+		)
 		Parts.block(Vector3.new(4.4, 1.2, 4.4), base * CFrame.new(side * 11, 0.2, 0), STONE, model, { collide = true })
 	end
 	Parts.block(Vector3.new(28, 3, 4), base * CFrame.new(0, 20.5, 0), DARK_WOOD, model, { collide = true })
 	Buildings.gableRoof(base * CFrame.new(0, 22, 0) * CFrame.Angles(0, 0, 0), 30, 5, 3.2, GATE_GREEN, model, 1.5)
-	Parts.block(Vector3.new(9, 4, 0.6), base * CFrame.new(0, 16.5, -2.2), rgb({ 240, 236, 220 }), model, { shadow = false })
+	Parts.block(
+		Vector3.new(9, 4, 0.6),
+		base * CFrame.new(0, 16.5, -2.2),
+		rgb({ 240, 236, 220 }),
+		model,
+		{ shadow = false }
+	)
 end
 
 local function trainingPost(ground: Vector3, t: number, parent: Instance)
@@ -114,9 +153,25 @@ local function trainingPost(ground: Vector3, t: number, parent: Instance)
 		Parts.disc(2.1, 0.5, ground + Vector3.new(0, y, 0), rgb({ 214, 196, 150 }), model, { shadow = false })
 	end
 	if t > 0.5 then
-		local target = Parts.cylinder(3, 0.4, ground + Vector3.new(0, 5, -1.1), Vector3.new(0, 0, -1), rgb({ 230, 230, 220 }), model, { shadow = false })
+		local target = Parts.cylinder(
+			3,
+			0.4,
+			ground + Vector3.new(0, 5, -1.1),
+			Vector3.new(0, 0, -1),
+			rgb({ 230, 230, 220 }),
+			model,
+			{ shadow = false }
+		)
 		target.Name = "Target"
-		Parts.cylinder(1.4, 0.45, ground + Vector3.new(0, 5, -1.15), Vector3.new(0, 0, -1), LANTERN, model, { shadow = false })
+		Parts.cylinder(
+			1.4,
+			0.45,
+			ground + Vector3.new(0, 5, -1.15),
+			Vector3.new(0, 0, -1),
+			LANTERN,
+			model,
+			{ shadow = false }
+		)
 	end
 end
 
@@ -125,11 +180,23 @@ local function marketStall(ground: Vector3, yaw: number, t: number, parent: Inst
 	local base = CFrame.new(ground) * CFrame.Angles(0, yaw, 0)
 	Parts.block(Vector3.new(7, 2.4, 3.5), base * CFrame.new(0, 1.2, 0), WOOD, model, { collide = true })
 	for _, corner in { { -3.2, -1.6 }, { 3.2, -1.6 }, { -3.2, 1.6 }, { 3.2, 1.6 } } do
-		Parts.block(Vector3.new(0.4, 6, 0.4), base * CFrame.new(corner[1], 3, corner[2]), DARK_WOOD, model, { shadow = false })
+		Parts.block(
+			Vector3.new(0.4, 6, 0.4),
+			base * CFrame.new(corner[1], 3, corner[2]),
+			DARK_WOOD,
+			model,
+			{ shadow = false }
+		)
 	end
 	Buildings.gableRoof(base * CFrame.new(0, 6, 0), 7.4, 4, 1.8, pick(ROOFS, t), model, 0.8)
 	for index = 0, 2 do
-		Parts.ball(1.2, (base * CFrame.new(-2 + index * 2, 2.9, -0.6)).Position, pick(FLOWERS, (t + index * 0.3) % 1), model, { shadow = false })
+		Parts.ball(
+			1.2,
+			(base * CFrame.new(-2 + index * 2, 2.9, -0.6)).Position,
+			pick(FLOWERS, (t + index * 0.3) % 1),
+			model,
+			{ shadow = false }
+		)
 	end
 end
 
@@ -142,7 +209,14 @@ local function powerLine(points: { { number } }, context: IslandBuilder.Context,
 		local ground = context.ground(x, z)
 		Parts.column(1, 16, CFrame.new(ground - Vector3.new(0, 1, 0)), DARK_WOOD, model, { shadow = false })
 		local top = ground + Vector3.new(0, 14.5, 0)
-		Parts.beam(top - Vector3.new(sample.dz, 0, -sample.dx) * 2.5, top + Vector3.new(sample.dz, 0, -sample.dx) * 2.5, 0.5, DARK_WOOD, model, { shadow = false })
+		Parts.beam(
+			top - Vector3.new(sample.dz, 0, -sample.dx) * 2.5,
+			top + Vector3.new(sample.dz, 0, -sample.dx) * 2.5,
+			0.5,
+			DARK_WOOD,
+			model,
+			{ shadow = false }
+		)
 		if previous then
 			Parts.beam(previous, top, 0.15, rgb({ 40, 40, 44 }), model, { shadow = false })
 		end
@@ -155,13 +229,37 @@ local function statue(ground: Vector3, yaw: number, parent: Instance)
 	local model = Parts.model("GuardianStatue", parent)
 	local base = CFrame.new(ground) * CFrame.Angles(0, yaw, 0)
 	local stone = rgb({ 150, 146, 140 })
-	Parts.block(Vector3.new(16, 6, 12), base * CFrame.new(0, 1, 0), Parts.vary(stone, 0.2, 0.2), model, { collide = true })
+	Parts.block(
+		Vector3.new(16, 6, 12),
+		base * CFrame.new(0, 1, 0),
+		Parts.vary(stone, 0.2, 0.2),
+		model,
+		{ collide = true }
+	)
 	for _, side in { -1, 1 } do
 		Parts.block(Vector3.new(4.5, 14, 5), base * CFrame.new(side * 3, 11, 0), stone, model, { collide = true })
 	end
-	Parts.block(Vector3.new(13, 14, 7), base * CFrame.new(0, 25, 0), Parts.vary(stone, 0.15, 0.6), model, { collide = true })
-	Parts.block(Vector3.new(4, 13, 4.5), base * CFrame.new(-8.5, 26, 0) * CFrame.Angles(0, 0, math.rad(-8)), stone, model, { collide = true })
-	Parts.block(Vector3.new(4, 13, 4.5), base * CFrame.new(8.5, 27, -2) * CFrame.Angles(math.rad(35), 0, math.rad(8)), stone, model, { collide = true })
+	Parts.block(
+		Vector3.new(13, 14, 7),
+		base * CFrame.new(0, 25, 0),
+		Parts.vary(stone, 0.15, 0.6),
+		model,
+		{ collide = true }
+	)
+	Parts.block(
+		Vector3.new(4, 13, 4.5),
+		base * CFrame.new(-8.5, 26, 0) * CFrame.Angles(0, 0, math.rad(-8)),
+		stone,
+		model,
+		{ collide = true }
+	)
+	Parts.block(
+		Vector3.new(4, 13, 4.5),
+		base * CFrame.new(8.5, 27, -2) * CFrame.Angles(math.rad(35), 0, math.rad(8)),
+		stone,
+		model,
+		{ collide = true }
+	)
 	Parts.ball(8, (base * CFrame.new(0, 36, 0)).Position, Parts.vary(stone, 0.1, 0.8), model, { collide = true })
 end
 
@@ -172,14 +270,27 @@ local function waterfall(context: IslandBuilder.Context, parent: Instance)
 	local mid = (top + bottom) / 2
 	-- Sheet along the drop: its Y axis runs from the pool up to the lip.
 	local up = (top - bottom).Unit
-	local back = Vector3.xAxis:Cross(up).Unit
+	local back = Vector3.new(1, 0, 0):Cross(up).Unit
 	local frame = CFrame.fromMatrix(mid, up:Cross(back), up, back)
-	local sheet = Parts.block(Vector3.new(14, (top - bottom).Magnitude + 6, 1.2), frame, WATER, model, { transparency = 0.35, shadow = false, name = "FallingWater" })
+	local sheet = Parts.block(
+		Vector3.new(14, (top - bottom).Magnitude + 6, 1.2),
+		frame,
+		WATER,
+		model,
+		{ transparency = 0.35, shadow = false, name = "FallingWater" }
+	)
 	sheet.Material = Enum.Material.Glass
 	-- Foam where the fall meets the water below.
 	local level = Shape.waterLevel(layout, 72, -212, 0)
 	local foamAt = context.ground(72, -212)
-	local foam = Parts.disc(18, 0.4, Vector3.new(foamAt.X, level + 0.2, foamAt.Z), rgb({ 245, 252, 255 }), model, { transparency = 0.25, shadow = false, name = "Foam" })
+	local foam = Parts.disc(
+		18,
+		0.4,
+		Vector3.new(foamAt.X, level + 0.2, foamAt.Z),
+		rgb({ 245, 252, 255 }),
+		model,
+		{ transparency = 0.25, shadow = false, name = "Foam" }
+	)
 	local mist = Instance.new("ParticleEmitter")
 	mist.Texture = "rbxasset://textures/particles/smoke_main.dds"
 	mist.Color = ColorSequence.new(Color3.new(1, 1, 1))
@@ -241,10 +352,12 @@ local function decorate(context: IslandBuilder.Context)
 	powerLine({ { -120, 170 }, { -250, 90 }, { -150, 60 }, { 20, 40 }, { 140, 20 } }, context, village)
 
 	-- Forest everywhere outside the village, thinning out up the mountains.
-	for _, point in Scatter.inCircle(rng, 0, 0, 470, 300, 13, function(x, z)
-		local villageDistance = math.sqrt((x - medium.x) ^ 2 + (z - medium.z) ^ 2)
-		return villageDistance > 125 and context.isFree(x, z, 6) and Shape.height(layout, x, z) < 70
-	end) do
+	for _, point in
+		Scatter.inCircle(rng, 0, 0, 470, 300, 13, function(x, z)
+			local villageDistance = math.sqrt((x - medium.x) ^ 2 + (z - medium.z) ^ 2)
+			return villageDistance > 125 and context.isFree(x, z, 6) and Shape.height(layout, x, z) < 70
+		end)
+	do
 		Nature.roundTree(context.ground(point.x, point.z), Rng.range(rng, 16, 30), Rng.next(rng), FOREST, nature)
 	end
 
@@ -266,14 +379,20 @@ local function decorate(context: IslandBuilder.Context)
 			Nature.bush(context.ground(x, z), Rng.range(rng, 3, 5), Rng.next(rng), BUSHES, nature)
 		end
 	end
-	for _, point in Scatter.inCircle(rng, 0, -200, 300, 45, 20, function(x, z)
-		return Shape.height(layout, x, z) > 30 and Shape.slope(layout, x, z) < 1.4 and Shape.pathInside(layout, x, z) < -4
-	end) do
+	for _, point in
+		Scatter.inCircle(rng, 0, -200, 300, 45, 20, function(x, z)
+			return Shape.height(layout, x, z) > 30
+				and Shape.slope(layout, x, z) < 1.4
+				and Shape.pathInside(layout, x, z) < -4
+		end)
+	do
 		Nature.rock(context.ground(point.x, point.z), Rng.range(rng, 4, 9), Rng.next(rng), ROCK, nature)
 	end
-	for _, point in Scatter.inCircle(rng, 0, 0, 470, 80, 9, function(x, z)
-		return context.isFree(x, z, 3)
-	end) do
+	for _, point in
+		Scatter.inCircle(rng, 0, 0, 470, 80, 9, function(x, z)
+			return context.isFree(x, z, 3)
+		end)
+	do
 		Nature.flowers(context.ground(point.x, point.z), Rng.next(rng), FLOWERS, nature)
 	end
 

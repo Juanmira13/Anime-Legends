@@ -73,15 +73,31 @@ local function createRow(parent: Instance, boost: Boosts.Boost, order: number): 
 	row.Parent = parent
 	Theme.corner(row)
 
-	local name = Theme.label({ text = `Boost de {boost.displayName}`, size = UDim2.new(0.55, -12, 0, 24), position = UDim2.fromOffset(12, 6), color = COLORS[boost.id] })
+	local name = Theme.label({
+		text = `Boost de {boost.displayName}`,
+		size = UDim2.new(0.55, -12, 0, 24),
+		position = UDim2.fromOffset(12, 6),
+		color = COLORS[boost.id],
+	})
 	name.TextXAlignment = Enum.TextXAlignment.Left
 	name.Parent = row
 
-	local effect = Theme.label({ text = EFFECTS[boost.id] or "", size = UDim2.new(0.55, -12, 0, 16), position = UDim2.fromOffset(12, 32), color = Theme.MutedText, bold = false })
+	local effect = Theme.label({
+		text = EFFECTS[boost.id] or "",
+		size = UDim2.new(0.55, -12, 0, 16),
+		position = UDim2.fromOffset(12, 32),
+		color = Theme.MutedText,
+		bold = false,
+	})
 	effect.TextXAlignment = Enum.TextXAlignment.Left
 	effect.Parent = row
 
-	local status = Theme.label({ size = UDim2.new(0.55, -12, 0, 16), position = UDim2.fromOffset(12, 52), color = Theme.Text, bold = false })
+	local status = Theme.label({
+		size = UDim2.new(0.55, -12, 0, 16),
+		position = UDim2.fromOffset(12, 52),
+		color = Theme.Text,
+		bold = false,
+	})
 	status.TextXAlignment = Enum.TextXAlignment.Left
 	status.Parent = row
 

@@ -127,7 +127,11 @@ local function createCard(entry: { uid: string, id: string }, isEquipped: boolea
 	stroke.Thickness = if isEquipped then 3 else 1.5
 	stroke.Parent = card
 
-	local name = Theme.label({ text = character.displayName, size = UDim2.new(1, -12, 0, 22), position = UDim2.fromOffset(6, 22) })
+	local name = Theme.label({
+		text = character.displayName,
+		size = UDim2.new(1, -12, 0, 22),
+		position = UDim2.fromOffset(6, 22),
+	})
 	name.Parent = card
 
 	local rarityLabel = Theme.label({
@@ -149,7 +153,12 @@ local function createCard(entry: { uid: string, id: string }, isEquipped: boolea
 	stats.Parent = card
 
 	if isEquipped then
-		local badge = Theme.label({ text = "EQUIPADO", size = UDim2.new(1, -12, 0, 16), position = UDim2.new(0, 6, 1, -22), color = Theme.Accent })
+		local badge = Theme.label({
+			text = "EQUIPADO",
+			size = UDim2.new(1, -12, 0, 16),
+			position = UDim2.new(0, 6, 1, -22),
+			color = Theme.Accent,
+		})
 		badge.Parent = card
 	end
 
@@ -198,9 +207,12 @@ render = function()
 		createCard(entry, equipped[entry.uid] == true, order)
 	end
 
-	countsLabel.Text = `Personajes {#current.characters}/{current.capacity}  ·  Equipados {#current.equipped}/{current.equipSlots}`
+	countsLabel.Text =
+		`Personajes {#current.characters}/{current.capacity}  ·  Equipados {#current.equipped}/{current.equipSlots}`
 	local cost = current.nextUpgradeCost
-	upgradeButton.Text = if cost then `Ampliar +{Balance.Inventory.slotsPerUpgrade} ({Format.number(cost)} ¥)` else "Inventario al máximo"
+	upgradeButton.Text = if cost
+		then `Ampliar +{Balance.Inventory.slotsPerUpgrade} ({Format.number(cost)} ¥)`
+		else "Inventario al máximo"
 	upgradeButton.Active = cost ~= nil
 	upgradeButton.AutoButtonColor = cost ~= nil
 end
@@ -219,7 +231,8 @@ local function createPanel(gui: ScreenGui)
 	sizeLimit.MaxSize = Vector2.new(760, 540)
 	sizeLimit.Parent = panel
 
-	local title = Theme.label({ text = "Inventario", size = UDim2.new(0.5, 0, 0, 32), position = UDim2.fromOffset(16, 12) })
+	local title =
+		Theme.label({ text = "Inventario", size = UDim2.new(0.5, 0, 0, 32), position = UDim2.fromOffset(16, 12) })
 	title.TextXAlignment = Enum.TextXAlignment.Left
 	title.Parent = panel
 
@@ -232,7 +245,12 @@ local function createPanel(gui: ScreenGui)
 		panel.Visible = false
 	end)
 
-	countsLabel = Theme.label({ size = UDim2.new(1, -32, 0, 20), position = UDim2.fromOffset(16, 48), color = Theme.MutedText, bold = false })
+	countsLabel = Theme.label({
+		size = UDim2.new(1, -32, 0, 20),
+		position = UDim2.fromOffset(16, 48),
+		color = Theme.MutedText,
+		bold = false,
+	})
 	countsLabel.TextXAlignment = Enum.TextXAlignment.Left
 	countsLabel.Parent = panel
 
@@ -269,7 +287,8 @@ local function createPanel(gui: ScreenGui)
 	layout.SortOrder = Enum.SortOrder.LayoutOrder
 	layout.Parent = grid
 
-	messageLabel = Theme.label({ size = UDim2.new(1, -32, 0, 24), position = UDim2.new(0, 16, 1, -32), color = Theme.Error })
+	messageLabel =
+		Theme.label({ size = UDim2.new(1, -32, 0, 24), position = UDim2.new(0, 16, 1, -32), color = Theme.Error })
 	messageLabel.Visible = false
 	messageLabel.ZIndex = 5
 	messageLabel.Parent = panel

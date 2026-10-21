@@ -43,7 +43,14 @@ function RaidLobby.build(onStatus: (string) -> ())
 	-- Platform with an inlaid ring pattern.
 	Parts.disc(PLATFORM_DIAMETER, 4, center - Vector3.new(0, 2, 0), STONE, decor, { collide = true })
 	Parts.disc(PLATFORM_DIAMETER + 6, 2, center - Vector3.new(0, 3, 0), STONE_DARK, decor, { collide = true })
-	Parts.disc(PLATFORM_DIAMETER * 0.62, 0.3, center + Vector3.new(0, 0.05, 0), accent, decor, { material = Enum.Material.Neon, shadow = false })
+	Parts.disc(
+		PLATFORM_DIAMETER * 0.62,
+		0.3,
+		center + Vector3.new(0, 0.05, 0),
+		accent,
+		decor,
+		{ material = Enum.Material.Neon, shadow = false }
+	)
 	Parts.disc(PLATFORM_DIAMETER * 0.58, 0.4, center + Vector3.new(0, 0.1, 0), STONE, decor, { shadow = false })
 
 	-- Rocky underside: stacked shrinking discs, like an upside-down mountain.
@@ -64,7 +71,13 @@ function RaidLobby.build(onStatus: (string) -> ())
 		Parts.column(3.4, height, CFrame.new(base + Vector3.new(0, 1.2, 0)), STONE, decor, { collide = true })
 		if height == 22 then
 			Parts.column(4.5, 1.2, CFrame.new(base + Vector3.new(0, 23.2, 0)), STONE_DARK, decor, { shadow = false })
-			local flame = Parts.ball(1.8, base + Vector3.new(0, 25.4, 0), accent, decor, { material = Enum.Material.Neon, shadow = false })
+			local flame = Parts.ball(
+				1.8,
+				base + Vector3.new(0, 25.4, 0),
+				accent,
+				decor,
+				{ material = Enum.Material.Neon, shadow = false }
+			)
 			if index % 4 == 0 then
 				Parts.light(flame, accent, 22, 1.5)
 			end
@@ -75,25 +88,48 @@ function RaidLobby.build(onStatus: (string) -> ())
 	for index, difficulty in Raids.Difficulties do
 		local angle = math.rad(-90 + (index - 2) * 38)
 		local x, z = center.X + math.cos(angle) * radius * 0.55, center.Z + math.sin(angle) * radius * 0.55
-		Gameplay.raidPad(difficulty.id, `Raid {difficulty.displayName}`, x, center.Y, z, PAD_COLORS[difficulty.id] or accent, gameplay)
+		Gameplay.raidPad(
+			difficulty.id,
+			`Raid {difficulty.displayName}`,
+			x,
+			center.Y,
+			z,
+			PAD_COLORS[difficulty.id] or accent,
+			gameplay
+		)
 	end
 	Gameplay.raidLobbyArrival(center.X, center.Y, center.Z + radius * 0.35, gameplay)
 	local first = Islands.List[1]
 	local portalX, portalZ = center.X - radius * 0.45, center.Z + radius * 0.45
-	Gameplay.islandPortal(first.id, portalX, center.Y, portalZ, math.atan2(-(center.X - portalX), -(center.Z - portalZ)), gameplay)
+	Gameplay.islandPortal(
+		first.id,
+		portalX,
+		center.Y,
+		portalZ,
+		math.atan2(-(center.X - portalX), -(center.Z - portalZ)),
+		gameplay
+	)
 
 	-- Floating crystals and clouds around the temple.
 	for index = 1, 10 do
 		local angle = index / 10 * 2 * math.pi + Rng.range(rng, -0.2, 0.2)
 		local distance = radius + Rng.range(rng, 18, 45)
-		local position = center + Vector3.new(math.cos(angle) * distance, Rng.range(rng, -10, 25), math.sin(angle) * distance)
-		local crystal = Parts.block(Vector3.new(3, 8, 3), CFrame.new(position) * CFrame.Angles(Rng.range(rng, 0, 1), Rng.range(rng, 0, 6), Rng.range(rng, 0, 1)), accent, decor, { material = Enum.Material.Neon, shadow = false })
+		local position = center
+			+ Vector3.new(math.cos(angle) * distance, Rng.range(rng, -10, 25), math.sin(angle) * distance)
+		local crystal = Parts.block(
+			Vector3.new(3, 8, 3),
+			CFrame.new(position) * CFrame.Angles(Rng.range(rng, 0, 1), Rng.range(rng, 0, 6), Rng.range(rng, 0, 1)),
+			accent,
+			decor,
+			{ material = Enum.Material.Neon, shadow = false }
+		)
 		crystal.Transparency = 0.15
 	end
 	for _ = 1, 26 do
 		local angle = Rng.range(rng, 0, 2 * math.pi)
 		local distance = Rng.range(rng, radius * 0.6, radius * 2.2)
-		local position = center + Vector3.new(math.cos(angle) * distance, Rng.range(rng, -70, -25), math.sin(angle) * distance)
+		local position = center
+			+ Vector3.new(math.cos(angle) * distance, Rng.range(rng, -70, -25), math.sin(angle) * distance)
 		for puff = 1, 3 do
 			local offset = Vector3.new(puff * 9 - 18, Rng.range(rng, -2, 3), Rng.range(rng, -5, 5))
 			Parts.ball(Rng.range(rng, 14, 24), position + offset, CLOUD, decor, { transparency = 0.2, shadow = false })

@@ -62,7 +62,10 @@ function LayoutCheck.run(layout: Shape.Layout): { string }
 	for index, river: Shape.River in list(layout.rivers) do
 		for _, area in areas do
 			for _, point in river.points do
-				if math.sqrt((point[1] - area.x) ^ 2 + (point[2] - area.z) ^ 2) < area.radius + FLAT_BLEND + river.width / 2 then
+				if
+					math.sqrt((point[1] - area.x) ^ 2 + (point[2] - area.z) ^ 2)
+					< area.radius + FLAT_BLEND + river.width / 2
+				then
 					problem(`river {index} runs through {area.name}`)
 					break
 				end
