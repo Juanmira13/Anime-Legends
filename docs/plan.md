@@ -35,7 +35,19 @@ DataService ── carga/guarda PlayerRecord; Yen y Gems como atributos
   ├── CombatService (AttackClock) ── usa EnemyService; TargetEnemyId; CharacterHit a todos; Yenes con CoinService
   ├── CoinService (CoinOps) ── monedas por jugador: CoinDrop, CoinCollect, CoinAutoCollect; paga lo pendiente en DataService.Releasing
   └── RaidService (RaidOps) ── usa EnemyService, InventoryService, BoostService; RaidEvent
-EnemyService ── enemigos de isla (EnemySpawn) y de Raid (spawn); Health/MaxHealth
+EnemyService ── enemigos de isla (EnemySpawn) y de Raid (spawn); Health/MaxHealth; intangibles (Shared/Intangible)
+```
+
+En el cliente (`src/client/Main.client.luau`), cada controlador lee atributos y remotes y solo dibuja o pide acciones:
+
+```
+HudController ── Yen, Gems, boosts          InventoryController ── InventoryAction / InventoryChanged
+GachaController ── GachaResult              PortalController ── PortalResult, Unlocked_<Isla>
+RaidController ── RaidEvent, Raid*          BoostController ── BoostAction, BoostOwned_/BoostTime_
+EnemyController ── barras de vida           FollowerController (FollowerMotion) ── EquippedCharacters, CharacterHit
+HitEffectController (HitStyle) ── CharacterHit: números de daño, destellos, humo
+CoinController ── CoinDrop / CoinCollect / CoinAutoCollect
+AmbienceController ── CurrentArea           SeaController ── textura y espuma del mar
 ```
 
 Los eventos entre servicios son `Server.Signal` (pasan las mismas tablas; un `BindableEvent` las copia). Orden de arranque (`src/server/Main.server.luau`): los servicios que escuchan `DataService.Loaded` o `Releasing` arrancan antes que `DataService`; `TestArena` antes que `PortalService` para que existan los puntos de llegada.
@@ -63,15 +75,17 @@ El código no depende de posiciones: lee Parts etiquetadas (`IslandSpawn`, `Enem
 | 5 | Portales e isla de aparición | ✅ | `288bb92` |
 | 6 | Raids | ✅ | `2d3c102` |
 | 7 | Boosts y tienda de Gemas | ✅ | `d1afd9a` |
-| 8 | Personajes visibles (estilo AFS), rigs R6 | ✅ | ver `docs/tasks.md` |
-| 9 | Islas de alta calidad, mar, ambientación, arena de Raid | ✅ (falta ver la textura del mar en Studio) | ver `docs/tasks.md` |
+| 8 | Personajes visibles (estilo AFS), rigs R6 | ✅ | `32d5076` |
+| 9 | Islas de alta calidad, mar, ambientación, arena de Raid | ✅ (falta ver la textura del mar en Studio) | `7d85911`, `a582cd1`, `74b3aec`, `b5a0b0e` |
+| — | Herramientas: StyLua, selene, Rokit; Check-UI como estilo | ✅ | `304f8fb` |
+| — | Arreglos: oleadas de los Raids, portal de salida, monedas, intangibles | ✅ | `90e577c` |
 | — | Modelos finales de Blender (en paralelo, sin bloquear) | ⏳ | — |
-| 10 | Efectos, números de daño, sonido | ⏳ | — |
+| 10 | Efectos, números de daño, gacha animado, sonido y música | 🟡 en curso (números de daño hechos) | `7806edd` |
 | 11 | UI con el estilo Check-UI | ⏳ | — |
 | 12 | Prueba temprana en servidor publicado | ⏳ | — |
 | 13 | Preparar publicación | ⏳ | — |
 
-**Orden aprobado:** cerrar la Fase 9 (arena de Raid, textura del mar) → 10 → 11 → 12 → 13. Los modelos finales de Blender avanzan en paralelo: no bloquean nada porque el código los acepta con el mismo nombre y ruta.
+**Orden aprobado:** 10 → 11 → 12 → 13 (la Fase 9 está cerrada; solo falta ver el mar en Studio). Los modelos finales de Blender avanzan en paralelo: no bloquean nada porque el código los acepta con el mismo nombre y ruta.
 
 ### Fase 8 — Personajes visibles
 
@@ -130,22 +144,30 @@ Los enemigos escalados multiplican tamaños, centros y puntos de giro por su esc
 
 ### Fase 10 — Efectos y sonido
 
-- ✅ Números de daño y efectos de golpe en el cliente a partir de `Remotes.CharacterHit` (ya lleva el daño): `HitEffectController` con la lógica pura de `Effects/HitStyle`. Sin cambios en el servidor.
-- Animación de la tirada del gacha según la rareza.
-- Sonidos (golpes, tiradas, portales) y música por área.
+Todo en el cliente; el servidor ya envía lo necesario (`CharacterHit` con el daño, `GachaResult` con personaje y rareza, `CurrentArea`, `RaidEvent`).
+
+- ✅ Números de daño y efectos de golpe (`7806edd`): `HitEffectController` con la lógica pura de `Effects/HitStyle`.
+- **Gacha animado:** `Effects/GachaReveal` (puro y probado: fases, duración y colores por rareza) y la secuencia sobre la máquina: el orbe tiembla y brilla, estalla en el color de la rareza y aparece el modelo del personaje girando. Más larga y vistosa cuanto más rara (Legendario y Mítico con rayos de luz, Secreto con destello en pantalla y arcoíris). Se puede saltar; las tiradas seguidas hacen cola.
+- **Sonidos:** ids en `Shared/Config/Sounds`; `SoundController` para golpes, muertes, monedas, gacha, portales, Raids, boosts y UI. Sonido 3D en el mundo y 2D en la UI, con límite cuando suenan muchos a la vez.
+- **Música:** una pista por área (islas, lobby de Raids, Raid y jefe final) con fundido al cambiar `CurrentArea`.
+- **Opciones:** música y efectos activables, guardados en los datos del jugador (campo nuevo en `PlayerRecord.newData`); la ventana de Ajustes se dibuja en la Fase 11.
 
 ### Fase 11 — UI Check-UI
 
 - `UI/Theme` adopta las constantes y constructores de Check-UI (skill `check-ui-clean-roblox`): ventanas, cabeceras por tipo de menú, botón de cerrar, botones con tríada de estados, escalado por `ViewportSize`.
-- Rehacer con esos constructores el HUD, el inventario, el gacha, los boosts, los Raids y los avisos, sin cambiar los Remotes ni la lógica del servidor.
+- Constructores: ventana, cabecera, botón de cerrar `[X]` con relieve, botón estándar sin icono, botones con estados (Reclamar, Reclamado, Bloqueado), barra de progreso y tarjeta de personaje; escalado con `UIScale` según `ViewportSize` (base 1050 × 620, entre 0.52 y 1.18) e interacciones desde el centro.
+- Rehacer con esos constructores el HUD, el inventario, el resultado del gacha, la tienda de boosts, el estado del Raid y los avisos, y añadir la ventana de Ajustes, sin cambiar los Remotes ni la lógica del servidor.
+- Probar en PC, móvil, tableta y mando.
 
 ### Fase 12 — Prueba temprana en servidor publicado
 
 - Publicar en privado y comprobar guardado entre sesiones, bloqueo de sesión y un Raid con varios jugadores, para encontrar fallos de red y DataStore antes de la publicación.
+- Comprobar también varios jugadores en una isla (personajes y números de daño de los demás, rendimiento) y un móvil real.
 
 ### Fase 13 — Publicación
 
 - Eliminar `Dev/DevCheats` y su llamada.
 - Revisar el balance con partidas reales y ajustar `docs/balance.md` y las pruebas.
 - Borrar los datos de prueba del DataStore.
-- Comprobar en un servidor publicado: guardado, bloqueo de sesión, Raids con varios jugadores.
+- Página de la experiencia: nombre, descripción, icono y miniaturas (puntos de foto del plugin), clasificación de edad y dispositivos.
+- Revisión final en un servidor publicado y paso de privado a público.

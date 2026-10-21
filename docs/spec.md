@@ -83,7 +83,7 @@ Las 6 islas están construidas por el plugin con su propio terreno, relieve y de
 **Aceptación:** con 3 personajes equipados, caminan detrás del jugador a la misma velocidad, con los pies en el suelo y moviendo brazos y piernas; al elegir un enemigo caminan hasta colocarse a su alrededor y cada uno embiste cada vez que golpea. Otro jugador ve lo mismo. Al equipar o desequipar, el grupo cambia al momento.
 - Cada luchador y enemigo tiene su modelo en rig R6 que se puede exportar desde Studio para rehacerlo en Blender y volver a importarlo sin tocar código.
 
-**Parcial:** hechos los personajes visibles, las 6 islas, el mar cartoon, la ambientación por área y la arena de Raid. Los 70 modelos son rigs R6 provisionales (luchadores del color de su rareza, enemigos del color y tamaño de su rango). Hechos también los números de daño y efectos de golpe. Faltan los modelos finales de Blender (en paralelo), efectos de gacha, sonido y música (Fase 10).
+**Parcial:** hechos los personajes visibles, las 6 islas, el mar cartoon, la ambientación por área y la arena de Raid. Los 71 modelos (42 luchadores, 24 enemigos de isla y 5 de Raid) son rigs R6 provisionales (luchadores del color de su rareza, enemigos del color y tamaño de su rango). Hechos también los números de daño y efectos de golpe. Faltan los modelos finales de Blender (en paralelo), efectos de gacha, sonido y música (Fase 10).
 
 ## Requisitos no funcionales
 
