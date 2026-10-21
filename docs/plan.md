@@ -130,7 +130,7 @@ Los enemigos escalados multiplican tamaños, centros y puntos de giro por su esc
 
 ### Fase 10 — Efectos y sonido
 
-- Números de daño y efectos de golpe en el cliente a partir de `Remotes.CharacterHit` (ya lleva el daño).
+- ✅ Números de daño y efectos de golpe en el cliente a partir de `Remotes.CharacterHit` (ya lleva el daño): `HitEffectController` con la lógica pura de `Effects/HitStyle`. Sin cambios en el servidor.
 - Animación de la tirada del gacha según la rareza.
 - Sonidos (golpes, tiradas, portales) y música por área.
 

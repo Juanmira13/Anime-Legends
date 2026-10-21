@@ -92,7 +92,8 @@ Lista de trabajo. Cada tarea hecha indica su commit. Las fases están descritas 
 - [ ] Modelos finales de Blender para los 42 luchadores y los 28 enemigos, sustituyendo los rigs de `assets/` (flujo en `docs/plan.md`, Modelos y Blender).
 
 ### Fase 10 — Efectos y sonido · R9
-- [ ] Números de daño y efectos al golpear.
+- [x] Números de daño y efectos al golpear: `HitEffectController` (cliente) y `Effects/HitStyle` (puro, `effects.spec`). El daño sale al conectar la embestida, del color de la rareza del personaje; propios grandes, de otros pequeños y solo cerca; destello y chispas al golpear y humo al morir.
+- [ ] Probar en Studio los números de daño y los efectos (con varios jugadores si es posible).
 - [ ] Animación/efectos de tirada de gacha por rareza.
 - [ ] Sonidos y música.
 

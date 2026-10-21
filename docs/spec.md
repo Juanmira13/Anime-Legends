@@ -76,13 +76,14 @@ Las 6 islas están construidas por el plugin con su propio terreno, relieve y de
 ### R9. Presentación 🟡
 - Personajes y enemigos intangibles: el jugador los atraviesa (los enemigos se siguen pudiendo seleccionar con clic).
 - Personajes equipados visibles para todos los jugadores, que siguen a su dueño caminando por el suelo y van hasta el enemigo a golpear (estilo AFS). Ver `docs/game-design.md` (Combate → Personajes visibles).
+- Números de daño (color de la rareza del personaje, grandes los propios), destello y chispas al golpear y humo al morir.
 - Modelos de enemigos y arena de Raid (coliseo flotante), efectos de golpe, números de daño, efectos de gacha, sonido y música.
 - Islas de alta calidad, con la dirección de arte de cada anime, mar cartoon animado y ambientación por isla (luz, cielo, niebla, partículas).
 
 **Aceptación:** con 3 personajes equipados, caminan detrás del jugador a la misma velocidad, con los pies en el suelo y moviendo brazos y piernas; al elegir un enemigo caminan hasta colocarse a su alrededor y cada uno embiste cada vez que golpea. Otro jugador ve lo mismo. Al equipar o desequipar, el grupo cambia al momento.
 - Cada luchador y enemigo tiene su modelo en rig R6 que se puede exportar desde Studio para rehacerlo en Blender y volver a importarlo sin tocar código.
 
-**Parcial:** hechos los personajes visibles, las 6 islas, el mar cartoon, la ambientación por área y la arena de Raid. Los 70 modelos son rigs R6 provisionales (luchadores del color de su rareza, enemigos del color y tamaño de su rango). Faltan los modelos finales de Blender (en paralelo), efectos de golpe, números de daño, efectos de gacha, sonido y música (Fase 10).
+**Parcial:** hechos los personajes visibles, las 6 islas, el mar cartoon, la ambientación por área y la arena de Raid. Los 70 modelos son rigs R6 provisionales (luchadores del color de su rareza, enemigos del color y tamaño de su rango). Hechos también los números de daño y efectos de golpe. Faltan los modelos finales de Blender (en paralelo), efectos de gacha, sonido y música (Fase 10).
 
 ## Requisitos no funcionales
 

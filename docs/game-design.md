@@ -147,6 +147,12 @@ Reglas del pity:
 - Son solo visuales: son intangibles (el jugador los atraviesa), no tapan los clics sobre enemigos y no influyen en el daño.
 - Los enemigos también son intangibles: el jugador los atraviesa, pero se pueden seleccionar con un clic.
 
+### Efectos de golpe
+- Cada golpe muestra su daño sobre el enemigo justo cuando la embestida del personaje lo alcanza. El número sale con un pequeño salto, sube y se desvanece en menos de un segundo; los golpes seguidos se reparten a izquierda y derecha para no taparse.
+- El número tiene el color de la rareza del personaje que golpea (los Secretos en blanco con contorno dorado) y los de Legendario, Mítico y Secreto son más grandes.
+- Los golpes propios se ven grandes y opacos; los de otros jugadores, más pequeños, más transparentes y solo cerca (hasta 80 studs), con un máximo en pantalla para que una pelea llena siga siendo legible.
+- En el punto de impacto hay un destello y unas chispas del mismo color. Cuando un enemigo muere, estalla en una nube de humo blanco.
+
 ## Inventario
 
 - Capacidad inicial: 50 personajes.

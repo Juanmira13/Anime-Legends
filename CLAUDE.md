@@ -72,7 +72,8 @@ AnimeLegends/
 │   │   ├── Main.client.luau  # Arranca los controladores
 │   │   ├── UI/               # Theme (colores y constructores), Notify (avisos en pantalla)
 │   │   ├── Followers/        # Lógica pura de los personajes visibles (FollowerMotion)
-│   │   └── Controllers/      # Hud, Enemy (barras de vida), Gacha, Inventory (panel), Portal, Raid, Boost, Follower, Ambience, Sea, Coin
+│   │   ├── Effects/          # Lógica pura de los efectos de golpe (HitStyle)
+│   │   └── Controllers/      # Hud, Enemy (barras de vida), Gacha, Inventory (panel), Portal, Raid, Boost, Follower, Ambience, Sea, Coin, HitEffect
 │   ├── shared/               # ReplicatedStorage.Shared — módulos compartidos
 │   │   ├── Formulas.luau     # Valores derivados: daño, vida, Yenes, costos
 │   │   ├── Format.luau       # Formato de números para la UI (1.5K, 2.3M)
@@ -125,6 +126,7 @@ AnimeLegends/
   - `signal.spec.luau`: los eventos entre servicios pasan las mismas tablas.
   - `boost.spec.luau`: conceder, activar (acumula duración) y descontar tiempo.
   - `acceptance.spec.luau`: los criterios de aceptación numéricos de `docs/spec.md` (R1 a R7), uno por requisito. Si cambia la especificación, actualizarlo.
+  - `effects.spec.luau`: números de daño (salto, subida y desvanecido, tamaños, topes) y destellos de golpe.
   - `followers.spec.luau`: formación, arco alrededor del objetivo, embestida (más corta que el cooldown más rápido), velocidad de marcha, ciclo de caminar y giro de los personajes visibles.
   - `worldgen.spec.luau`: aleatorio con semilla, forma del terreno, relieve (montañas, ríos con cascada, lagos, caminos con rampas, formas de costa), materiales, orilla, vóxeles de tierra y agua, dispersión, y reglas de trazado (`LayoutCheck`) sobre los trazados reales de las 6 islas.
   - `map.spec.luau`: reglas del mapa (`MapCheck`), configuración del mundo, ambientación de todas las áreas y trazado de la arena de Raid (`RaidArenaLayout`).
@@ -184,6 +186,7 @@ El diseño detallado (islas, personajes, probabilidades, pity) está en `docs/ga
 - **Combate:** el jugador hace clic en un enemigo (ClickDetector) y el servidor lo fija como objetivo si la isla está desbloqueada. Los personajes equipados golpean según su cooldown mientras el jugador esté a menos de `Balance.Combat.range`. El objetivo se replica en el atributo `TargetEnemyId` del jugador.
 - **Modelos (preparados para Blender):** cada luchador y cada enemigo tiene su propio modelo en `assets/` (uno por personaje, uno por rango e isla y uno por tipo de Raid), sincronizado por Rojo. Todos son **rigs R6**: `HumanoidRootPart` (PrimaryPart, invisible, la única pieza anclada), `Torso`, `Head`, `Left Arm`, `Right Arm`, `Left Leg`, `Right Leg`, los Motor6D estándar (`RootJoint`, `Neck`, `Left/Right Shoulder`, `Left/Right Hip`) y `Humanoid` (sin nombre ni vida visibles) con `Animator`. Escala 1 = 5 studs de alto con los pies en y = 0; los enemigos más grandes escalan el rig entero. Los modelos finales de Blender sustituyen al provisional con el mismo nombre y ruta, guardados como `.rbxm`; mantienen esa estructura para que las animaciones R6 funcionen. El código no ancla las extremidades y apoya cada modelo por su punto más bajo. Flujo completo en `docs/plan.md` (Modelos y Blender). Si falta un modelo se usa un bloque provisional.
 - **Personajes visibles:** todos los jugadores ven los personajes equipados de todos. El servidor replica el equipo en el atributo `EquippedCharacters` del jugador (ids en orden de ranura, separados por comas; sale de `InventoryOps.activeTeam`) y envía `Remotes.CharacterHit (dueño, enemyId, {ranura, daño})` a todos los clientes por cada golpe. Es solo para animar: el daño lo decide `CombatService`. `FollowerController` dibuja los modelos de `ReplicatedStorage.CharacterModels.<Isla>.<IdPersonaje>` sin colisión ni `CanQuery` para no tapar los clics, con el nombre encima. Caminan por el suelo (no flotan), todos a la misma velocidad (la del dueño ×1.25), y mueven brazos y piernas con los Motor6D del rig R6.
+- **Efectos de golpe:** `HitEffectController` escucha `Remotes.CharacterHit` y, cuando la embestida conecta (`FollowerMotion.LUNGE_IN_TIME`), muestra el daño sobre el enemigo con el color de la rareza del personaje que golpea (Secreto: blanco con contorno dorado), en GothamBlack con contorno; el número salta, sube y se desvanece. Además, destello y chispas en el impacto, y una nube de humo cuando el enemigo muere. Los golpes propios se ven grandes; los de otros jugadores, más pequeños y solo cerca. Tamaños, tiempos y topes en `Client/Effects/HitStyle` (puro, `effects.spec`). Solo visual: el servidor no cambia.
 - **Gacha en el mapa:** cada máquina es una Part con la etiqueta `GachaStand` y el atributo `Island`. El servidor le añade un ProximityPrompt; al activarlo valida (isla desbloqueada, espacio en inventario, Yenes), tira con `GachaRoll` y envía el resultado por `Remotes.GachaResult`.
 - **Boosts:** `BoostService` activa boosts, los vende por Gemas y descuenta el tiempo cada segundo solo para jugadores conectados. Cualquier sistema que dé boosts usa `BoostService.grant`. Se replican como atributos `BoostOwned_<Id>` y `BoostTime_<Id>`. Los efectos se leen de `data.Boosts.Remaining.<Id> > 0` donde se calcula cada recompensa.
 - **Inventario:** toda la lógica está en `InventoryOps` (pura). Los cambios en personajes siempre pasan por `InventoryService` (por ejemplo `addCharacter`), que envía el estado al cliente por `Remotes.InventoryChanged`. El cliente pide acciones por `Remotes.InventoryAction` y recibe el resultado más un snapshot.
@@ -249,3 +252,4 @@ Decisiones cerradas. Las tareas pendientes están en `docs/tasks.md`.
 - [x] Eventos entre servicios con `Signal` (no `BindableEvent`).
 - [x] Raids de 20 oleadas siempre (también en Studio): 4 débiles + 2 medianos + 1 fuerte por oleada, ×1.03 por oleada; mini jefe en la 10 y jefe final en la 20, en el centro del coliseo.
 - [x] Personajes y enemigos intangibles (grupo de colisión `Intangible`).
+- [x] Números de daño del color de la rareza del personaje que golpea, grandes los propios y pequeños los de otros jugadores; destello, chispas y humo al morir.
