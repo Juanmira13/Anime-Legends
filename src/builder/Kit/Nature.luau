@@ -53,6 +53,30 @@ function Nature.pineTree(ground: Vector3, height: number, t: number, palette: Tr
 	return model
 end
 
+-- Huge tree: thick trunk with flaring roots and a crown of big canopies.
+function Nature.giantTree(ground: Vector3, height: number, t: number, palette: TreePalette, parent: Instance): Model
+	local model = Parts.model("GiantTree", parent)
+	local trunk = height * 0.13
+	local base = CFrame.new(ground) * CFrame.Angles(0, t * 6.28, 0)
+	Parts.column(trunk, height, base * CFrame.new(0, -2, 0), palette.trunk, model, { collide = true })
+	for index = 0, 4 do
+		local angle = index / 5 * 2 * math.pi
+		local out = Vector3.new(math.cos(angle), 0, math.sin(angle))
+		local foot = ground + out * trunk * 1.3 - Vector3.new(0, 0.5, 0)
+		local top = ground + out * trunk * 0.3 + Vector3.new(0, trunk * 1.4, 0)
+		Parts.beam(foot, top, trunk * 0.4, Parts.vary(palette.trunk, 0.15, index / 5), model, { collide = true, shadow = false })
+	end
+	local crown = ground + Vector3.new(0, height, 0)
+	local leaf = pick(palette.leaves, t)
+	Parts.ball(height * 0.55, crown, leaf, model)
+	for index = 1, 4 do
+		local angle = t * 6.28 + index * 1.57
+		local offset = Vector3.new(math.cos(angle) * height * 0.28, -height * 0.08 + (index % 2) * height * 0.08, math.sin(angle) * height * 0.28)
+		Parts.ball(height * 0.4, crown + offset, Parts.vary(leaf, 0.2, (t + index * 0.23) % 1), model, { shadow = index <= 2 })
+	end
+	return model
+end
+
 function Nature.bush(ground: Vector3, size: number, t: number, colors: { Color3 }, parent: Instance): Model
 	local model = Parts.model("Bush", parent)
 	local color = pick(colors, t)

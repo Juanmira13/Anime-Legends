@@ -107,18 +107,18 @@ Los enemigos escalados multiplican tamaños, centros y puntos de giro por su esc
 
 **Plugin Island Builder** (`builder.project.json` → `src/builder` + copia de `src/shared`), solo en modo edición:
 
-1. **Trazado puro** por isla (`Islands/NamekuLayout`, `Islands/GenericLayout`): radio y forma de la costa, colinas, plaza, 4 zonas planas, camino y mesetas. `Gen/LayoutCheck` revisa que plaza y zonas estén en tierra y separadas, que el camino las conecte, que ninguna meseta las invada y que quepan los enemigos (también en `worldgen.spec`).
+1. **Trazado puro** por isla (`Islands/<Isla>Layout`, reunidos en `Islands/Layouts`): silueta de costa (`coast`: alargada, lóbulos, bahías), colinas, montañas, mesetas del mar (`mesas`), terrazas (`plateaus`), ríos con cascadas y lagos (`rivers`, `lakes`, con su propio nivel de agua), superficies de suelo (`surfaces`: círculos con otro material, como la ciudad pavimentada de Hero), plaza, 4 zonas planas y caminos (con alturas, tallan rampas; se cortan sobre el agua). `Gen/Shape` aplica las capas en orden: costa y colinas, montañas, mesetas, agua, áreas planas, caminos. `Gen/LayoutCheck` revisa zonas en tierra y separadas, caminos que las conectan con pendiente ≤ 0.5, mesetas y agua lejos de las zonas y espacio para los enemigos (también en `worldgen.spec`).
 2. **Terreno y mar** (`Kit/TerrainWriter`): `Gen/Shape` da altura y material en cada punto; se escriben vóxeles de 4 studs por bloques con `WriteVoxelChannels` (tierra y agua comparten vóxel en la orilla) y el mar abierto con `FillBlock`.
 3. **Mar cartoon** (`Kit/Sea`): Part transparente con la textura `World.Sea.textureId` (etiqueta `SeaSurface`, la desplaza `SeaController`) y anillos de espuma en cada orilla (etiqueta `SeaFoam`, su transparencia oscila).
-4. **Jugabilidad** (`Kit/Gameplay`) a partir del trazado: llegada, gacha, portales con arco y nombre, portal de Raids, puntos de enemigos dispersos con separación de 16 studs y carteles de zona.
-5. **Decoración** propia de cada isla con el kit (`Kit/Nature`, `Kit/Parts`): toda anclada y sin `CanQuery`/`CanTouch` (no tapa clics ni rayos); los objetos pequeños no hacen sombra.
+4. **Jugabilidad** (`Kit/Gameplay`) a partir del trazado: llegada, gacha, portales con arco y nombre, portal de Raids, puntos de enemigos dispersos con separación de 24 studs y carteles de zona.
+5. **Decoración** propia de cada isla (`Islands/<Isla>`) con piezas del kit (`Kit/Buildings`: cimientos, muros, tejados a dos aguas y cónicos, ventanas, vallas; `Kit/Nature`: árboles redondos, pinos, gigantes, arbustos, rocas, flores; `Gen/PathWalk` para colocar a lo largo de caminos y murallas). Toda anclada y sin `CanQuery`/`CanTouch` (no tapa clics ni rayos); los objetos pequeños no hacen sombra; los edificios se apoyan en el punto más bajo de su planta y llevan cimientos que bajan bajo tierra.
 6. **Validación** (`Shared/Map/MapCheck` + `MapScan`) al terminar y al arrancar el juego en Studio, con presupuesto de 9000 Parts por área.
 
 **Ambientación:** `Shared/Config/Ambience` por área; `Shared/Map/AmbienceApply` la aplica (plugin y cliente); `CurrentArea` la replica el servidor.
 
 **Ciclo de calidad:** construir → *Siguiente foto* en el panel (cámaras fijas por área) → capturas → ajustes en el código de la isla → reconstruir. Nameku primero; luego una isla detallada por commit.
 
-**Pendiente de la fase:** subir la textura del mar, iterar Nameku con capturas, versión detallada de las otras 5 islas, arena de Raid, lista de piezas para Blender (hitos difíciles con Parts).
+**Pendiente de la fase:** subir la textura del mar, iterar Kono, Clover Kingdom, Titan Village, Hero Academy y Demon Corps con capturas, arena de Raid, lista de piezas para Blender (estatuas de Kono y otros hitos difíciles con Parts).
 
 ### Fase 11 — Publicación
 

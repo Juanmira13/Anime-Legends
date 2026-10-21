@@ -5,7 +5,7 @@ local Shape = require(Builder.Gen.Shape)
 local Scatter = require(Builder.Gen.Scatter)
 local LayoutCheck = require(Builder.Gen.LayoutCheck)
 local NamekuLayout = require(Builder.Islands.NamekuLayout)
-local GenericLayout = require(Builder.Islands.GenericLayout)
+local IslandLayouts = require(Builder.Islands.Layouts)
 local Islands = require(Shared.Data.Islands)
 
 local failures = 0
@@ -170,11 +170,82 @@ for _, case in { { radius = 40, count = 8 }, { radius = 10, count = 6 } } do
 	check(`spawns spaced r{case.radius}`, spaced, true)
 end
 
--- Every real island layout passes the layout rules
-local layouts = { Nameku = NamekuLayout }
-for id in GenericLayout.Params do
-	layouts[id] = GenericLayout.layoutFor(id)
+local function hasProblemIn(problems, text)
+	for _, message in problems do
+		if string.find(message, text, 1, true) then
+			return true
+		end
+	end
+	return false
 end
+
+-- Relief: mountains, rivers with waterfalls, lakes, graded paths and coast shapes
+local relief = {
+	id = "Relief",
+	seed = 21,
+	radius = 400,
+	coastNoise = 0.05,
+	baseHeight = 8,
+	hillHeight = 0,
+	hillScale = 100,
+	beachWidth = 30,
+	seaFloor = -24,
+	plaza = { x = 0, z = 250, radius = 30, height = 6 },
+	zones = {
+		{ rank = "Easy", name = "Low", x = -150, z = 150, radius = 40, height = 8, count = 6 },
+		{ rank = "Hard", name = "High", x = 150, z = 0, radius = 40, height = 40, count = 4 },
+	},
+	paths = {
+		{ width = 12, points = { { 0, 250, 6 }, { -150, 150, 8 }, { 0, 100, 12 }, { 100, 50, 30 }, { 150, 0, 40 } } },
+	},
+	mesas = {},
+	mountains = { { x = 0, z = -200, radius = 150, height = 90 } },
+	rivers = { { width = 14, depth = 4, points = { { -100, -150, 40 }, { -120, -100, 38 }, { -125, -90, 10 }, { -250, 0, 3 }, { -420, 0, 0 } } } },
+	lakes = { { x = 150, z = 200, radius = 30, level = 9, depth = 5 } },
+	materials = { grass = "Grass", path = "Ground", plaza = "Pavement", cliff = "Rock", beach = "Sand", seabed = "Mud" },
+}
+check("mountain rises", Shape.height(relief, 0, -200) > 85, true)
+check("mountain fades out", Shape.height(relief, 0, -200 + 160) < 20, true)
+near("graded path follows its heights", Shape.height(relief, 50, 75), 21, 0.01)
+check("graded path cuts a ramp", Shape.slope(relief, 50, 75) < 0.5, true)
+near("lake water level", Shape.waterLevel(relief, 150, 200, 0), 9)
+check("lake bed is under water", Shape.height(relief, 150, 200) < 9 - 4, true)
+near("river surface above the fall", Shape.waterLevel(relief, -110, -125, 0), 39, 1)
+check("waterfall drops", Shape.waterLevel(relief, -110, -125, 0) - Shape.waterLevel(relief, -180, -50, 0) > 20, true)
+check("river bed is under its surface", Shape.height(relief, -250, 0) < 3, true)
+near("away from water is the sea level", Shape.waterLevel(relief, 0, 0, 0), 0)
+check("river bed material", Shape.material(relief, -250, 0, Shape.height(relief, -250, 0), 0), "Mud")
+check("relief layout passes the rules", #LayoutCheck.run(relief), 0)
+for _, message in LayoutCheck.run(relief) do
+	print(`  {message}`)
+end
+local steep = table.clone(relief)
+steep.paths = { { width = 12, points = { { 0, 250, 6 }, { -150, 150, 8 }, { -140, 140, 30 }, { 150, 0, 40 } } } }
+check("catches a steep path", hasProblemIn(LayoutCheck.run(steep), "too steep"), true)
+local flooded = table.clone(relief)
+flooded.lakes = { { x = -150, z = 120, radius = 20, level = 9, depth = 4 } }
+check("catches a lake in a zone", hasProblemIn(LayoutCheck.run(flooded), "lake 1 is too close"), true)
+
+local paved = table.clone(relief)
+paved.surfaces = { { x = -150, z = 150, radius = 120, material = "Pavement" }, { x = -200, z = 200, radius = 20, material = "Grass" } }
+check("surface paves the ground", Shape.material(paved, -100, 220, Shape.height(paved, -100, 220), 0), "Pavement")
+check("later surface wins", Shape.material(paved, -200, 200, Shape.height(paved, -200, 200), 0), "Grass")
+check("paths keep their material", Shape.material(paved, -75, 125, Shape.height(paved, -75, 125), 0), "Ground")
+
+local stretched = table.clone(relief)
+stretched.coast = { elongation = 0.3, angle = 0 }
+check("elongated along x", Shape.coastRadius(stretched, 0) > Shape.coastRadius(stretched, math.pi / 2) * 1.6, true)
+local bay = table.clone(relief)
+bay.coast = { bays = { { angle = math.pi / 2, width = 0.3, depth = 0.4 } } }
+check("bay pulls the coast in", Shape.coastRadius(bay, math.pi / 2) < Shape.coastRadius(relief, math.pi / 2) * 0.65, true)
+check("bay is local", math.abs(Shape.coastRadius(bay, -math.pi / 2) - Shape.coastRadius(relief, -math.pi / 2)) < 1, true)
+local lobed = table.clone(relief)
+lobed.coast = { lobes = 4, lobeDepth = 0.12 }
+check("lobes bulge", Shape.coastRadius(lobed, 0) > Shape.coastRadius(lobed, math.pi / 4), true)
+check("max coast radius", Shape.maxCoastRadius(stretched) >= Shape.coastRadius(stretched, 0) - 1e-6, true)
+
+-- Every real island layout passes the layout rules
+local layouts = IslandLayouts
 for _, island in Islands.List do
 	local real = layouts[island.id]
 	check(`layout exists {island.id}`, real ~= nil, true)

@@ -30,8 +30,13 @@ export type Context = {
 	accent: Color3,
 	-- Absolute ground point for coordinates relative to the island center.
 	ground: (x: number, z: number) -> Vector3,
-	-- Whether a spot is open land, away from paths, the plaza and combat zones.
+	-- Whether a spot is open land, away from water, paths, the plaza and combat zones.
 	isFree: (x: number, z: number, margin: number) -> boolean,
+	-- Lowest ground point under a footprint (center and four corners), so
+	-- buildings on slopes never float.
+	groundMin: (x: number, z: number, halfSize: number) -> Vector3,
+	-- Yaw (radians) that faces from a point toward the nearest path.
+	facePath: (x: number, z: number) -> number,
 }
 
 export type PhotoSpot = { from: { number }, to: { number } } -- relative { x, y, z }
@@ -77,6 +82,7 @@ end
 local function yawToward(fromX: number, fromZ: number, toX: number, toZ: number): number
 	return math.atan2(-(toX - fromX), -(toZ - fromZ))
 end
+IslandBuilder.yawToward = yawToward
 
 local function savePhotoSpots(areaId: string, spots: { PhotoSpot }, cx: number, cy: number, cz: number)
 	local root = ServerStorage:FindFirstChild("PhotoSpots") or Parts.folder("PhotoSpots", ServerStorage)
@@ -195,7 +201,11 @@ function IslandBuilder.build(islandId: string, definition: Definition, onStatus:
 			return Vector3.new(cx + x, Shape.height(layout, x, z), cz + z)
 		end,
 		isFree = function(x: number, z: number, margin: number): boolean
-			if Shape.coastFraction(layout, x, z) > 0.9 or Shape.height(layout, x, z) < 3 then
+			local height = Shape.height(layout, x, z)
+			if Shape.coastFraction(layout, x, z) > 0.9 or height < 3 then
+				return false
+			end
+			if Shape.waterLevel(layout, x, z, World.SeaLevel) > height - 2 then
 				return false
 			end
 			if Shape.pathInside(layout, x, z) > -margin then
@@ -211,6 +221,17 @@ function IslandBuilder.build(islandId: string, definition: Definition, onStatus:
 				end
 			end
 			return Shape.slope(layout, x, z) < 0.7
+		end,
+		groundMin = function(x: number, z: number, halfSize: number): Vector3
+			local lowest = Shape.height(layout, x, z)
+			for _, corner in { { -1, -1 }, { -1, 1 }, { 1, -1 }, { 1, 1 } } do
+				lowest = math.min(lowest, Shape.height(layout, x + corner[1] * halfSize, z + corner[2] * halfSize))
+			end
+			return Vector3.new(cx + x, lowest, cz + z)
+		end,
+		facePath = function(x: number, z: number): number
+			local px, pz = Shape.closestPathPoint(layout, x, z)
+			return yawToward(x, z, px, pz)
 		end,
 	}
 

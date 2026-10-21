@@ -77,9 +77,9 @@ AnimeLegends/
 │       ├── Main.server.luau  # Panel: construir mundo/isla/lobby, validar, puntos de foto
 │       ├── IslandBuilder.luau # Construye una isla: terreno, mar, jugabilidad, decoración
 │       ├── RaidLobby.luau    # Lobby de Raids (templo flotante)
-│       ├── Gen/              # Lógica pura: Rng, Shape (terreno), Scatter, LayoutCheck
-│       ├── Kit/              # Parts, TerrainWriter, Sea, Gameplay, Nature
-│       └── Islands/          # Una definición por isla (Nameku detallada; Generic v0) + Registry
+│       ├── Gen/              # Lógica pura: Rng, Shape (terreno), Scatter, PathWalk, LayoutCheck
+│       ├── Kit/              # Parts, Buildings, TerrainWriter, Sea, Gameplay, Nature
+│       └── Islands/          # Por isla: <Isla>Layout (trazado puro) y <Isla> (decoración); Layouts y Registry
 ├── docs/
 │   ├── spec.md               # Especificación (qué)
 │   ├── plan.md               # Plan técnico (cómo)
@@ -112,7 +112,7 @@ AnimeLegends/
   - `raid.spec.luau`: esperas, completados y logros de ranuras, recompensas, drops de boosts y oleadas.
   - `boost.spec.luau`: conceder, activar (acumula duración) y descontar tiempo.
   - `followers.spec.luau`: formación, arco alrededor del objetivo, embestida (más corta que el cooldown más rápido), velocidad de marcha, ciclo de caminar y giro de los personajes visibles.
-  - `worldgen.spec.luau`: aleatorio con semilla, forma del terreno, materiales, orilla, vóxeles de tierra y agua, dispersión, y reglas de trazado (`LayoutCheck`) sobre las 6 islas reales.
+  - `worldgen.spec.luau`: aleatorio con semilla, forma del terreno, relieve (montañas, ríos con cascada, lagos, caminos con rampas, formas de costa), materiales, orilla, vóxeles de tierra y agua, dispersión, y reglas de trazado (`LayoutCheck`) sobre los trazados reales de las 6 islas.
   - `map.spec.luau`: reglas del mapa (`MapCheck`), configuración del mundo y ambientación de todas las áreas.
 - **Modelos provisionales:** `python tools/build_rigs.py` crea el rig R6 de cada luchador y enemigo que no tenga modelo (nunca sobrescribe; `--force` regenera solo los `.rbxmx`). `python tools/build_rigs.py --check` falla si falta alguno: ejecutarlo al añadir personajes, islas, rangos o tipos de enemigo de Raid.
 - **Plugin Island Builder:** `rojo build builder.project.json --plugin AnimeLegendsBuilder.rbxm` lo instala en la carpeta de plugins de Studio (volver a ejecutarlo tras cada cambio en `src/builder`). En Studio: pestaña Plugins → Anime Legends → Island Builder.
@@ -145,7 +145,7 @@ El diseño detallado (islas, personajes, probabilidades, pity) está en `docs/ga
 - **Pity:** contadores por isla, uno por rareza; cada uno se reinicia al obtener esa rareza.
 - **Guardado:** `src/server/Services/DataService.luau` (DataStore con bloqueo de sesión, autoguardado cada 2 min, guardado al salir y al cerrar el servidor). La forma de los datos, los valores iniciales y las migraciones están en `src/server/Data/PlayerRecord.luau`. Al añadir un campo, ponerlo en `newData()`; la reconciliación lo añade a las partidas existentes. Si se renombra o cambia de forma un campo, subir `CurrentVersion` y añadir una migración.
 - **Mundo:** las islas están en el mar (no flotan), en fila sobre +X a 2000 studs una de otra (Nameku en el origen), con el nivel del mar en y = 0 (`Shared/Config/World`). Cada isla ocupa un cuadrado de mar de 2000 studs con su orilla de espuma y una textura cartoon animada encima del agua Terrain; alrededor de todas, un océano (`Workspace.Map.Ocean`) llega 4000 studs más allá para que el mar alcance el horizonte. El lobby de Raids es un templo flotante en el cielo.
-- **Island Builder (plugin):** construye las islas en Studio desde código, en `Workspace.Map.<Área>` (`Gameplay`, `Decor`, `Sea`). Cada isla es un trazado puro (`Islands/<Isla>Layout` o `GenericLayout`: costa, colinas, plaza, 4 zonas, camino, mesetas) y una función de decoración. El terreno, los objetos y los puntos de jugabilidad salen de las mismas funciones de `Gen/Shape`, así que siempre coinciden. Reconstruir borra y regenera el área salvo la carpeta `Map.<Área>.Manual`, que es para retoques a mano. Antes de construir comprueba el trazado con `LayoutCheck`; después valida el mapa con `MapCheck`. Los puntos de foto (cámaras fijas para capturas) se guardan en `ServerStorage.PhotoSpots`.
+- **Island Builder (plugin):** construye las islas en Studio desde código, en `Workspace.Map.<Área>` (`Gameplay`, `Decor`, `Sea`). Cada isla tiene su propio módulo: un trazado puro (`Islands/<Isla>Layout`) y su decoración (`Islands/<Isla>`). Ninguna isla reutiliza el terreno ni la organización de otra. El trazado define la silueta de la costa (alargada, lóbulos, bahías), las colinas, las montañas, las mesetas del mar (`mesas`), las terrazas donde pueden ir zonas (`plateaus`), los ríos (con cascadas, cada uno a su nivel de agua) y lagos, las superficies de suelo (`surfaces`), la plaza, las 4 zonas planas y los caminos. Un camino con alturas en todos sus puntos talla rampas y cortes en el relieve, pero se interrumpe sobre el agua, que necesita un puente decorativo con colisión. El terreno, los objetos y los puntos de jugabilidad salen de las mismas funciones de `Gen/Shape`, así que siempre coinciden. Reconstruir borra y regenera el área salvo la carpeta `Map.<Área>.Manual`, que es para retoques a mano. Antes de construir comprueba el trazado con `LayoutCheck` (zonas en tierra y separadas, caminos con pendiente ≤ 0.5, agua lejos de las zonas); después valida el mapa con `MapCheck`. Los puntos de foto (cámaras fijas para capturas) se guardan en `ServerStorage.PhotoSpots`.
 - **Ambientación:** cada área (isla, `RaidLobby`, `Raid`) tiene su iluminación, cielo, niebla, color, colores de terreno y agua y partículas en `Shared/Config/Ambience`. El servidor replica el área del jugador en el atributo `CurrentArea` (`PortalService` y `RaidService` al teletransportar) y `AmbienceController` la aplica. Los colores de material del terreno son globales en Roblox, por eso se aplican por área en el cliente.
 - **Construir el mapa:** el código no depende de posiciones; lee Parts etiquetadas (CollectionService) con atributos:
 
@@ -220,3 +220,4 @@ Decisiones cerradas. Las tareas pendientes están en `docs/tasks.md`.
 - [x] Islas de alta calidad: dirección de arte por anime aprobada (`docs/game-design.md`), construidas por código con el plugin Island Builder; Nameku primero como isla de prueba del estilo.
 - [x] Las islas están en el mar (no flotan), con mar de estilo cartoon (textura animada y espuma en la orilla).
 - [x] La ambientación por isla (luz, cielo, niebla, partículas) entra en la Fase 9.
+- [x] Cada isla con su propia organización, terreno (no reutilizado), relieve y decoración; nada de islas planas.

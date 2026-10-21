@@ -25,21 +25,21 @@ local function alignUp(value: number): number
 	return math.ceil(value / VOXEL) * VOXEL
 end
 
--- Highest point the layout can reach, for the vertical extent of the writes.
-local function maxHeight(layout: Shape.Layout): number
-	local top = layout.baseHeight + layout.hillHeight * 1.4 + layout.plaza.height
-	for _, zone in layout.zones do
-		top = math.max(top, zone.height)
+-- Highest point of the island (sampled every 8 studs), for the vertical
+-- extent of the writes.
+local function maxHeight(layout: Shape.Layout, landHalf: number): number
+	local top = 0
+	for x = -landHalf, landHalf, 8 do
+		for z = -landHalf, landHalf, 8 do
+			top = math.max(top, Shape.height(layout, x, z))
+		end
 	end
-	for _, mesa in layout.mesas do
-		top = math.max(top, mesa.height + 2)
-	end
-	return top + 8
+	return top + 12
 end
 
 -- Half size of the square that holds every land voxel (beyond it is open sea).
 local function landHalfSize(layout: Shape.Layout): number
-	local reach = layout.radius * (1 + layout.coastNoise) * 1.4
+	local reach = Shape.maxCoastRadius(layout) * 1.4
 	for _, mesa in layout.mesas do
 		reach = math.max(reach, math.abs(mesa.x) + mesa.radius, math.abs(mesa.z) + mesa.radius)
 	end
@@ -64,13 +64,14 @@ local function writeChunk(terrain: Terrain, layout: Shape.Layout, cx: number, cz
 		for k = 1, CHUNK do
 			local z = z0 + (k - 0.5) * VOXEL
 			local height = Shape.height(layout, x, z)
+			local water = Shape.waterLevel(layout, x, z, seaLevel)
 			local surface = material(Shape.material(layout, x, z, height, Shape.slope(layout, x, z)))
-			local deep = if height < seaLevel then seabed else cliff
+			local deep = if height < water then seabed else cliff
 			for j = 1, sizeY do
 				local bottom = yMin + (j - 1) * VOXEL
 				columnMaterials[j][k] = if bottom + VOXEL > height - SUBSOIL_DEPTH then surface else deep
 				columnSolid[j][k] = Shape.occupancy(height, bottom, VOXEL)
-				columnLiquid[j][k] = Shape.waterOccupancy(height, bottom, VOXEL, seaLevel)
+				columnLiquid[j][k] = Shape.waterOccupancy(height, bottom, VOXEL, water)
 			end
 		end
 	end
@@ -110,13 +111,14 @@ function TerrainWriter.writeIsland(layout: Shape.Layout, cx: number, cz: number,
 	local seaLevel = World.SeaLevel
 	local seaFloor = alignDown(layout.seaFloor)
 	local yMin = seaFloor - VOXEL
-	local yMax = alignUp(maxHeight(layout))
+	local landHalf = landHalfSize(layout)
+	local yMax = alignUp(maxHeight(layout, landHalf))
 
 	-- Wipe whatever was here (previous builds), from below the sea floor up high.
-	terrain:FillBlock(CFrame.new(cx, (yMin + 400) / 2, cz), Vector3.new(World.AreaSize, 400 - yMin, World.AreaSize), Enum.Material.Air)
+	local clearTop = math.max(400, yMax + 40)
+	terrain:FillBlock(CFrame.new(cx, (yMin + clearTop) / 2, cz), Vector3.new(World.AreaSize, clearTop - yMin, World.AreaSize), Enum.Material.Air)
 
-	-- Open sea around the land square: water down to a sand floor.
-	local landHalf = landHalfSize(layout)
+	-- Open sea around the land square: water down to the sea floor.
 	local band = half - landHalf
 	if band > 0 then
 		local function sea(x: number, z: number, sizeX: number, sizeZ: number)

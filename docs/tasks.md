@@ -79,6 +79,11 @@ Lista de trabajo. Cada tarea hecha indica su commit. Las fases están descritas 
 - [x] Tercera ronda de capturas: fotos de Nameku despejadas; jugando funcionan plaza, combate y jefe.
 - [x] Ajustes de la tercera ronda: barras de vida con tamaño en el mundo (no se amontonan; visibles hasta 150 studs), enemigos a 24 studs repartidos por el 85 % de la zona, plaza de Nameku menos brillante, menos reflejo en el agua.
 - [x] Estilo de Nameku aprobado.
+- [x] Relieve en el generador: siluetas de costa (alargada, lóbulos, bahías), montañas, terrazas, ríos con cascadas y lagos con nivel de agua propio, caminos con rampas; reglas nuevas en `LayoutCheck` y pruebas.
+- [x] Kono, Clover Kingdom, Titan Village, Hero Academy y Demon Corps con trazado, terreno y decoración propios (`Islands/<Isla>Layout` + `Islands/<Isla>`); `Kit/Buildings`, `Gen/PathWalk` y árboles gigantes; se elimina `Generic`.
+- [x] Primera ronda de capturas de las 5 islas nuevas. Ajustes: títulos de portales y gacha con tamaño en studs (no se pisan), cámaras de foto despejadas (Kono, Clover, Demon), suelo pavimentado en la ciudad de Hero (`surfaces`), oficinas sin rayas y menos farolas, muralla de Titan con la parte superior nivelada, piedra con textura, hiladas, contrafuertes y estandartes, ciudad de Titan en anillos de calles, glicinas moradas y noche más clara en Demon Corps.
+- [x] Segunda ronda de capturas de las 5 islas nuevas: Titan Village y Demon Corps correctas; el rectángulo claro al este de Clover Kingdom desapareció al reconstruir el mundo entero. Ajustes: cascada de Kono orientada a lo largo de la caída (estaba inclinada al revés, medio enterrada y medio flotando), casas de Clover solo en terreno suave (pendiente < 0.3), suelo de Hero más oscuro (`Pavement`, `Concrete`), farolas de Hero cada 50 studs y ninguna en las ruinas, ruinas con ventanas en vez de rayas oscuras.
+- [x] Mapas de las 6 islas aceptados tal cual tras la segunda ronda (sin tercera ronda de capturas).
 - [ ] Iterar Nameku con capturas (*Siguiente foto*) hasta aprobar el estilo.
 - [ ] Versión detallada de Kono, Clover Kingdom, Titan Village, Hero Academy y Demon Corps (una por commit).
 - [ ] Arena de Raid (coliseo).
@@ -99,3 +104,4 @@ Lista de trabajo. Cada tarea hecha indica su commit. Las fases están descritas 
 
 ### Pendientes de verificar en Studio
 - [ ] Guardado entre sesiones con "Enable Studio Access to API Services".
+- [ ] Línea naranja fina sobre el mar entre Kono y Clover Kingdom en la vista aérea de Kono: comprobar si es una pieza o un reflejo del agua lejana.

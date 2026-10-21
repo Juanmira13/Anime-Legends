@@ -47,7 +47,7 @@ Simulador de progresión de Roblox al estilo Anime Fighters Simulator. El jugado
 - Las 6 islas están en el mar, cada una con plaza de llegada, gacha, portales, 4 zonas de enemigos unidas por un camino y el hito del jefe. Ver `docs/game-design.md` (Mundo y mar, Recorrido, Dirección de arte).
 
 **Aceptación:** desbloquear Kono cuesta 2,700 ¥; intentar saltar una isla avisa "Primero desbloquea…". Con el mundo construido por el plugin, el validador no muestra errores y se puede viajar por portales de Nameku a Demon Corps y al lobby de Raids.
-**Parcial:** las 6 islas existen (Nameku detallada; las demás en versión v0) y falta probarlas en Studio.
+**Parcial:** las 6 islas están construidas con su propio terreno, relieve y decoración (Nameku aprobada); falta probar y ajustar las otras 5 en Studio.
 
 ### R6. Raids ✅
 - Lobby común al que se llega por un portal en Nameku. 3 dificultades abiertas desde el inicio, con espera por jugador (1 h, 1 h 30 min, 2 h).

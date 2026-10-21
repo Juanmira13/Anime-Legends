@@ -1,16 +1,19 @@
 --!strict
 -- Sanity rules for an island layout, checked before building and in the
 -- tests: zones and plaza inland and apart, every one reached by a path,
--- mesas clear of them, and room for the enemy spawns on flat ground.
+-- mesas, rivers and lakes clear of them, walkable graded paths, and room
+-- for the enemy spawns on flat ground.
 
 local Shape = require(script.Parent.Shape)
 
 local LayoutCheck = {}
+local list = Shape.list
 
 LayoutCheck.ENEMY_SPACING = 24 -- studs between enemy spawn points (keeps health bars apart)
 LayoutCheck.SPAWN_AREA = 0.85 -- enemies spawn within this fraction of the zone radius
-local FLAT_BLEND = 26 -- matches Shape: flat areas blend over this distance
+local FLAT_BLEND = Shape.FLAT_BLEND
 local GAP = 10 -- studs between areas
+LayoutCheck.MAX_PATH_SLOPE = 0.5 -- rise over run of graded paths (about 27°)
 
 type Area = { name: string, x: number, z: number, radius: number }
 
@@ -55,6 +58,41 @@ function LayoutCheck.run(layout: Shape.Layout): { string }
 		end
 	end
 
+	-- Water stays clear of the flat areas (they would fill it in).
+	for index, river: Shape.River in list(layout.rivers) do
+		for _, area in areas do
+			for _, point in river.points do
+				if math.sqrt((point[1] - area.x) ^ 2 + (point[2] - area.z) ^ 2) < area.radius + FLAT_BLEND + river.width / 2 then
+					problem(`river {index} runs through {area.name}`)
+					break
+				end
+			end
+		end
+	end
+	for index, lake: Shape.Lake in list(layout.lakes) do
+		for _, area in areas do
+			if math.sqrt((lake.x - area.x) ^ 2 + (lake.z - area.z) ^ 2) < lake.radius + area.radius + FLAT_BLEND then
+				problem(`lake {index} is too close to {area.name}`)
+			end
+		end
+	end
+
+	for pathIndex, path in layout.paths do
+		if Shape.isGraded(path) then
+			for index = 1, #path.points - 1 do
+				local a, b = path.points[index], path.points[index + 1]
+				local run = math.sqrt((b[1] - a[1]) ^ 2 + (b[2] - a[2]) ^ 2)
+				if run > 0 and math.abs(b[3] - a[3]) / run > LayoutCheck.MAX_PATH_SLOPE then
+					problem(`path {pathIndex} is too steep between points {index} and {index + 1}`)
+				end
+			end
+		end
+	end
+
+	local plaza = layout.plaza
+	if math.abs(Shape.height(layout, plaza.x, plaza.z) - plaza.height) > 0.5 then
+		problem("plaza is not flat at its height")
+	end
 	for _, zone in layout.zones do
 		if math.abs(Shape.height(layout, zone.x, zone.z) - zone.height) > 0.5 then
 			problem(`{zone.name} is not flat at its height`)

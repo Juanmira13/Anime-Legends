@@ -36,9 +36,11 @@ local function marker(name: string, x: number, ground: number, z: number, parent
 	return part
 end
 
-local function label(parent: BasePart, text: string, color: Color3, offset: number, maxDistance: number)
+-- Floating title sized in studs (`width`), so it shrinks with distance and
+-- titles side by side never overlap.
+local function label(parent: BasePart, text: string, color: Color3, offset: number, maxDistance: number, width: number)
 	local billboard = Instance.new("BillboardGui")
-	billboard.Size = UDim2.fromOffset(220, 46)
+	billboard.Size = UDim2.fromScale(width, width * 0.22)
 	billboard.StudsOffsetWorldSpace = Vector3.new(0, offset, 0)
 	billboard.MaxDistance = maxDistance
 	billboard.LightInfluence = 0
@@ -75,7 +77,7 @@ function Gameplay.gacha(islandId: string, x: number, ground: number, z: number, 
 	orb.CanQuery = true -- the prompt lives here
 	Parts.light(orb, accent, 18, 2)
 	tag(orb, "GachaStand", { Island = islandId })
-	label(orb, "Gacha", Color3.new(1, 1, 1), 6, 90)
+	label(orb, "Gacha", Color3.new(1, 1, 1), 6, 90, 9)
 end
 
 -- Portal: glowing pad (tagged) under a column of light, framed by an arch.
@@ -95,7 +97,7 @@ local function portal(name: string, tagName: string, attributes: { [string]: any
 		Parts.block(Vector3.new(3.2, 1.2, 3.2), base * CFrame.new(side * 7.5, 16.6, 0), color, model, { material = Enum.Material.Neon, shadow = false })
 	end
 	local top = Parts.block(Vector3.new(19, 2, 3), base * CFrame.new(0, 17.6, 0), STONE, model, { collide = true })
-	label(top, title, color, 4, 120)
+	label(top, title, color, 4, 120, 16)
 end
 
 function Gameplay.islandPortal(targetIslandId: string, x: number, ground: number, z: number, facing: number, parent: Instance)
@@ -116,7 +118,7 @@ function Gameplay.raidPad(difficultyId: string, title: string, x: number, ground
 	pad.CanQuery = true
 	tag(pad, "RaidPad", { Difficulty = difficultyId })
 	Parts.light(pad, color, 20, 2)
-	label(pad, title, color, 7, 100)
+	label(pad, title, color, 7, 100, 14)
 end
 
 function Gameplay.enemySpawn(islandId: string, rankId: string, x: number, ground: number, z: number, parent: Instance)

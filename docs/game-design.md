@@ -29,8 +29,8 @@ Orden de progresión (de menor a mayor dificultad y costo de portal):
 
 ### Recorrido de cada isla
 
-1. **Plaza de llegada** junto a la costa: punto de llegada, máquina de gacha, portales a la isla anterior y a la siguiente (en Nameku, el portal de Raids ocupa el lugar del anterior). Es el escaparate de la isla.
-2. **Un camino** recorre las cuatro zonas en orden, subiendo de altura: Fácil (8 enemigos) → Media (6) → Difícil (4) → Jefe (1). Cada zona es un área plana con su cartel; los enemigos quedan a 24 studs entre sí, repartidos por casi toda la zona, y sus barras de vida tienen tamaño en el mundo (unos 7 studs de ancho, más en enemigos grandes): se achican con la distancia y no se amontonan. Se ven hasta 150 studs.
+1. **Plaza de llegada** junto a la costa sur: punto de llegada, máquina de gacha, portales a la isla anterior y a la siguiente (en Nameku, el portal de Raids ocupa el lugar del anterior). Es el escaparate de la isla.
+2. **Un camino** recorre las cuatro zonas en orden, con rampas talladas en el relieve (pendiente máxima 0.5): Fácil (8 enemigos) → Media (6) → Difícil (4) → Jefe (1). Cada zona es un área plana con su cartel; los enemigos quedan a 24 studs entre sí, repartidos por casi toda la zona, y sus barras de vida tienen tamaño en el mundo (unos 7 studs de ancho, más en enemigos grandes): se achican con la distancia y no se amontonan. Se ven hasta 150 studs.
 3. **El hito del jefe** se ve desde la plaza y marca hacia dónde progresar.
 4. El detalle se concentra en caminos, plaza y zonas de combate; el resto es paisaje más simple para cuidar el rendimiento en móvil.
 
@@ -50,7 +50,18 @@ Todo está *inspirado en* cada anime, sin logotipos ni copias exactas.
 - **Lobby de Raids:** templo flotante en el cielo, con un altar por dificultad y nubes alrededor.
 - **Arena de Raid:** coliseo de piedra con antorchas (pendiente).
 - Partículas de ambiente por isla: polen (Nameku), hojas (Kono), chispas mágicas (Clover), polvo (Titan), pétalos (Demon Corps).
-- Estado: Nameku tiene su versión detallada (v1). Las demás islas están en v0 (terreno, mar, paleta, árboles, jugabilidad completa y un hito provisional) hasta que llegue su turno.
+### Organización de cada isla
+
+Cada isla tiene su propia silueta, relieve y recorrido; ninguna reutiliza el terreno de otra.
+
+| Isla | Silueta y relieve | Recorrido (Fácil → Media → Difícil → Jefe) | Piezas propias |
+|---|---|---|---|
+| **Nameku** | Redonda e irregular, colinas suaves, 9 mesetas en el mar y 3 en tierra | Praderas → aldea de domos → zona rocosa → nave (subiendo de 8 a 22) | Casas-domo, árboles de copa redonda, nave esférica, cristales |
+| **Kono** | Alargada de este a oeste; cordillera de hasta 110 al norte que cae al mar; terraza boscosa a 26 al este | Campo de entrenamiento al oeste → aldea en el centro → terraza de árboles gigantes → valle de la cascada al pie de la cordillera | Casas japonesas con depósitos de agua y farolillos, gran portón, depósito de agua, mercado, postes eléctricos, cascada en un desfiladero con lago y río hasta la costa oeste, dos estatuas guardianas (provisionales para Blender) |
+| **Clover Kingdom** | Dos lóbulos unidos por una cintura; colina del castillo a 48 en el centro; acantilado del altar a 34 | Aldea humilde (lóbulo oeste) → camino real junto al castillo → bosque embrujado (lóbulo este) → altar en el acantilado | Cabañas con entramado, molino, campos de trigo, río con puente de piedra, castillo blanco de torres azules, faroles, hongos luminosos, niebla violeta, grimorio flotante con trébol de luz |
+| **Titan Village** | Redonda con una cala al noroeste; colinas costeras; meseta a 24 al este | Campos exteriores → ciudad dentro de la muralla (puerta sur) → bosque gigante (puerta este) → brecha de la muralla al norte | Muralla en anillo de 70 de alto con almenas, cañones, puertas y brecha con escombros y polvo; casas de piedra y entramado, iglesia con campanario, granjas, árboles de casi 90 |
+| **Hero Academy** | Casi cuadrada con malecón (costa baja de acantilados); terraza del campus a 18; colina-parque a 50 | Campus → avenida central → ciudad simulacro → gran estadio | Cuadrícula de calles de asfalto, rascacielos de cristal, oficinas y apartamentos, edificio H del campus, semáforos, farolas, coches, ruinas en llamas, estadio con torres de luz, antena de radio, faro |
+| **Demon Corps** | Tres lóbulos; montaña central de más de 170 y una segunda al sureste; estanque al pie | Aldea de faroles → terraza de bambú (22) → santuario en la montaña (58) → vía del tren (30), en espiral alrededor del pico | Casas de madera oscura con farolillos, pagoda de tres pisos, glicinas, puente rojo arqueado, bambú, túnel de toriis, linternas de piedra, santuario, tren con ventanas iluminadas, torii en el mar |
 
 ## Personajes por isla
 
