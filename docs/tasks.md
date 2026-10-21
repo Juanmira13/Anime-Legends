@@ -84,7 +84,9 @@ Lista de trabajo. Cada tarea hecha indica su commit. Las fases están descritas 
 - [x] Primera ronda de capturas de las 5 islas nuevas. Ajustes: títulos de portales y gacha con tamaño en studs (no se pisan), cámaras de foto despejadas (Kono, Clover, Demon), suelo pavimentado en la ciudad de Hero (`surfaces`), oficinas sin rayas y menos farolas, muralla de Titan con la parte superior nivelada, piedra con textura, hiladas, contrafuertes y estandartes, ciudad de Titan en anillos de calles, glicinas moradas y noche más clara en Demon Corps.
 - [x] Segunda ronda de capturas de las 5 islas nuevas: Titan Village y Demon Corps correctas; el rectángulo claro al este de Clover Kingdom desapareció al reconstruir el mundo entero. Ajustes: cascada de Kono orientada a lo largo de la caída (estaba inclinada al revés, medio enterrada y medio flotando), casas de Clover solo en terreno suave (pendiente < 0.3), suelo de Hero más oscuro (`Pavement`, `Concrete`), farolas de Hero cada 50 studs y ninguna en las ruinas, ruinas con ventanas en vez de rayas oscuras.
 - [x] Mapas de las 6 islas aprobados tal cual tras la segunda ronda (sin tercera ronda ni versiones detalladas aparte; Nameku cerrada).
-- [ ] Arena de Raid (coliseo).
+- [x] Arena de Raid (coliseo): `RaidArena` en el plugin (botón *Arena de Raid* y en *Construir todo el mundo*) guarda la plantilla `ServerStorage.RaidArena` y una vista previa para fotos; `RaidArenaLayout` con pruebas en `map.spec` (sitio para la oleada más grande, puntos dentro del campo y separados, jugador al alcance de la primera fila, cabe entre arenas); `RaidService` ordena los puntos por nombre y borra la vista previa.
+- [x] Primera ronda de capturas de la arena: estructura correcta. Ajustes: piedra y arena más neutras y luz del Raid menos naranja (todo se veía del mismo color), antorchas con menos luz (manchas amarillas en las gradas), suelo cuadrado oculto bajo las gradas y anillos por segmentos (el cilindro grande mostraba sus caras), círculo dorado en el punto de los jefes en lugar del rosa neón.
+- [x] Arena de Raid aprobada.
 - [ ] Lista de hitos para Blender (estatuas del valle, etc.).
 - [ ] Exportar un rig con *Export Selection* y abrirlo en Blender (primer paso del flujo).
 - [ ] Modelos finales de Blender para los 42 luchadores y los 28 enemigos, sustituyendo los rigs de `assets/` (flujo en `docs/plan.md`, Modelos y Blender).
@@ -115,5 +117,6 @@ Lista de trabajo. Cada tarea hecha indica su commit. Las fases están descritas 
 - [x] selene con `std = "roblox+tests"`: `tools/selene_std.py` genera la std de Roblox (la descarga de selene se rinde con la red lenta), `tests.yml` declara los globales de las pruebas. Corregido: variable sin usar en Titan Village, `UDim2.fromScale` en `Notify`. 0 errores y 0 avisos.
 
 ### Pendientes de verificar en Studio
+- [ ] Raid completo en el coliseo: aparecer en la arena y el jefe en el anillo dorado.
 - [ ] Guardado entre sesiones con "Enable Studio Access to API Services".
 - [ ] Línea naranja fina sobre el mar entre Kono y Clover Kingdom en la vista aérea de Kono: comprobar si es una pieza o un reflejo del agua lejana.

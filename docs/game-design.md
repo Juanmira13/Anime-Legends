@@ -48,7 +48,7 @@ Todo está *inspirado en* cada anime, sin logotipos ni copias exactas.
 | **Demon Corps** | Japón tradicional de noche | Azul noche, glicinas moradas, faroles cálidos; luna llena | Glicinas con pétalos cayendo, bambú con niebla, toriis, aldea con faroles | Aldea de Faroles → Bosque de Bambú → Montaña de Toriis → Tren de la Luna |
 
 - **Lobby de Raids:** templo flotante en el cielo, con un altar por dificultad y nubes alrededor.
-- **Arena de Raid:** coliseo de piedra con antorchas (pendiente).
+- **Arena de Raid:** coliseo de piedra flotando en el cielo al atardecer. Piedra y arena claras y neutras (la luz del atardecer les da el tono cálido). Suelo de arena con un anillo incrustado y un círculo dorado donde salen los jefes, muro del podio con antorchas, gradas escalonadas, muralla exterior con arcos, almenas y estandartes, dos puertas cerradas (la de los enemigos, al norte, brilla en rojo), base rocosa y nubes debajo. Los jugadores aparecen al sur, con la primera fila de enemigos a su alcance; los jefes salen en el centro.
 - Partículas de ambiente por isla: polen (Nameku), hojas (Kono), chispas mágicas (Clover), polvo (Titan), pétalos (Demon Corps).
 ### Organización de cada isla
 

@@ -124,7 +124,7 @@ Los enemigos escalados multiplican tamaños, centros y puntos de giro por su esc
 
 **Ciclo de calidad:** construir → *Siguiente foto* en el panel (cámaras fijas por área) → capturas → ajustes en el código de la isla → reconstruir. Nameku primero; luego una isla detallada por commit.
 
-**Pendiente de la fase:** las 6 islas están aprobadas. Faltan la arena de Raid (coliseo construido por el plugin, como el lobby), subir la textura del mar y la lista de piezas para Blender (estatuas de Kono y otros hitos difíciles con Parts).
+**Pendiente de la fase:** las 6 islas están aprobadas. La arena de Raid (coliseo) la construye el plugin como plantilla `ServerStorage.RaidArena` que `RaidService` clona por grupo; `RaidArenaLayout` (puro, probado en `map.spec`) fija las medidas y los puntos de aparición. Faltan subir la textura del mar y la lista de piezas para Blender (estatuas de Kono y otros hitos difíciles con Parts).
 
 ### Fase 10 — Efectos y sonido
 

@@ -78,9 +78,11 @@ AnimeLegends/
 │   │   ├── Map/              # MapCheck (reglas puras del mapa), MapScan (recolecta y valida), AmbienceApply
 │   │   └── Data/             # Contenido: Islands, Characters
 │   └── builder/              # Plugin Island Builder (no se publica en el juego)
-│       ├── Main.server.luau  # Panel: construir mundo/isla/lobby, validar, puntos de foto
+│       ├── Main.server.luau  # Panel: construir mundo/isla/lobby/arena, validar, puntos de foto
 │       ├── IslandBuilder.luau # Construye una isla: terreno, mar, jugabilidad, decoración
 │       ├── RaidLobby.luau    # Lobby de Raids (templo flotante)
+│       ├── RaidArena.luau    # Arena de Raid (coliseo) → ServerStorage.RaidArena
+│       ├── RaidArenaLayout.luau # Medidas y puntos de aparición de la arena (puro)
 │       ├── Gen/              # Lógica pura: Rng, Shape (terreno), Scatter, PathWalk, LayoutCheck
 │       ├── Kit/              # Parts, Buildings, TerrainWriter, Sea, Gameplay, Nature
 │       └── Islands/          # Por isla: <Isla>Layout (trazado puro) y <Isla> (decoración); Layouts y Registry
@@ -120,7 +122,7 @@ AnimeLegends/
   - `boost.spec.luau`: conceder, activar (acumula duración) y descontar tiempo.
   - `followers.spec.luau`: formación, arco alrededor del objetivo, embestida (más corta que el cooldown más rápido), velocidad de marcha, ciclo de caminar y giro de los personajes visibles.
   - `worldgen.spec.luau`: aleatorio con semilla, forma del terreno, relieve (montañas, ríos con cascada, lagos, caminos con rampas, formas de costa), materiales, orilla, vóxeles de tierra y agua, dispersión, y reglas de trazado (`LayoutCheck`) sobre los trazados reales de las 6 islas.
-  - `map.spec.luau`: reglas del mapa (`MapCheck`), configuración del mundo y ambientación de todas las áreas.
+  - `map.spec.luau`: reglas del mapa (`MapCheck`), configuración del mundo, ambientación de todas las áreas y trazado de la arena de Raid (`RaidArenaLayout`).
 - **Modelos provisionales:** `python tools/build_rigs.py` crea el rig R6 de cada luchador y enemigo que no tenga modelo (nunca sobrescribe; `--force` regenera solo los `.rbxmx`). `python tools/build_rigs.py --check` falla si falta alguno: ejecutarlo al añadir personajes, islas, rangos o tipos de enemigo de Raid.
 - **Plugin Island Builder:** `rojo build builder.project.json --plugin AnimeLegendsBuilder.rbxm` lo instala en la carpeta de plugins de Studio (volver a ejecutarlo tras cada cambio en `src/builder`). En Studio: pestaña Plugins → Anime Legends → Island Builder.
 - **Textura del mar:** `python tools/build_textures.py` genera `assets/Textures/SeaCartoon.png`. Subirla a Roblox y poner su id en `World.Sea.textureId`.
@@ -167,7 +169,7 @@ El diseño detallado (islas, personajes, probabilidades, pity) está en `docs/ga
   | `RaidLobbySpawn` | — | Punto de llegada al lobby de Raids |
   | `RaidPad` | `Difficulty` (`Easy`, `Medium`, `Hard`) | Plataforma para entrar a la fila de un Raid |
 
-  Modelos de enemigos en `ServerStorage.EnemyModels.<Isla>.<Rango>` y `EnemyModels.Raid.<Tipo>` (vienen de `assets/EnemyModels`, ver **Modelos**). Opcional: `ServerStorage.RaidArena` (Model con PrimaryPart, una Part `PlayerSpawn` y una carpeta `EnemySpawns` de Parts) para la arena de Raid; sin ella se usa una plataforma generada.
+  Modelos de enemigos en `ServerStorage.EnemyModels.<Isla>.<Rango>` y `EnemyModels.Raid.<Tipo>` (vienen de `assets/EnemyModels`, ver **Modelos**). La arena de Raid es `ServerStorage.RaidArena` (Model con PrimaryPart y pivote en el centro del suelo, una Part `PlayerSpawn` y una carpeta `EnemySpawns` de Parts con nombres en orden de aparición: `01` es el centro, para los jefes). La construye el plugin (botón *Arena de Raid*) con la medida y los puntos de `RaidArenaLayout`, y deja una copia `Workspace.RaidArenaPreview` para las fotos que `RaidService` borra al arrancar. Sin plantilla se usa una plataforma generada.
 
   En Studio, si no hay ningún `IslandSpawn`, `Dev/TestArena` construye un mundo de prueba con Nameku, Kono y el lobby de Raids. Si existe `Workspace.Map`, `Dev/MapValidator` lo valida al arrancar y muestra en la salida lo que falte. Para que el validador sepa en qué área está cada Part, las Parts hechas a mano van dentro de `Workspace.Map.<Área>`.
 - **Raids:** `RaidService` gestiona filas (empiezan 15 s después del primer jugador), una arena por grupo creada en el aire (`y = 1500`), oleadas, recompensas por enemigo para todos los jugadores del Raid y logros. El estado se replica en atributos del jugador (`RaidQueue`, `RaidSessionId`, `RaidWave`, `RaidEndsAt`, `RaidReady_<Dificultad>`); los tiempos son unix (comparar con `workspace:GetServerTimeNow()`). Las recompensas de enemigos de Raid las da `RaidService`, no `CombatService`.

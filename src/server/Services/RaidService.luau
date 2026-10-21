@@ -8,8 +8,9 @@
 -- Using a pad joins that difficulty's queue; the raid starts QUEUE_TIME seconds
 -- after the first player joins, with everyone queued (up to Raids.MaxPlayers).
 -- Each group plays in its own arena: a clone of ServerStorage.RaidArena (a Model
--- with a PrimaryPart, a "PlayerSpawn" part and an "EnemySpawns" folder of parts)
--- or a generated platform, placed high above the map.
+-- with a PrimaryPart, a "PlayerSpawn" part and an "EnemySpawns" folder of parts
+-- named in spawn order; the Island Builder's coliseum) or a generated platform,
+-- placed high above the map.
 --
 -- Replicated to the client as player attributes: RaidQueue, RaidQueueStartsAt,
 -- RaidSessionId, RaidDifficulty, RaidWave, RaidEndsAt, RaidReady_<Difficulty>,
@@ -169,10 +170,18 @@ local function buildArena(slot: number): (Model, CFrame, { CFrame })
 		local spotsFolder = arena:FindFirstChild("EnemySpawns")
 		local spots = {}
 		if spotsFolder then
+			-- Spots are named in spawn order ("01", "02"...): bosses spawn first and take the first one.
+			local parts = {}
 			for _, part in spotsFolder:GetChildren() do
 				if part:IsA("BasePart") then
-					table.insert(spots, part.CFrame * CFrame.new(0, part.Size.Y / 2, 0))
+					table.insert(parts, part)
 				end
+			end
+			table.sort(parts, function(a, b)
+				return a.Name < b.Name
+			end)
+			for _, part in parts do
+				table.insert(spots, part.CFrame * CFrame.new(0, part.Size.Y / 2, 0))
 			end
 		end
 		if spawnPart and spawnPart:IsA("BasePart") and #spots > 0 then
@@ -488,6 +497,11 @@ function RaidService.setWaveSequence(waves: { number })
 end
 
 function RaidService.start()
+	-- The Island Builder leaves a copy of the arena for screenshots; the game only uses the template.
+	local preview = workspace:FindFirstChild("RaidArenaPreview")
+	if preview then
+		preview:Destroy()
+	end
 	onTagged(PORTAL_TAG, setupPortal)
 	onTagged(PAD_TAG, setupPad)
 	EnemyService.Died:Connect(onRaidEnemyDied)

@@ -263,22 +263,22 @@ local Areas: { [string]: Ambience } = {
 		particles = { color = { 255, 210, 255 }, rate = 6, size = 0.3, speed = 1, lifetime = 8, light = 0.8 },
 	},
 
-	-- Raid arena: dramatic dusk.
+	-- Raid arena: dusk, warm but not monochrome (stone and sand keep their colors).
 	Raid = {
 		clockTime = 19,
 		brightness = 2,
-		ambient = { 120, 80, 80 },
-		outdoorAmbient = { 160, 110, 100 },
-		colorShiftTop = { 255, 170, 130 },
+		ambient = { 110, 96, 108 },
+		outdoorAmbient = { 150, 135, 145 },
+		colorShiftTop = { 255, 205, 175 },
 		atmosphere = {
 			density = 0.3,
 			offset = 0.3,
-			color = { 230, 160, 130 },
-			decay = { 160, 80, 80 },
+			color = { 205, 175, 180 },
+			decay = { 120, 85, 110 },
 			glare = 0.6,
 			haze = 1.5,
 		},
-		colorCorrection = { brightness = 0.02, contrast = 0.15, saturation = 0.15, tint = { 255, 240, 232 } },
+		colorCorrection = { brightness = 0.02, contrast = 0.15, saturation = 0.05, tint = { 255, 248, 246 } },
 		bloom = { intensity = 0.8, size = 28, threshold = 1.4 },
 		sunRays = { intensity = 0.1, spread = 0.6 },
 		stars = 300,
