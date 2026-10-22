@@ -103,7 +103,11 @@ Lista de trabajo. Cada tarea hecha indica su commit. Las fases están descritas 
 
 ## Pendiente
 
-### Fase 10 — Efectos y sonido · R9 (en curso)
+### Audios (pendiente; el sistema ya está hecho y en silencio)
+- [ ] Elegir en la Toolbox → Audio (de Roblox o con licencia APM) o subir cada audio y poner su id en `src/shared/Config/Sounds.luau`: 23 efectos (`Sounds.Effects`) y 9 pistas de música (6 islas, `RaidLobby`, `Raid`, `RaidBoss`). El usuario pasa los ids.
+- [ ] Probar en Studio el sonido y la música: volumen de cada efecto, límites con muchos golpes, fundido al viajar, música del jefe en la última oleada y opciones de música y efectos.
+
+### Fase 10 — Efectos y sonido · R9 (cerrada salvo los audios)
 - [x] Números de daño y efectos al golpear (`7806edd`): `HitEffectController` y `Effects/HitStyle` (`effects.spec`). El daño sale al conectar la embestida, del color de la rareza del personaje; propios grandes, de otros pequeños y solo cerca; destello y chispas al golpear y humo al morir.
 - [x] **Gacha en el HUD con Tirar x1 y Tirar x10, y animación a pantalla completa.**
   - [x] Estrella dorada en lugar del orbe (`Shared/Map/GachaStar`: contorno, cuerpo y corazón brillante; geometría probada en `map.spec`), en el plugin y en `TestArena`; el cliente la hace girar y flotar.
@@ -115,18 +119,15 @@ Lista de trabajo. Cada tarea hecha indica su commit. Las fases están descritas 
   - [x] Atajo temporal de Studio `Client/Dev/RevealPreview`: Ctrl + 1..7 (cada rareza) y Ctrl + 8 y 9 (diez tiradas), sin tirar.
   - [x] Plugin reinstalado e islas reconstruidas con la estrella.
   - [x] Probado en Studio (2026-10-21): panel al acercarse, x1 y x10 reales, cada rareza con Ctrl + 1..9 y adelantar.
-- [ ] **Sonidos.**
-  - [ ] Elegir o subir los audios (biblioteca de Roblox o propios) y guardar sus ids en un `Shared/Config/Sounds`.
-  - [ ] `SoundController` (cliente): golpes (por rareza), muerte de enemigo, recoger monedas (tono que sube en cadena), tirada y revelado del gacha por rareza, portales (viajar y desbloquear), Raid (empieza, oleada, mini jefe, jefe, completado, fallido), boost activado, clic y hover de la UI.
-  - [ ] Sonido 3D en el mundo (golpes, monedas, portales) y 2D en la UI; volumen limitado cuando suenan muchos a la vez.
-- [ ] **Música por área.**
-  - [ ] Una pista por isla, por el lobby de Raids y por el Raid (con otra para el jefe final), en `Config/Ambience` o `Config/Sounds`.
-  - [ ] Cambio con fundido al cambiar el atributo `CurrentArea`.
-- [ ] Opciones de sonido: activar o desactivar música y efectos (se guardan en los datos del jugador). La ventana de Ajustes con Check-UI va en la Fase 11.
-- [ ] Probar en Studio el sonido y, con varios jugadores si es posible, los números de daño y los efectos (el gacha ya está probado).
-- [ ] Documentos al día (constitución, spec, plan, diseño) y commit.
+- [x] **Sonidos** (sistema completo, en silencio hasta poner los ids).
+  - [x] `Shared/Config/Sounds` con un hueco por efecto y por pista (id vacío = no suena), volumen, 2D o 3D, límite de copias y separación mínima.
+  - [x] `SoundController` (cliente) y `Effects/SoundMix` (puro, `sound.spec`): golpes 3D (más graves por rareza, más bajos los de otros), muerte de enemigo 3D, monedas con tono que sube en cadena, gacha (silbido, nota por color, estallido, volteo, estrellas, fanfarria normal y rara), portales (viajar y desbloquear), Raid (empieza, oleada, mini jefe y jefe, completado, fallido, logro, boost obtenido), boost activado o comprado, ampliar el inventario, errores, pasar y pulsar botones Check-UI; máximo 16 a la vez.
+- [x] **Música por área:** una pista por isla, lobby de Raids, Raid y `RaidBoss` (última oleada), con fundido de 1.5 s al cambiar `CurrentArea`. Los ids quedan en la tarea Audios.
+- [x] Opciones de sonido: `Data.Settings` (música y efectos), `SettingsService` + `SettingsOps` (remote `SetSetting`), atributos `SettingMusic`/`SettingEffects`. La ventana de Ajustes con Check-UI va en la Fase 11.
+- [ ] Probar con varios jugadores los números de daño y los efectos (se hará en la prueba en servidor publicado, Fase 12).
+- [x] Documentos al día (constitución, spec, plan, diseño) y commit.
 
-### Fase 11 — UI Check-UI · R8
+### Fase 11 — UI Check-UI · R8 (siguiente; el usuario da las instrucciones de la UI)
 - [ ] Cargar la skill `check-ui-clean-roblox` y pasar sus constantes a `UI/Theme`: lienzo `#3B5866`, GothamBlack con contorno, cabeceras por tipo de menú con divisor de dos líneas, damero con degradado, colores de la tríada de botones.
 - [ ] Constructores en `UI/CheckUI` (ya existen ventana, cabecera, `[X]`, botón estándar con paletas y escalado, hechos para el gacha): ventana, cabecera, botón de cerrar `[X]` con relieve, botón estándar sin icono, botón con estados (Reclamar, Reclamado, Bloqueado), barra de progreso, tarjeta de personaje.
 - [ ] Escalado por pantalla (`UIScale` según `ViewportSize`, base 1050 × 620, entre 0.52 y 1.18) e interacciones desde el centro (salto al pasar y al pulsar).

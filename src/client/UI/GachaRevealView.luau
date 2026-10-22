@@ -7,8 +7,9 @@
 -- ten rolls lay ten face-down cards and flip them one by one, best last, with
 -- a pause and a shockwave for each Legendary or better. Rare cards shine;
 -- Mythic and Secret add a second layer of rays; Secret cycles the rainbow.
--- A click, tap, E, Space or A skips ahead. Timing and motion live in
--- Effects/GachaReveal (pure, tested); this module only draws.
+-- A click, tap, E, Space or A skips ahead. Each stage has its sound (whoosh,
+-- a rising note per color, burst, flips, stars and a fanfare). Timing and
+-- motion live in Effects/GachaReveal (pure, tested); this module only draws.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -23,6 +24,8 @@ local Rarities = require(Shared.Config.Rarities)
 
 local Client = script.Parent.Parent
 local GachaReveal = require(Client.Effects.GachaReveal)
+local SoundMix = require(Client.Effects.SoundMix)
+local SoundController = require(Client.Controllers.SoundController)
 local CharacterViewport = require(script.Parent.CharacterViewport)
 local CheckUI = require(script.Parent.CheckUI)
 local Theme = require(script.Parent.Theme)
@@ -452,6 +455,7 @@ function GachaRevealView.play(results: { Result })
 	})
 
 	gui.Enabled = true
+	SoundController.play("GachaWhoosh")
 
 	local burstAt = GachaReveal.INTRO + style.charge
 	local revealAt = burstAt + GachaReveal.REVEAL_DELAY
@@ -463,6 +467,9 @@ function GachaRevealView.play(results: { Result })
 	local clock = 0 -- real time, for spins and colors that should not jump on a skip
 	local lastClimb = 0
 	local kick = 0 -- extra shake from rare cards flipping, decays
+	local burstSounded = false
+	local revealSounded = false
+	local starsSounded = 0
 
 	local function addTick(color: Color3, x: number, y: number, size: number)
 		local tick = ring(size, 8, color, stage)
@@ -516,6 +523,7 @@ function GachaRevealView.play(results: { Result })
 				glow.ImageTransparency = 0.15 + 0.15 * math.sin(clock * 12)
 				glow.Size = UDim2.fromOffset(430 * scale, 430 * scale)
 				if climb > lastClimb then
+					SoundController.play("GachaClimb", { pitch = SoundMix.stepPitch(climb) })
 					if lastClimb > 0 then
 						addTick(climbColor, 0, 0, 260)
 					end
@@ -527,6 +535,10 @@ function GachaRevealView.play(results: { Result })
 		else
 			-- The burst.
 			local t = age - burstAt
+			if not burstSounded then
+				burstSounded = true
+				SoundController.play("GachaBurst")
+			end
 			local flashTransparency, ringScale, ringTransparency, burstScale, starTransparency =
 				GachaReveal.burstAt(best, t)
 			backdrop.BackgroundTransparency = 0.25
@@ -563,6 +575,11 @@ function GachaRevealView.play(results: { Result })
 		-- Cards.
 		if age >= revealAt then
 			local t = age - revealAt
+			if not multi and not revealSounded then
+				revealSounded = true
+				local rare = GachaReveal.style(best).order >= GachaReveal.RARE_ORDER
+				SoundController.play(if rare then "RevealRare" else "Reveal")
+			end
 			for slot, card in cards do
 				local isRare = GachaReveal.style(card.rarityId).order >= GachaReveal.RARE_ORDER
 				if multi then
@@ -575,7 +592,9 @@ function GachaRevealView.play(results: { Result })
 					end
 					if front and not card.flipped then
 						card.flipped = true
+						SoundController.play("CardFlip")
 						if isRare then
+							SoundController.play("RevealRare")
 							addTick(colorOf(card.rarityId, clock), card.x, card.y, 220)
 							kick = math.max(kick, GachaReveal.style(card.rarityId).shake)
 						end
@@ -584,6 +603,10 @@ function GachaRevealView.play(results: { Result })
 					card.scale.Scale = GachaReveal.popAt(t)
 					for index, starPop in card.stars do
 						starPop.Scale = GachaReveal.starPopAt(index, t)
+						if starPop.Scale > 0 and index > starsSounded then
+							starsSounded = index
+							SoundController.play("StarPop", { pitch = SoundMix.stepPitch(index) })
+						end
 					end
 				end
 				if card.front.Visible then

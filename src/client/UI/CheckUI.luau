@@ -8,6 +8,8 @@
 
 local TweenService = game:GetService("TweenService")
 
+local SoundController = require(script.Parent.Parent.Controllers.SoundController)
+
 local CheckUI = {}
 
 CheckUI.Assets = {
@@ -410,6 +412,7 @@ function CheckUI.bind(button: GuiButton, onActivated: () -> ())
 	end
 	button.MouseEnter:Connect(function()
 		to(1.05, hover)
+		SoundController.play("UiHover")
 	end)
 	button.MouseLeave:Connect(function()
 		to(1, hover)
@@ -420,7 +423,10 @@ function CheckUI.bind(button: GuiButton, onActivated: () -> ())
 	button.MouseButton1Up:Connect(function()
 		to(1.05, release)
 	end)
-	button.Activated:Connect(onActivated)
+	button.Activated:Connect(function()
+		SoundController.play("UiClick")
+		onActivated()
+	end)
 end
 
 return CheckUI

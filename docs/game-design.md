@@ -262,6 +262,15 @@ Los valores de vida y recompensas por dificultad están en `docs/balance.md` (Ra
 - Al desbloquear una isla, el jugador viaja a ella directamente. Volver a islas anteriores es gratis.
 - Al entrar al juego o reaparecer, el jugador aparece en la última isla que visitó.
 
+## Sonido y música
+- **Efectos en el mundo (3D):** golpes en el enemigo (más graves cuanto más rara es la rareza del personaje que golpea; los de otros jugadores, más bajos) y la muerte de un enemigo. Se oyen hasta 140 studs.
+- **Efectos en pantalla (2D):** recoger monedas (cada moneda seguida suena un semitono más agudo, hasta 12; se reinicia tras 0.6 s sin recoger), viajar entre áreas, desbloquear un portal, Raid (empieza, nueva oleada, mini jefe y jefe final, completado, fallido, logro de ranura, boost obtenido), activar o comprar un boost, ampliar el inventario, errores y botones (pasar y pulsar).
+- **Gacha:** la estrella entra con un silbido, cada color de rareza que sube suena una nota más aguda, el estallido tiene su golpe, cada carta que se voltea suena y cada estrella de rareza también (más aguda cada una). Una fanfarria acompaña la carta: normal hasta Épico y especial para Legendario, Mítico y Secreto (también al voltear cada carta de esas rarezas en la x10).
+- **Límites:** cada efecto tiene un máximo de copias sonando a la vez y una separación mínima; en total suenan como mucho 16 efectos.
+- **Música:** una pista por isla, por el lobby de Raids y por el Raid; en la última oleada del Raid cambia a la del jefe final. Al cambiar de área, la música se funde en 1.5 s.
+- **Opciones:** música y efectos se activan o desactivan por separado y se guardan en la partida. La ventana de Ajustes llega con la UI Check-UI (Fase 11).
+- **Audios:** los ids van en `src/shared/Config/Sounds.luau`; un id vacío no suena.
+
 ## Guardado
 
 - Persistencia con DataStore: monedas, inventario, personajes equipados, islas desbloqueadas, contadores de pity, mejoras de inventario, boosts y progreso de Raids.

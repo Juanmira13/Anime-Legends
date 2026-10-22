@@ -5,7 +5,7 @@
 -- rarity, rises and fades, with a flash and sparks at the impact. The local
 -- player's hits are big; other players' hits are smaller, fainter and only
 -- shown nearby (limits in HitStyle). An enemy that dies bursts in a puff of
--- smoke. Purely visual: damage is decided by the server.
+-- smoke, each with its sound. Purely visual: damage is decided by the server.
 
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
@@ -14,11 +14,14 @@ local RunService = game:GetService("RunService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Characters = require(Shared.Data.Characters)
+local Rarities = require(Shared.Config.Rarities)
 local Format = require(Shared.Format)
 
 local Client = script.Parent.Parent
 local FollowerMotion = require(Client.Followers.FollowerMotion)
 local HitStyle = require(Client.Effects.HitStyle)
+local SoundMix = require(Client.Effects.SoundMix)
+local SoundController = require(script.Parent.SoundController)
 local Theme = require(Client.UI.Theme)
 
 local ENEMY_TAG = "Enemy"
@@ -175,6 +178,8 @@ local function showHit(shape: EnemyShape, enemyId: string, damage: number, rarit
 	if own or distance <= HitStyle.OTHER_DISTANCE then
 		addFlash(impact, color, if own then 1 else HitStyle.OTHER_SCALE)
 		emitAt(sparks, impact, color, if own then SPARK_COUNT else SPARK_COUNT // 2)
+		local order = if rarityId then Rarities.get(rarityId).order else 1
+		SoundController.playAt("Hit", impact, { pitch = SoundMix.hitPitch(order), volume = SoundMix.hitVolume(own) })
 	end
 
 	local active, activeOthers = countNumbers()
@@ -258,6 +263,7 @@ local function untrackEnemy(instance: Instance)
 	if shape and instance:GetAttribute("Health") == 0 then
 		addFlash(shape.center, Color3.new(1, 1, 1), shape.size / HitStyle.FLASH_SIZE[2])
 		emitAt(smoke, shape.center, Color3.fromRGB(235, 235, 240), POOF_COUNT)
+		SoundController.playAt("EnemyDeath", shape.center)
 	end
 end
 

@@ -13,6 +13,7 @@ local Format = require(Shared.Format)
 local Formulas = require(Shared.Formulas)
 local Rarities = require(Shared.Config.Rarities)
 local Theme = require(script.Parent.Parent.UI.Theme)
+local SoundController = require(script.Parent.SoundController)
 
 type Snapshot = {
 	characters: { { uid: string, id: string } },
@@ -79,8 +80,11 @@ local function request(action: string, uid: string?)
 	if result.snapshot then
 		applySnapshot(result.snapshot)
 	end
-	if not result.ok and FAILURE_MESSAGES[result.reason] then
+	if result.ok and action == "Upgrade" then
+		SoundController.play("Purchase")
+	elseif not result.ok and FAILURE_MESSAGES[result.reason] then
 		showMessage(FAILURE_MESSAGES[result.reason])
+		SoundController.play("Error")
 	end
 end
 

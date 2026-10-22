@@ -14,6 +14,7 @@ local Islands = require(Shared.Data.Islands)
 local UI = script.Parent.Parent.UI
 local Notify = require(UI.Notify)
 local Theme = require(UI.Theme)
+local SoundController = require(script.Parent.SoundController)
 
 local PORTAL_TAG = "Portal"
 
@@ -58,6 +59,7 @@ local function onResult(result: any)
 	local island = if type(result.island) == "string" then Islands.get(result.island) else nil
 	if result.unlocked and island then
 		Notify.show(`¡Desbloqueaste {island.displayName}!`, Theme.Accent)
+		SoundController.play("PortalUnlock")
 	elseif result.ok then
 		return
 	elseif result.reason == "NotEnoughYen" then

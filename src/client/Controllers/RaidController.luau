@@ -12,6 +12,7 @@ local Raids = require(Shared.Config.Raids)
 local UI = script.Parent.Parent.UI
 local Notify = require(UI.Notify)
 local Theme = require(UI.Theme)
+local SoundController = require(script.Parent.SoundController)
 
 local PAD_TAG = "RaidPad"
 
@@ -97,23 +98,32 @@ local function onEvent(event: any)
 		Notify.error("Este Raid está lleno")
 	elseif kind == "Started" then
 		Notify.show(`¡Comienza el Raid {difficultyName(event.difficulty)}!`, Theme.Accent)
+		SoundController.play("RaidStart")
 	elseif kind == "Wave" then
 		if event.wave == 10 then
 			Notify.show("¡Oleada 10: Mini jefe!", Theme.rarityColor("Mythic"))
+			SoundController.play("RaidBossWave")
 		elseif event.wave == Raids.WaveCount then
 			Notify.show(`¡Oleada {Raids.WaveCount}: Jefe final!`, Theme.rarityColor("Epic"))
+			SoundController.play("RaidBossWave")
+		elseif event.wave ~= 1 then
+			SoundController.play("RaidWave")
 		end
 	elseif kind == "BoostDrop" then
 		Notify.show(`Obtuviste un Boost de {Boosts.get(event.boost).displayName}`, Color3.fromRGB(120, 220, 255))
+		SoundController.play("Purchase")
 	elseif kind == "Achievement" then
 		Notify.show(
 			`¡Nueva ranura! Ahora puedes equipar {event.equipSlots} personajes`,
 			Theme.rarityColor("Legendary")
 		)
+		SoundController.play("Achievement")
 	elseif kind == "Completed" then
 		Notify.show("¡Raid completado!", Theme.rarityColor("Uncommon"))
+		SoundController.play("RaidComplete")
 	elseif kind == "Failed" then
-		Notify.error("Raid fallido")
+		Notify.show("Raid fallido", Theme.Error)
+		SoundController.play("RaidFail")
 	elseif kind == "Left" then
 		Notify.show("Abandonaste el Raid", Theme.MutedText)
 	end

@@ -26,6 +26,7 @@ export type Data = {
 		Completions: { [string]: number },
 		LastStarted: { [string]: number }, -- os.time() of the last start, for cooldowns
 	},
+	Settings: { [string]: boolean }, -- player options by name (Config.Sounds.Settings)
 }
 
 export type Lock = {
@@ -79,6 +80,7 @@ function PlayerRecord.newData(): Data
 			Completions = { Easy = 0, Medium = 0, Hard = 0 },
 			LastStarted = { Easy = 0, Medium = 0, Hard = 0 },
 		},
+		Settings = { Music = true, Effects = true },
 	}
 end
 

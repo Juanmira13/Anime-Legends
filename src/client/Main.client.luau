@@ -1,6 +1,7 @@
 -- Client entry point.
 
 local Controllers = script.Parent.Controllers
+local SoundController = require(Controllers.SoundController)
 local EnemyController = require(Controllers.EnemyController)
 local GachaController = require(Controllers.GachaController)
 local HudController = require(Controllers.HudController)
@@ -15,6 +16,7 @@ local CoinController = require(Controllers.CoinController)
 local HitEffectController = require(Controllers.HitEffectController)
 local RevealPreview = require(script.Parent.Dev.RevealPreview) -- TEMPORARY: remove before release
 
+SoundController.start()
 HudController.start()
 EnemyController.start()
 GachaController.start()

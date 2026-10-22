@@ -4,13 +4,16 @@
 -- Balance.Coins.magnetRadius, then fly to them and are collected (the server
 -- adds that coin's yen, and the HUD shows it at once). When the server pays a
 -- drop by itself (coins left too long), its remaining coins fly over just for
--- show. Coins are local parts: only their owner sees them.
+-- show. Each pickup chimes a little higher while they keep coming. Coins are
+-- local parts: only their owner sees them.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
 local Balance = require(ReplicatedStorage:WaitForChild("Shared").Config.Balance)
+
+local SoundController = require(script.Parent.SoundController)
 
 local COIN_COLOR = Color3.fromRGB(255, 200, 40)
 local COIN_SIZE = Vector3.new(0.35, 2, 2) -- a cylinder on its side: a coin standing up
@@ -106,6 +109,7 @@ local function step(deltaTime: number)
 					if not coin.paid then
 						collectRemote:FireServer(dropId, index)
 					end
+					SoundController.coin()
 					coin.part:Destroy()
 					coins[index] = nil
 					continue

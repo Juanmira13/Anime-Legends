@@ -11,6 +11,7 @@ local Boosts = require(Shared.Config.Boosts)
 local UI = script.Parent.Parent.UI
 local Notify = require(UI.Notify)
 local Theme = require(UI.Theme)
+local SoundController = require(script.Parent.SoundController)
 
 local EFFECTS: { [string]: string } = {
 	Luck = "×2 probabilidad de Legendario, Mítico y Secreto",
@@ -56,8 +57,10 @@ local function request(action: string, boostId: string)
 	if result.ok then
 		if action == "Activate" then
 			Notify.show(`Boost de {boost.displayName} activado`, COLORS[boostId])
+			SoundController.play("BoostActivate")
 		else
 			Notify.show(`Compraste un Boost de {boost.displayName}`, COLORS[boostId])
+			SoundController.play("Purchase")
 		end
 	elseif FAILURE_MESSAGES[result.reason] then
 		Notify.error(FAILURE_MESSAGES[result.reason])

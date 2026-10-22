@@ -13,6 +13,7 @@ local PortalService = require(Services.PortalService)
 local RaidService = require(Services.RaidService)
 local BoostService = require(Services.BoostService)
 local CoinService = require(Services.CoinService)
+local SettingsService = require(Services.SettingsService)
 local TestArena = require(script.Parent.Dev.TestArena)
 local MapValidator = require(script.Parent.Dev.MapValidator)
 local DevCheats = require(script.Parent.Dev.DevCheats) -- TEMPORARY: remove before release
@@ -26,6 +27,7 @@ PortalService.start() -- connect before players load to place them on their last
 RaidService.start() -- connect before players load to replicate raid cooldowns
 BoostService.start() -- connect before players load to replicate boosts
 CoinService.start()
+SettingsService.start() -- connect before players load to replicate their options
 DataService.start()
 EnemyService.start()
 CombatService.start()

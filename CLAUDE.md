@@ -57,7 +57,7 @@ AnimeLegends/
 │   ├── server/               # ServerScriptService.Server — lógica del servidor
 │   │   ├── Main.server.luau  # Arranca los servicios en orden
 │   │   ├── Remotes.luau      # Crea los RemoteEvents en ReplicatedStorage.Remotes
-│   │   ├── Services/         # Data, Enemy, Combat, Coin, Gacha, Inventory, Portal, Raid, Boost (…Service)
+│   │   ├── Services/         # Data, Enemy, Combat, Coin, Gacha, Inventory, Portal, Raid, Boost, Settings (…Service)
 │   │   ├── Signal.luau       # Eventos entre servicios (pasan las mismas tablas, no copias)
 │   │   ├── Coins/            # Lógica pura de las monedas (CoinOps)
 │   │   ├── Data/             # PlayerRecord (forma de los datos guardados)
@@ -67,18 +67,19 @@ AnimeLegends/
 │   │   ├── Portals/          # Lógica pura de desbloqueo y viaje (PortalOps)
 │   │   ├── Raids/            # Lógica pura de Raids (RaidOps)
 │   │   ├── Boosts/           # Lógica pura de boosts (BoostOps)
+│   │   ├── Settings/         # Lógica pura de las opciones del jugador (SettingsOps)
 │   │   └── Dev/              # Ayudas solo para Studio (TestArena, MapValidator; DevCheats es temporal)
 │   ├── client/               # StarterPlayer.StarterPlayerScripts.Client — UI, efectos, control
 │   │   ├── Main.client.luau  # Arranca los controladores
 │   │   ├── Dev/              # Ayudas solo para Studio (RevealPreview, temporal)
 │   │   ├── UI/               # Theme (colores), CheckUI (constructores Check-UI), Notify, CharacterViewport, GachaRevealView
 │   │   ├── Followers/        # Lógica pura de los personajes visibles (FollowerMotion)
-│   │   ├── Effects/          # Lógica pura de los efectos de golpe y del gacha (HitStyle, GachaReveal)
-│   │   └── Controllers/      # Hud, Enemy (barras de vida), Gacha, Inventory (panel), Portal, Raid, Boost, Follower, Ambience, Sea, Coin, HitEffect
+│   │   ├── Effects/          # Lógica pura de los efectos de golpe, del gacha y del sonido (HitStyle, GachaReveal, SoundMix)
+│   │   └── Controllers/      # Sound, Hud, Enemy (barras de vida), Gacha, Inventory (panel), Portal, Raid, Boost, Follower, Ambience, Sea, Coin, HitEffect
 │   ├── shared/               # ReplicatedStorage.Shared — módulos compartidos
 │   │   ├── Formulas.luau     # Valores derivados: daño, vida, Yenes, costos
 │   │   ├── Format.luau       # Formato de números para la UI (1.5K, 2.3M)
-│   │   ├── Config/           # Constantes: Balance, Rarities, Raids, Boosts, World (mar e islas), Ambience (look por área)
+│   │   ├── Config/           # Constantes: Balance, Rarities, Raids, Boosts, World (mar e islas), Ambience (look por área), Sounds (audios)
 │   │   ├── Map/              # MapCheck (reglas puras del mapa), MapScan (recolecta y valida), AmbienceApply, GachaStar
 │   │   └── Data/             # Contenido: Islands, Characters
 │   └── builder/              # Plugin Island Builder (no se publica en el juego)
@@ -117,7 +118,7 @@ AnimeLegends/
 - **Build / exportar:** `rojo build -o AnimeLegends.rbxlx` (los `.rbxl`/`.rbxlx` están en `.gitignore`).
 - **Pruebas:** `python tests/run.py` ejecuta todos los `tests/*.spec.luau`. Requiere Python y el CLI de Luau (`luau`, de github.com/luau-lang/luau/releases; si no está en el PATH, indicar su ruta en la variable `LUAU`). `tests/bundle.py` empaqueta `src/shared`, `src/server`, `src/client` y `src/builder` con una imitación de `script` para que los `require` por instancia funcionen fuera de Studio; solo sirve para módulos puros, sin servicios de Roblox.
   - `balance.spec.luau`: `Formulas` reproduce las tablas de `docs/balance.md`. Si se cambia el balance, actualizar ambos.
-  - `player-record.spec.luau`: datos iniciales, reconciliación, migraciones y bloqueo de sesión.
+  - `player-record.spec.luau`: datos iniciales (también las opciones), reconciliación, migraciones y bloqueo de sesión.
   - `combat.spec.luau`: tiempos de ataque, recompensas y formato de números.
   - `gacha.spec.luau`: probabilidades, Boost de Suerte, pity, distribución de tiradas y tirada x10 (igual que 10 sueltas, costo ×10).
   - `inventory.spec.luau`: añadir, equipar, desequipar, eliminar, "Equipar mejores", ampliaciones y espacio para varios.
@@ -130,6 +131,7 @@ AnimeLegends/
   - `effects.spec.luau`: números de daño (salto, subida y desvanecido, tamaños, topes), destellos de golpe y animación del gacha (estilo por rareza, entrada, carga con subida de colores, estallido, confeti, cartas, volteo y orden de las diez cartas, distribución en pantalla).
   - `followers.spec.luau`: formación, arco alrededor del objetivo, embestida (más corta que el cooldown más rápido), velocidad de marcha, ciclo de caminar y giro de los personajes visibles.
   - `worldgen.spec.luau`: aleatorio con semilla, forma del terreno, relieve (montañas, ríos con cascada, lagos, caminos con rampas, formas de costa), materiales, orilla, vóxeles de tierra y agua, dispersión, y reglas de trazado (`LayoutCheck`) sobre los trazados reales de las 6 islas.
+  - `sound.spec.luau`: configuración de los audios, límites de efectos, tonos que suben (monedas, gacha), tono de los golpes por rareza, música por área y del jefe, fundido y opciones del jugador (`SettingsOps`).
   - `map.spec.luau`: reglas del mapa (`MapCheck`), configuración del mundo, ambientación de todas las áreas trazado de la arena de Raid (`RaidArenaLayout`) y geometría de la estrella del gacha (`GachaStar`).
 - **Modelos provisionales:** `python tools/build_rigs.py` crea el rig R6 de cada luchador y enemigo que no tenga modelo (nunca sobrescribe; `--force` regenera solo los `.rbxmx`). `python tools/build_rigs.py --check` falla si falta alguno: ejecutarlo al añadir personajes, islas, rangos o tipos de enemigo de Raid.
 - **Plugin Island Builder:** `rojo build builder.project.json --plugin AnimeLegendsBuilder.rbxm` lo instala en la carpeta de plugins de Studio (volver a ejecutarlo tras cada cambio en `src/builder`). En Studio: pestaña Plugins → Anime Legends → Island Builder.
@@ -190,6 +192,7 @@ El diseño detallado (islas, personajes, probabilidades, pity) está en `docs/ga
 - **Efectos de golpe:** `HitEffectController` escucha `Remotes.CharacterHit` y, cuando la embestida conecta (`FollowerMotion.LUNGE_IN_TIME`), muestra el daño sobre el enemigo con el color de la rareza del personaje que golpea (Secreto: blanco con contorno dorado), en GothamBlack con contorno; el número salta, sube y se desvanece. Además, destello y chispas en el impacto, y una nube de humo cuando el enemigo muere. Los golpes propios se ven grandes; los de otros jugadores, más pequeños y solo cerca. Tamaños, tiempos y topes en `Client/Effects/HitStyle` (puro, `effects.spec`). Solo visual: el servidor no cambia.
 - **Gacha en el mapa y en el HUD:** cada máquina es un pedestal con una estrella dorada (`Shared/Map/GachaStar`, la construyen el plugin y `TestArena`); el núcleo de la estrella es la Part con la etiqueta `GachaStand` y el atributo `Island`. `GachaController` hace girar y flotar las estrellas en el cliente y, a menos de 14 studs (en planta), abre en el HUD un panel Check-UI con los 7 personajes de la isla en 3D (`UI/CharacterViewport`), sus probabilidades (`Formulas.gachaChances`, con la Suerte si está activa) y dos botones: **Tirar x1** y **Tirar x10** (`Balance.GachaMultiRoll`; también E y R, o X e Y con mando). El cliente pide la tirada por `Remotes.GachaRoll (isla, cantidad)`; el servidor valida (cantidad 1 o 10, cerca de una estrella de esa isla, isla desbloqueada, espacio para todos, Yenes para todas), cobra `Formulas.gachaCost(isla, cantidad)` (x10 = 10 tiradas, sin descuento), tira con `GachaRoll.rollMany` (igual que tiradas sueltas seguidas, con pity) y responde por `Remotes.GachaResult` con la lista de resultados.
 - **Animación del gacha:** a pantalla completa sobre el HUD (`UI/GachaRevealView`): la pantalla se oscurece, entra una estrella dorada que se carga (late, tiembla, sacude la pantalla y sube por los colores de rareza hasta la mejor obtenida, con un anillo en cada paso) y estalla con destello, onda y confeti. Una tirada muestra una carta grande con el personaje girando en 3D, cinta de rareza, estrellas de rareza y daño; diez tiradas colocan diez cartas boca abajo que se voltean de peor a mejor, con pausa y onda antes de cada Legendario o superior. Brillo en Legendario y superiores, doble capa de rayos en Mítico y Secreto, arcoíris en Secreto. Un clic, toque, E, Espacio o A adelanta. Tiempos y movimientos en `Client/Effects/GachaReveal` (puro, `effects.spec`); solo visual. En Studio, `Client/Dev/RevealPreview` (temporal) la reproduce sin tirar: Ctrl + 1..7 una tirada de cada rareza, Ctrl + 8 y 9 diez tiradas.
+- **Sonido y música:** los ids de audio están en `Shared/Config/Sounds` (efectos con volumen, 2D o 3D, límite de copias y separación mínima; una pista de música por área y `RaidBoss`). Un id vacío no suena, así que cada sonido ya está enganchado y basta con poner su id. `SoundController` (cliente) los reproduce: `play` en pantalla, `playAt` en una posición del mundo (golpes y muertes, hasta `Sounds.SpatialRange`) y `coin` (tono que sube mientras las monedas se recogen seguidas); limita cada efecto y el total (`Sounds.MaxEffects`) con `Client/Effects/SoundMix` (puro, `sound.spec`). Los golpes suenan más graves cuanto más rara es la rareza del personaje y más bajos si son de otros jugadores. La música cambia con fundido al cambiar `CurrentArea`, y en el Raid pasa a `RaidBoss` en la última oleada (`RaidWave`). Los botones de `CheckUI.bind` suenan al pasar y al pulsar; `Notify.error` suena como error. Las opciones de música y efectos se guardan en `Data.Settings` (`Sounds.Settings`), se cambian con `Remotes.SetSetting (nombre, valor)` (`SettingsService`, validado con `SettingsOps`) y se replican en los atributos `SettingMusic` y `SettingEffects`, que silencian los grupos `Music` y `Effects` de SoundService.
 - **Boosts:** `BoostService` activa boosts, los vende por Gemas y descuenta el tiempo cada segundo solo para jugadores conectados. Cualquier sistema que dé boosts usa `BoostService.grant`. Se replican como atributos `BoostOwned_<Id>` y `BoostTime_<Id>`. Los efectos se leen de `data.Boosts.Remaining.<Id> > 0` donde se calcula cada recompensa.
 - **Inventario:** toda la lógica está en `InventoryOps` (pura). Los cambios en personajes siempre pasan por `InventoryService` (por ejemplo `addCharacter`), que envía el estado al cliente por `Remotes.InventoryChanged`. El cliente pide acciones por `Remotes.InventoryAction` y recibe el resultado más un snapshot.
 - **Interfaz (estilo oficial Check-UI):** toda la UI de pantalla (HUD, inventario, gacha, boosts, Raids, avisos) sigue la skill `check-ui-clean-roblox`: tipografía `GothamBlack` con contorno negro, ventanas opacas `#3B5866` con borde oscuro, cabeceras con degradado por tipo de menú y divisor de dos líneas, botón de cerrar `[X]` con relieve, botones con relieve y tríada de estados (Reclamar, Reclamado, Bloqueado), iconos con `ScaleType.Fit`, interacciones desde el centro (`AnchorPoint` 0.5 y `UIScale`) y escalado según `ViewportSize`. Los tokens y constructores Check-UI (ventana, cabecera, `[X]`, botón estándar con paletas de la tríada, escalado) viven en `src/client/UI/CheckUI` y los colores de rareza en `src/client/UI/Theme`; los controladores no ponen colores a mano. Los textos en el mundo 3D (carteles, títulos de portales) mantienen su estilo propio. Antes de tocar la UI, cargar la skill.
@@ -255,4 +258,5 @@ Decisiones cerradas. Las tareas pendientes están en `docs/tasks.md`.
 - [x] Raids de 20 oleadas siempre (también en Studio): 4 débiles + 2 medianos + 1 fuerte por oleada, ×1.03 por oleada; mini jefe en la 10 y jefe final en la 20, en el centro del coliseo.
 - [x] Personajes y enemigos intangibles (grupo de colisión `Intangible`).
 - [x] Números de daño del color de la rareza del personaje que golpea, grandes los propios y pequeños los de otros jugadores; destello, chispas y humo al morir.
+- [x] Sonido: los ids de audio los elige el usuario (Toolbox o subidos) y se ponen en `Config/Sounds`; mientras tanto el sistema está completo y en silencio.
 - [x] Gacha en el HUD: panel Check-UI junto a la máquina con Tirar x1 y Tirar x10 (10 veces el costo, sin descuento; necesita 10 espacios) y animación a pantalla completa; la máquina es una estrella dorada que gira.

@@ -80,12 +80,13 @@ Las 6 islas están construidas por el plugin con su propio terreno, relieve y de
 - Números de daño (color de la rareza del personaje, grandes los propios), destello y chispas al golpear y humo al morir.
 - Animación de la tirada del gacha a pantalla completa sobre el HUD (una carta o diez que se voltean), más larga y vistosa cuanto más rara; se puede adelantar. La máquina es una estrella dorada que gira. Ver `docs/game-design.md` (Gacha → Animación de la tirada).
 - Modelos de enemigos y arena de Raid (coliseo flotante), efectos de golpe, números de daño, efectos de gacha, sonido y música.
+- Sonidos de golpes (más graves cuanto más rara la rareza), muertes, monedas (tono que sube en cadena), cada paso de la animación del gacha, portales, Raids, boosts y botones; música por área con fundido y otra para el jefe final del Raid. Música y efectos se pueden desactivar y la opción se guarda. Ver `docs/game-design.md` (Sonido y música).
 - Islas de alta calidad, con la dirección de arte de cada anime, mar cartoon animado y ambientación por isla (luz, cielo, niebla, partículas).
 
 **Aceptación:** con 3 personajes equipados, caminan detrás del jugador a la misma velocidad, con los pies en el suelo y moviendo brazos y piernas; al elegir un enemigo caminan hasta colocarse a su alrededor y cada uno embiste cada vez que golpea. Otro jugador ve lo mismo. Al equipar o desequipar, el grupo cambia al momento.
 - Cada luchador y enemigo tiene su modelo en rig R6 que se puede exportar desde Studio para rehacerlo en Blender y volver a importarlo sin tocar código.
 
-**Parcial:** hechos los personajes visibles, las 6 islas, el mar cartoon, la ambientación por área y la arena de Raid. Los 71 modelos (42 luchadores, 24 enemigos de isla y 5 de Raid) son rigs R6 provisionales (luchadores del color de su rareza, enemigos del color y tamaño de su rango). Hechos también los números de daño, los efectos de golpe y el gacha en el HUD (Tirar x1 y x10, estrella dorada y animación a pantalla completa por rareza, probado en Studio). Faltan los modelos finales de Blender (en paralelo), sonido y música (Fase 10).
+**Parcial:** hechos los personajes visibles, las 6 islas, el mar cartoon, la ambientación por área y la arena de Raid. Los 71 modelos (42 luchadores, 24 enemigos de isla y 5 de Raid) son rigs R6 provisionales (luchadores del color de su rareza, enemigos del color y tamaño de su rango). Hechos también los números de daño, los efectos de golpe y el gacha en el HUD (Tirar x1 y x10, estrella dorada y animación a pantalla completa por rareza, probado en Studio). El sistema de sonido y música está programado, pero en silencio hasta poner los ids de los audios. Faltan esos ids y los modelos finales de Blender (en paralelo).
 
 ## Requisitos no funcionales
 

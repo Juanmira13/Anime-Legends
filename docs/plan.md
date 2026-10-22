@@ -80,8 +80,8 @@ El código no depende de posiciones: lee Parts etiquetadas (`IslandSpawn`, `Enem
 | — | Herramientas: StyLua, selene, Rokit; Check-UI como estilo | ✅ | `304f8fb` |
 | — | Arreglos: oleadas de los Raids, portal de salida, monedas, intangibles | ✅ | `90e577c` |
 | — | Modelos finales de Blender (en paralelo, sin bloquear) | ⏳ | — |
-| 10 | Efectos, números de daño, gacha animado, sonido y música | 🟡 en curso (números de daño y gacha animado hechos) | `7806edd` |
-| 11 | UI con el estilo Check-UI | ⏳ | — |
+| 10 | Efectos, números de daño, gacha animado, sonido y música | ✅ (los ids de los audios quedan pendientes) | `7806edd`, `d6822c1` |
+| 11 | UI con el estilo Check-UI | 🟡 siguiente | — |
 | 12 | Prueba temprana en servidor publicado | ⏳ | — |
 | 13 | Preparar publicación | ⏳ | — |
 
@@ -148,9 +148,9 @@ Todo en el cliente; el servidor ya envía lo necesario (`CharacterHit` con el da
 
 - ✅ Números de daño y efectos de golpe (`7806edd`): `HitEffectController` con la lógica pura de `Effects/HitStyle`.
 - ✅ **Gacha en el HUD** (probado en Studio): la máquina es una estrella dorada (`Shared/Map/GachaStar`, geometría pura probada en `map.spec`) que el cliente hace girar. Junto a ella, `GachaController` abre un panel Check-UI (`UI/CheckUI`, `UI/CharacterViewport`) con los 7 personajes, sus probabilidades (`Formulas.gachaChances`, compartida con `GachaRoll`) y los botones Tirar x1 y Tirar x10. Nuevo remote `GachaRoll (isla, cantidad)`; `GachaService` ya no usa ProximityPrompt, valida la distancia a la estrella, el espacio (`InventoryOps.hasSpace(data, cantidad)`) y los Yenes (`Formulas.gachaCost(isla, cantidad)`), tira con `GachaRoll.rollMany` y añade los personajes de una vez (`InventoryService.addCharacters`). La animación va a pantalla completa (`UI/GachaRevealView`) con la lógica pura de `Effects/GachaReveal` (probada en `effects.spec`): entrada, carga con subida de colores, estallido, carta grande o diez cartas que se voltean de peor a mejor. `Dev/RevealPreview` (temporal, cliente) la prueba con Ctrl + 1..9.
-- **Sonidos:** ids en `Shared/Config/Sounds`; `SoundController` para golpes, muertes, monedas, gacha, portales, Raids, boosts y UI. Sonido 3D en el mundo y 2D en la UI, con límite cuando suenan muchos a la vez.
-- **Música:** una pista por área (islas, lobby de Raids, Raid y jefe final) con fundido al cambiar `CurrentArea`.
-- **Opciones:** música y efectos activables, guardados en los datos del jugador (campo nuevo en `PlayerRecord.newData`); la ventana de Ajustes se dibuja en la Fase 11.
+- ✅ **Sonidos** (en silencio hasta tener los ids): ids en `Shared/Config/Sounds` (vacío = no suena). `SoundController` (`play` 2D, `playAt` 3D, `coin`) con la lógica pura de `Effects/SoundMix` (probada en `sound.spec`): límite por efecto y total, tonos que suben, tono de golpe por rareza. Enganchado en `HitEffectController`, `CoinController`, `GachaRevealView`, `PortalController`, `RaidController`, `BoostController`, `InventoryController`, `CheckUI.bind` y `Notify.error`.
+- ✅ **Música:** una pista por área (islas, lobby de Raids, Raid y `RaidBoss` en la última oleada, por `RaidWave`) con fundido al cambiar `CurrentArea` (`SoundMix.musicKey` y `SoundMix.fade`).
+- ✅ **Opciones:** `Data.Settings` (`PlayerRecord.newData`; la reconciliación lo añade a las partidas existentes), `SettingsService` con el remote `SetSetting` y `SettingsOps` (puro), atributos `SettingMusic` y `SettingEffects`; la ventana de Ajustes se dibuja en la Fase 11.
 
 ### Fase 11 — UI Check-UI
 

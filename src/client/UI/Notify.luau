@@ -4,6 +4,7 @@
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 
+local SoundController = require(script.Parent.Parent.Controllers.SoundController)
 local Theme = require(script.Parent.Theme)
 
 local DISPLAY_TIME = 2.5
@@ -75,6 +76,7 @@ function Notify.show(text: string, color: Color3, outline: Color3?)
 end
 
 function Notify.error(text: string)
+	SoundController.play("Error")
 	Notify.show(text, Theme.Error)
 end
 
