@@ -72,7 +72,8 @@ Las 6 islas están construidas por el plugin con su propio terreno, relieve y de
 - Botones "Inventario" y "Boosts" en el borde izquierdo (no tapan el joystick en móvil).
 - Avisos en pantalla para gacha, portales, Raids y boosts.
 - Interacciones con proximidad (panel del gacha), ProximityPrompt y clic/toque: funcionan en PC, móvil y consola.
-- Estilo oficial Check-UI (ventanas opacas, tipografía GothamBlack con contorno, botones con relieve, escalado según el tamaño de pantalla). Ver `CLAUDE.md` (sección 6, Interfaz); la migración de la UI actual es la Fase 11 de `docs/plan.md`.
+- Estilo oficial aprobado en Figma sobre Check-UI: paleta morada (~60 % morado, negro y gris) con acentos de color, ventanas con profundidad (marco con relieve, pestaña de título, `[X]` morado), paneles hundidos, botones con relieve, tarjetas con marco de rareza (Secreto negro), tipografía GothamBlack con contorno y escalado según el tamaño de pantalla. Ver `docs/game-design.md` (Interfaz); la migración de la UI actual es la Fase 11 de `docs/plan.md`.
+- Ventana de Ajustes con Música y Efectos.
 
 ### R9. Presentación 🟡
 - Personajes y enemigos intangibles: el jugador los atraviesa (los enemigos se siguen pudiendo seleccionar con clic).

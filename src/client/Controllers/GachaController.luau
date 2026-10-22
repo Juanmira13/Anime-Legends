@@ -1,6 +1,6 @@
 --!strict
 -- The gacha. Every machine's golden star spins and bobs (locally). Next to a
--- machine, a Check-UI panel opens at the bottom of the HUD with the island's
+-- machine, a panel in the official UI style opens at the bottom of the HUD with the island's
 -- seven characters in 3D, their chances (with the Luck boost if active) and two
 -- buttons: roll once and roll Balance.GachaMultiRoll times (also E and R, or X
 -- and Y on a gamepad). The roll goes to the server through Remotes.GachaRoll;
@@ -40,12 +40,12 @@ local BOB_HEIGHT = 0.4 -- studs
 local BOB_SPEED = 1.6 -- radians per second
 local SPIN_DISTANCE = 300 -- studs from the camera to animate a star
 
-local WINDOW_SIZE = Vector2.new(700, 316)
+local WINDOW_SIZE = Vector2.new(700, 334)
 local CARD_SIZE = Vector2.new(88, 150)
 local CARD_GAP = 8
-local CARD_TOP = 72
+local CARD_TOP = 78
 local BUTTON_SIZE = Vector2.new(300, 64)
-local BUTTON_Y = 268
+local BUTTON_Y = 280
 local SECRET_STROKE = Color3.fromRGB(255, 200, 60)
 
 local FAILURE_MESSAGES: { [string]: string } = {
@@ -115,14 +115,11 @@ local function refresh()
 	multiCost.Text = `¥ {Format.number(multi)}`
 	CheckUI.setPalette(
 		singleButton,
-		if locked
-			then CheckUI.Buttons.Claimed
-			elseif money < single then CheckUI.Buttons.Locked
-			else CheckUI.Buttons.Claim
+		if locked then CheckUI.Buttons.Gray elseif money < single then CheckUI.Buttons.Red else CheckUI.Buttons.Purple
 	)
 	CheckUI.setPalette(
 		multiButton,
-		if locked then CheckUI.Buttons.Claimed elseif money < multi then CheckUI.Buttons.Locked else CheckUI.Buttons.Skip
+		if locked then CheckUI.Buttons.Gray elseif money < multi then CheckUI.Buttons.Red else CheckUI.Buttons.Gold
 	)
 
 	local lucky = luckActive()
@@ -139,23 +136,15 @@ local function buildSlot(characterId: string, index: number): Slot
 	local color = Theme.rarityColor(rarity.id)
 	local isSecret = rarity.id == "Secret"
 
-	local card = Instance.new("Frame")
-	card.Name = `Card_{character.id}`
-	card.Size = UDim2.fromOffset(CARD_SIZE.X, CARD_SIZE.Y)
-	card.Position = UDim2.fromOffset((index - 1) * (CARD_SIZE.X + CARD_GAP), 0)
-	card.BackgroundColor3 = Color3.new(1, 1, 1)
-	card.ZIndex = 22
-	card.Parent = cardRow
-	local corner = Instance.new("UICorner")
-	corner.CornerRadius = UDim.new(0, 6)
-	corner.Parent = card
-	CheckUI.stroke(card, Color3.new(0, 0, 0), 2.5, true)
-	if isSecret then
-		CheckUI.gradient(card, Color3.new(), Color3.new(), 45).Color = CheckUI.sequence(CheckUI.Rainbow)
-	else
-		CheckUI.gradient(card, color:Lerp(Color3.new(1, 1, 1), 0.15), CheckUI.Colors.Card)
-	end
-	CheckUI.damier(card, Color3.new(0, 0, 0), 14, 0.9, 0.7)
+	local card = CheckUI.rarityCard({
+		name = `Card_{character.id}`,
+		size = CARD_SIZE,
+		position = UDim2.fromOffset((index - 1) * (CARD_SIZE.X + CARD_GAP), 0),
+		color = color,
+		secret = isSecret,
+		zIndex = 22,
+		parent = cardRow,
+	})
 
 	local ribbon = CheckUI.text({
 		text = string.upper(rarity.displayName),
@@ -395,7 +384,7 @@ local function buildPanel()
 	gui.Parent = player:WaitForChild("PlayerGui")
 
 	window, windowScale = CheckUI.window("Gacha", WINDOW_SIZE, gui)
-	local header, close, titleLabel = CheckUI.header(window, "GACHA", CheckUI.Headers.Shop)
+	local header, close, titleLabel = CheckUI.header(window, "GACHA", CheckUI.Accents.Gold)
 	title = titleLabel
 	CheckUI.bind(close, function()
 		dismissed = nearStand
@@ -412,11 +401,9 @@ local function buildPanel()
 	luckBadge.ZIndex = header.ZIndex + 4
 	luckBadge.Visible = false
 	luckBadge.Parent = header
-	local badgeCorner = Instance.new("UICorner")
-	badgeCorner.CornerRadius = UDim.new(0, 6)
-	badgeCorner.Parent = luckBadge
+	CheckUI.corner(luckBadge, 16)
 	CheckUI.stroke(luckBadge, Color3.new(0, 0, 0), 2.5, true)
-	CheckUI.gradient(luckBadge, CheckUI.Buttons.Claim.top, CheckUI.Buttons.Claim.bottom)
+	CheckUI.gradient(luckBadge, CheckUI.Buttons.Green.top, CheckUI.Buttons.Green.bottom)
 	CheckUI.text({
 		text = "SUERTE x2",
 		size = UDim2.fromScale(1, 1),
@@ -427,6 +414,12 @@ local function buildPanel()
 	})
 
 	local rowWidth = #Rarities.List * CARD_SIZE.X + (#Rarities.List - 1) * CARD_GAP
+	CheckUI.well({
+		name = "CardWell",
+		size = UDim2.fromOffset(rowWidth + 16, CARD_SIZE.Y + 20),
+		position = UDim2.fromOffset((WINDOW_SIZE.X - rowWidth) / 2 - 8, CARD_TOP - 8),
+		parent = window,
+	})
 	cardRow = Instance.new("Frame")
 	cardRow.Name = "Cards"
 	cardRow.Size = UDim2.fromOffset(rowWidth, CARD_SIZE.Y)
@@ -436,9 +429,9 @@ local function buildPanel()
 	cardRow.Parent = window
 
 	singleButton, singleLabel, singleCost =
-		rollButton("RollOnce", WINDOW_SIZE.X / 2 - 162, CheckUI.Buttons.Claim, "[E]", 1)
+		rollButton("RollOnce", WINDOW_SIZE.X / 2 - 162, CheckUI.Buttons.Purple, "[E]", 1)
 	multiButton, multiLabel, multiCost =
-		rollButton("RollMany", WINDOW_SIZE.X / 2 + 162, CheckUI.Buttons.Skip, "[R]", Balance.GachaMultiRoll)
+		rollButton("RollMany", WINDOW_SIZE.X / 2 + 162, CheckUI.Buttons.Gold, "[R]", Balance.GachaMultiRoll)
 
 	CheckUI.onScaleChanged(function()
 		placeWindow()

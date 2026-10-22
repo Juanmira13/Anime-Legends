@@ -1,10 +1,13 @@
 --!strict
--- Check-UI (skill check-ui-clean-roblox), the official UI style: tokens and
--- the constructors screens are built from. Solid #3B5866 windows with a dark
--- border, headers with a gradient per menu type and a two-line divider, the
--- beveled [X] close button, iconless buttons with gradient, checkerboard and
--- triple inner highlight, GothamBlack text with black outline, center-anchored
--- interactions with UIScale, and scaling from the 1050 x 620 base viewport.
+-- The official UI style: Check-UI (skill check-ui-clean-roblox) with the purple
+-- palette and depth approved in Figma (docs/game-design.md, Interfaz). About
+-- 60% dark and light purple, black and gray; color only for accents. Every
+-- piece is stacked in layers Roblox can draw without blur: a hard drop shadow,
+-- a darker base peeking out below as a bevel, a gradient face, a white gloss
+-- on top and a light inner edge. GothamBlack text with a black outline,
+-- center-anchored interactions with UIScale, and scaling from the 1050 x 620
+-- base viewport. Rotated pieces (header stripes, the slanted title tab) live
+-- in CanvasGroups, because ClipsDescendants does not clip rotated frames.
 
 local TweenService = game:GetService("TweenService")
 
@@ -19,71 +22,86 @@ CheckUI.Assets = {
 	Coin = "rbxassetid://96866635707429", -- CheckUIIcons Currency/Coin Golden_Coin_1st
 }
 
+local BLACK = Color3.new(0, 0, 0)
+local WHITE = Color3.new(1, 1, 1)
+
 CheckUI.Colors = {
-	Canvas = Color3.fromRGB(59, 88, 102),
-	CanvasBorder = Color3.fromRGB(24, 30, 34),
-	Card = Color3.fromRGB(26, 44, 52),
-	CardHighlight = Color3.fromRGB(75, 125, 145),
-	ButtonBorder = Color3.fromRGB(12, 20, 26),
-	TextStroke = Color3.fromRGB(17, 23, 26),
-	Text = Color3.new(1, 1, 1),
+	RimTop = Color3.fromRGB(160, 105, 245),
+	RimBottom = Color3.fromRGB(84, 40, 150),
+	RimBevel = Color3.fromRGB(40, 14, 82),
+	RimHighlight = Color3.fromRGB(235, 210, 255),
+	BodyTop = Color3.fromRGB(48, 29, 82),
+	BodyBottom = Color3.fromRGB(22, 13, 40),
+	BodyGlow = Color3.fromRGB(150, 95, 240),
+	HeaderTop = Color3.fromRGB(38, 21, 64),
+	HeaderBottom = Color3.fromRGB(12, 7, 20),
+	TabTop = Color3.fromRGB(46, 26, 80),
+	TabBottom = Color3.fromRGB(10, 6, 18),
+	Well = Color3.fromRGB(16, 9, 28),
+	WellEdge = Color3.fromRGB(125, 85, 200),
+	CardInner = Color3.fromRGB(26, 16, 42),
+	Lavender = Color3.fromRGB(190, 140, 255),
+	Gold = Color3.fromRGB(255, 194, 26),
+	Muted = Color3.fromRGB(190, 172, 222),
+	Outline = BLACK,
+	Text = WHITE,
 }
 
-export type HeaderTheme = {
-	top: Color3,
-	bottom: Color3,
-	highlight: Color3,
-	damier: Color3,
-	divider: Color3,
+-- Header stripe and divider colors: Purple by default (inventory, settings),
+-- Gold for shops, Red for warnings.
+CheckUI.Accents = {
+	Purple = Color3.fromRGB(185, 125, 255),
+	Gold = Color3.fromRGB(255, 190, 20),
+	Red = Color3.fromRGB(255, 70, 100),
 }
 
-CheckUI.Headers = {
-	Shop = {
-		top = Color3.fromRGB(255, 20, 150),
-		bottom = Color3.fromRGB(225, 0, 25),
-		highlight = Color3.fromRGB(255, 200, 225),
-		damier = Color3.fromRGB(150, 0, 20),
-		divider = Color3.fromRGB(125, 0, 18),
-	},
-	Codes = {
-		top = Color3.fromRGB(0, 205, 255),
-		bottom = Color3.fromRGB(0, 130, 245),
-		highlight = Color3.fromRGB(180, 240, 255),
-		damier = Color3.fromRGB(0, 75, 150),
-		divider = Color3.fromRGB(0, 50, 110),
-	},
-	Rebirth = {
-		top = Color3.fromRGB(160, 0, 255),
-		bottom = Color3.fromRGB(96, 0, 200),
-		highlight = Color3.fromRGB(224, 160, 255),
-		damier = Color3.fromRGB(96, 0, 144),
-		divider = Color3.fromRGB(80, 0, 120),
-	},
-} :: { [string]: HeaderTheme }
+export type ButtonPalette = { top: Color3, bottom: Color3, bevel: Color3, highlight: Color3 }
 
-export type ButtonPalette = { top: Color3, bottom: Color3 }
-
--- The button state triad (Claim, Claimed, Locked) plus the golden Skip.
+-- Purple is the main action; Green confirms, Red is destructive, Gold buys
+-- and Gray is locked or disabled.
 CheckUI.Buttons = {
-	Claim = { top = Color3.fromRGB(180, 255, 25), bottom = Color3.fromRGB(105, 225, 0) },
-	Claimed = { top = Color3.fromRGB(216, 222, 228), bottom = Color3.fromRGB(148, 160, 176) },
-	Locked = { top = Color3.fromRGB(255, 32, 80), bottom = Color3.fromRGB(208, 0, 32) },
-	Skip = { top = Color3.fromRGB(255, 208, 0), bottom = Color3.fromRGB(255, 140, 0) },
+	Purple = {
+		top = Color3.fromRGB(185, 120, 255),
+		bottom = Color3.fromRGB(118, 44, 226),
+		bevel = Color3.fromRGB(56, 14, 118),
+		highlight = Color3.fromRGB(230, 205, 255),
+	},
+	Green = {
+		top = Color3.fromRGB(170, 250, 40),
+		bottom = Color3.fromRGB(90, 200, 0),
+		bevel = Color3.fromRGB(20, 100, 10),
+		highlight = Color3.fromRGB(225, 255, 150),
+	},
+	Red = {
+		top = Color3.fromRGB(255, 80, 105),
+		bottom = Color3.fromRGB(205, 0, 45),
+		bevel = Color3.fromRGB(100, 0, 20),
+		highlight = Color3.fromRGB(255, 185, 205),
+	},
+	Gold = {
+		top = Color3.fromRGB(255, 218, 60),
+		bottom = Color3.fromRGB(255, 150, 0),
+		bevel = Color3.fromRGB(140, 70, 0),
+		highlight = Color3.fromRGB(255, 242, 170),
+	},
+	Gray = {
+		top = Color3.fromRGB(112, 104, 134),
+		bottom = Color3.fromRGB(70, 63, 90),
+		bevel = Color3.fromRGB(36, 31, 50),
+		highlight = Color3.fromRGB(196, 188, 216),
+	},
 } :: { [string]: ButtonPalette }
-
--- The Check-UI spectrum (Day 7 rainbow).
-CheckUI.Rainbow = {
-	Color3.fromRGB(255, 30, 80),
-	Color3.fromRGB(255, 140, 0),
-	Color3.fromRGB(255, 230, 0),
-	Color3.fromRGB(40, 230, 50),
-	Color3.fromRGB(0, 210, 255),
-	Color3.fromRGB(90, 60, 255),
-	Color3.fromRGB(220, 0, 230),
-}
 
 local BASE_VIEWPORT = Vector2.new(1050, 620)
 local MIN_SCALE, MAX_SCALE = 0.52, 1.18
+
+local WINDOW_RADIUS = 22
+local RIM = 9 -- px of purple rim around the window body
+local RIM_BEVEL = 8 -- px of dark rim base showing at the bottom
+local HEADER_HEIGHT = 52
+local TAB_SIZE = Vector2.new(300, 60)
+local TAB_SLANT = 28 -- px the tab's right edge leans over its height
+local TAB_RISE = 22 -- px the tab sticks out above the window
 
 -- Scale for the current screen: 1 at 1050 x 620, clamped for phones and big monitors.
 function CheckUI.deviceScale(): number
@@ -145,8 +163,104 @@ function CheckUI.stroke(parent: Instance, color: Color3, thickness: number, bord
 	return stroke
 end
 
+function CheckUI.corner(parent: Instance, radius: number): UICorner
+	local corner = Instance.new("UICorner")
+	corner.CornerRadius = UDim.new(0, radius)
+	corner.Parent = parent
+	return corner
+end
+
+-- Plain frame: the building block of every layer.
+function CheckUI.box(props: {
+	name: string,
+	size: UDim2,
+	position: UDim2?,
+	anchor: Vector2?,
+	color: Color3?,
+	transparency: number?,
+	radius: number?,
+	zIndex: number?,
+	parent: Instance,
+}): Frame
+	local frame = Instance.new("Frame")
+	frame.Name = props.name
+	frame.Size = props.size
+	frame.Position = props.position or UDim2.new()
+	frame.AnchorPoint = props.anchor or Vector2.zero
+	frame.BackgroundColor3 = props.color or WHITE
+	frame.BackgroundTransparency = props.transparency or 0
+	frame.BorderSizePixel = 0
+	frame.ZIndex = props.zIndex or 1
+	frame.Parent = props.parent
+	if props.radius then
+		CheckUI.corner(frame, props.radius)
+	end
+	return frame
+end
+
+-- Hard drop shadow: a translucent black copy of the parent's shape, pushed down.
+function CheckUI.shadow(parent: Instance, radius: number, offset: number, transparency: number?): Frame
+	return CheckUI.box({
+		name = "Shadow",
+		size = UDim2.fromScale(1, 1),
+		position = UDim2.fromOffset(0, offset),
+		color = BLACK,
+		transparency = transparency or 0.5,
+		radius = radius,
+		parent = parent,
+	})
+end
+
+-- A transparent frame whose border stroke draws an inner edge highlight.
+local function edge(
+	parent: Instance,
+	inset: number,
+	radius: number,
+	color: Color3,
+	transparency: number,
+	zIndex: number
+)
+	local frame = CheckUI.box({
+		name = "Edge",
+		size = UDim2.new(1, -inset * 2, 1, -inset * 2),
+		position = UDim2.fromScale(0.5, 0.5),
+		anchor = Vector2.new(0.5, 0.5),
+		transparency = 1,
+		radius = radius,
+		zIndex = zIndex,
+		parent = parent,
+	})
+	CheckUI.stroke(frame, color, 1.4, true).Transparency = transparency
+	return frame
+end
+
+-- White gloss over the top part of a face, fading downwards.
+local function gloss(parent: Instance, height: number, radius: number, strength: number, zIndex: number): Frame
+	local frame = CheckUI.box({
+		name = "Gloss",
+		size = UDim2.new(1, -10, height, 0),
+		position = UDim2.new(0.5, 0, 0, 3),
+		anchor = Vector2.new(0.5, 0),
+		radius = radius,
+		zIndex = zIndex,
+		parent = parent,
+	})
+	local fade = Instance.new("UIGradient")
+	fade.Rotation = 90
+	fade.Transparency = NumberSequence.new(1 - strength, 0.94)
+	fade.Parent = frame
+	return frame
+end
+
 -- Checkerboard overlay with a vertical transparency fade (`from` at the top, `to` at the bottom).
-function CheckUI.damier(parent: GuiObject, color: Color3, tile: number, from: number, to: number): ImageLabel
+function CheckUI.damier(
+	parent: GuiObject,
+	color: Color3,
+	tile: number,
+	from: number,
+	to: number,
+	radius: number?
+): ImageLabel
 	local damier = Instance.new("ImageLabel")
 	damier.Name = "Checkerboard"
 	damier.Size = UDim2.fromScale(1, 1)
@@ -157,11 +271,44 @@ function CheckUI.damier(parent: GuiObject, color: Color3, tile: number, from: nu
 	damier.ImageColor3 = color
 	damier.ZIndex = parent.ZIndex + 1
 	damier.Parent = parent
+	if radius then
+		CheckUI.corner(damier, radius)
+	end
 	local fade = Instance.new("UIGradient")
 	fade.Rotation = 90
 	fade.Transparency = NumberSequence.new(from, to)
 	fade.Parent = damier
 	return damier
+end
+
+-- Diagonal stripes in `color`, fading in from the left (a CanvasGroup clips them).
+function CheckUI.stripes(parent: Instance, size: Vector2, color: Color3, zIndex: number): CanvasGroup
+	local group = Instance.new("CanvasGroup")
+	group.Name = "Stripes"
+	group.Size = UDim2.fromOffset(size.X, size.Y)
+	group.BackgroundTransparency = 1
+	group.ZIndex = zIndex
+	group.Parent = parent
+	local step, width = 24, 12
+	for index = 0, math.ceil((size.X + size.Y) / step) do
+		CheckUI.box({
+			name = "Stripe",
+			size = UDim2.fromOffset(width, size.Y * 2),
+			position = UDim2.fromOffset(index * step, size.Y / 2),
+			anchor = Vector2.new(0.5, 0.5),
+			color = color,
+			parent = group,
+		}).Rotation =
+			25
+	end
+	local fade = Instance.new("UIGradient")
+	fade.Transparency = NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 1),
+		NumberSequenceKeypoint.new(0.5, 0.45),
+		NumberSequenceKeypoint.new(1, 0),
+	})
+	fade.Parent = group
+	return group
 end
 
 -- GothamBlack text with the black outline, sized in pixels.
@@ -174,12 +321,16 @@ function CheckUI.text(props: {
 	color: Color3?,
 	stroke: number?,
 	align: Enum.TextXAlignment?,
+	italic: boolean?,
 	zIndex: number?,
 	parent: Instance,
 }): TextLabel
 	local label = Instance.new("TextLabel")
 	label.BackgroundTransparency = 1
-	label.Font = Enum.Font.GothamBlack
+	label.FontFace = Font.fromEnum(Enum.Font.GothamBlack)
+	if props.italic then
+		label.FontFace = Font.new(label.FontFace.Family, Enum.FontWeight.Heavy, Enum.FontStyle.Italic)
+	end
 	label.Text = props.text
 	label.TextSize = props.textSize
 	label.TextColor3 = props.color or CheckUI.Colors.Text
@@ -189,79 +340,122 @@ function CheckUI.text(props: {
 	label.TextXAlignment = props.align or Enum.TextXAlignment.Center
 	label.ZIndex = props.zIndex or 1
 	label.Parent = props.parent
-	CheckUI.stroke(label, Color3.new(0, 0, 0), props.stroke or 2.5)
+	CheckUI.stroke(label, BLACK, props.stroke or 2.5)
 	return label
 end
 
--- Solid window, centered, hidden, with its "WindowScale".
+-- Window: hard shadow, thick purple rim with a bevel, and the dark purple
+-- body. Centered and hidden, with its "WindowScale". Content goes in the
+-- window itself (ZIndex 10 and up); the body starts RIM px inside.
 function CheckUI.window(name: string, size: Vector2, parent: Instance, zIndex: number?): (Frame, UIScale)
-	local window = Instance.new("Frame")
-	window.Name = name
-	window.Size = UDim2.fromOffset(size.X, size.Y)
-	window.Position = UDim2.fromScale(0.5, 0.5)
-	window.AnchorPoint = Vector2.new(0.5, 0.5)
-	window.BackgroundColor3 = CheckUI.Colors.Canvas
-	window.BorderSizePixel = 0
-	window.ZIndex = zIndex or 20
+	local colors = CheckUI.Colors
+	local window = CheckUI.box({
+		name = name,
+		size = UDim2.fromOffset(size.X, size.Y),
+		position = UDim2.fromScale(0.5, 0.5),
+		anchor = Vector2.new(0.5, 0.5),
+		transparency = 1,
+		zIndex = zIndex or 20,
+		parent = parent,
+	})
 	window.Visible = false
-	window.Parent = parent
-	local corner = Instance.new("UICorner")
-	corner.CornerRadius = UDim.new(0, 4)
-	corner.Parent = window
-	CheckUI.stroke(window, CheckUI.Colors.CanvasBorder, 3.5, true)
+	CheckUI.shadow(window, WINDOW_RADIUS, 12, 0.45)
+
+	local rim = CheckUI.box({
+		name = "Rim",
+		size = UDim2.fromScale(1, 1),
+		color = colors.RimBevel,
+		radius = WINDOW_RADIUS,
+		zIndex = 2,
+		parent = window,
+	})
+	CheckUI.stroke(rim, BLACK, 4, true)
+	local rimFace = CheckUI.box({
+		name = "RimFace",
+		size = UDim2.new(1, 0, 1, -RIM_BEVEL),
+		radius = WINDOW_RADIUS,
+		zIndex = 2,
+		parent = rim,
+	})
+	CheckUI.gradient(rimFace, colors.RimTop, colors.RimBottom)
+	edge(rimFace, 2, WINDOW_RADIUS - 2, colors.RimHighlight, 0.3, 3)
+
+	local body = CheckUI.box({
+		name = "Body",
+		size = UDim2.new(1, -RIM * 2, 1, -RIM * 2 - RIM_BEVEL),
+		position = UDim2.fromOffset(RIM, RIM),
+		radius = WINDOW_RADIUS - 7,
+		zIndex = 3,
+		parent = window,
+	})
+	CheckUI.gradient(body, colors.BodyTop, colors.BodyBottom)
+	CheckUI.stroke(body, BLACK, 3, true)
+	local glow = CheckUI.box({
+		name = "Glow",
+		size = UDim2.new(1, 0, 0, 120),
+		position = UDim2.fromOffset(0, HEADER_HEIGHT),
+		color = colors.BodyGlow,
+		zIndex = 3,
+		parent = body,
+	})
+	local glowFade = Instance.new("UIGradient")
+	glowFade.Rotation = 90
+	glowFade.Transparency = NumberSequence.new(0.84, 1)
+	glowFade.Parent = glow
+
 	local scale = Instance.new("UIScale")
 	scale.Name = "WindowScale"
 	scale.Parent = window
 	return window, scale
 end
 
--- Beveled square [X] (38 x 38) on the right of a header.
-function CheckUI.closeButton(header: GuiObject): ImageButton
-	local zIndex = header.ZIndex + 4
+-- Round purple [X] with a bevel, gloss and shadow (46 x 46), centered on `position`.
+function CheckUI.closeButton(parent: GuiObject, position: UDim2, zIndex: number?): ImageButton
+	local z = zIndex or 30
 	local button = Instance.new("ImageButton")
 	button.Name = "CloseButton"
-	button.Size = UDim2.fromOffset(38, 38)
-	button.Position = UDim2.new(1, -34, 0.5, -2)
+	button.Size = UDim2.fromOffset(46, 46)
+	button.Position = position
 	button.AnchorPoint = Vector2.new(0.5, 0.5)
-	button.BackgroundColor3 = Color3.fromRGB(115, 0, 16)
-	button.BorderSizePixel = 0
+	button.BackgroundTransparency = 1
 	button.AutoButtonColor = false
-	button.ZIndex = zIndex
-	button.Parent = header
-	CheckUI.stroke(button, Color3.new(0, 0, 0), 2.8, true)
-
-	local face = Instance.new("Frame")
-	face.Name = "Face"
-	face.Size = UDim2.new(1, 0, 1, -4)
-	face.BackgroundColor3 = Color3.new(1, 1, 1)
-	face.BorderSizePixel = 0
-	face.ZIndex = zIndex + 1
-	face.Parent = button
-	CheckUI.gradient(face, Color3.fromRGB(255, 125, 175), Color3.fromRGB(255, 20, 40))
-
-	local inner = Instance.new("Frame")
-	inner.Size = UDim2.new(1, -2, 1, -2)
-	inner.Position = UDim2.fromScale(0.5, 0.5)
-	inner.AnchorPoint = Vector2.new(0.5, 0.5)
-	inner.BackgroundTransparency = 1
-	inner.ZIndex = zIndex + 2
-	inner.Parent = face
-	CheckUI.stroke(inner, Color3.fromRGB(255, 210, 235), 1.2, true)
-
-	local line = Instance.new("Frame")
-	line.Size = UDim2.new(1, 0, 0, 1)
-	line.Position = UDim2.new(0, 0, 1, -4)
-	line.BackgroundColor3 = Color3.fromRGB(70, 0, 10)
-	line.BorderSizePixel = 0
-	line.ZIndex = zIndex + 2
-	line.Parent = button
-
+	button.ZIndex = z
+	button.Parent = parent
+	CheckUI.shadow(button, 23, 5)
+	local base = CheckUI.box({
+		name = "Bevel",
+		size = UDim2.fromScale(1, 1),
+		color = Color3.fromRGB(48, 12, 96),
+		radius = 23,
+		zIndex = 2,
+		parent = button,
+	})
+	CheckUI.stroke(base, BLACK, 3, true)
+	local face = CheckUI.box({
+		name = "Face",
+		size = UDim2.new(1, 0, 1, -5),
+		radius = 23,
+		zIndex = 3,
+		parent = base,
+	})
+	CheckUI.gradient(face, Color3.fromRGB(205, 150, 255), Color3.fromRGB(122, 48, 232))
+	edge(face, 2, 20, Color3.fromRGB(235, 215, 255), 0.15, 4)
+	CheckUI.box({
+		name = "Gloss",
+		size = UDim2.fromOffset(28, 12),
+		position = UDim2.new(0.5, 0, 0, 4),
+		anchor = Vector2.new(0.5, 0),
+		transparency = 0.72,
+		radius = 6,
+		zIndex = 4,
+		parent = face,
+	})
 	CheckUI.text({
 		text = "X",
 		size = UDim2.fromScale(1, 1),
-		textSize = 29,
-		stroke = 3,
-		zIndex = zIndex + 3,
+		textSize = 26,
+		stroke = 3.2,
+		zIndex = 5,
 		parent = face,
 	})
 	local scale = Instance.new("UIScale")
@@ -270,57 +464,229 @@ function CheckUI.closeButton(header: GuiObject): ImageButton
 	return button
 end
 
--- 60 px header with the theme's gradient, fading checkerboard, two-line
--- divider and title; returns it and its close button.
-function CheckUI.header(window: GuiObject, title: string, theme: HeaderTheme): (Frame, ImageButton, TextLabel)
-	local header = Instance.new("Frame")
-	header.Name = "Header"
-	header.Size = UDim2.new(1, 0, 0, 60)
-	header.BackgroundColor3 = Color3.new(1, 1, 1)
-	header.BorderSizePixel = 0
-	header.ClipsDescendants = true
-	header.ZIndex = window.ZIndex + 1
-	header.Parent = window
-	CheckUI.gradient(header, theme.top, theme.bottom)
-
-	local highlight = Instance.new("Frame")
-	highlight.Size = UDim2.new(1, 0, 0, 2)
-	highlight.BackgroundColor3 = theme.highlight
-	highlight.BackgroundTransparency = 0.25
-	highlight.BorderSizePixel = 0
-	highlight.ZIndex = header.ZIndex + 1
-	highlight.Parent = header
-
-	local damier = CheckUI.damier(header, theme.damier, 26, 1, 0.05)
-	damier.ImageTransparency = 0.35
-
-	for index, color in { theme.divider, Color3.new(0, 0, 0) } do
-		local bar = Instance.new("Frame")
-		bar.Size = UDim2.new(1, 0, 0, 3)
-		bar.Position = UDim2.new(0, 0, 1, -9 + index * 3)
-		bar.BackgroundColor3 = color
-		bar.BorderSizePixel = 0
-		bar.ZIndex = header.ZIndex + 2
-		bar.Parent = header
-	end
-
-	local titleLabel = CheckUI.text({
-		text = title,
-		size = UDim2.new(1, -80, 0, 44),
-		position = UDim2.new(0, 18, 0.5, -2),
-		anchor = Vector2.new(0, 0.5),
-		textSize = 30,
-		stroke = 3,
-		align = Enum.TextXAlignment.Left,
-		zIndex = header.ZIndex + 3,
-		parent = header,
+-- The tab's shape (a rectangle whose right edge leans by TAB_SLANT) in one
+-- solid color, `inset` px smaller on every side.
+local function tabShape(parent: Instance, name: string, inset: number, color: Color3, zIndex: number): CanvasGroup
+	local height = TAB_SIZE.Y - inset * 2
+	local group = Instance.new("CanvasGroup")
+	group.Name = name
+	group.Size = UDim2.fromOffset(TAB_SIZE.X, height)
+	group.Position = UDim2.fromOffset(0, inset)
+	group.BackgroundTransparency = 1
+	group.ZIndex = zIndex
+	group.Parent = parent
+	local angle = math.atan(TAB_SLANT / TAB_SIZE.Y)
+	-- x of the slanted edge halfway down; the rectangle stops where the edge is leftmost.
+	local edgeX = TAB_SIZE.X - TAB_SLANT / 2 - inset / math.cos(angle)
+	CheckUI.box({
+		name = "Main",
+		size = UDim2.fromOffset(edgeX - height / 2 * math.tan(angle) - inset + 1, height),
+		position = UDim2.fromOffset(inset, 0),
+		color = color,
+		radius = math.max(16 - inset, 4),
+		parent = group,
 	})
-	return header, CheckUI.closeButton(header), titleLabel
+	-- A tall rotated block whose right side draws the slanted edge.
+	local wedgeWidth = 60
+	CheckUI.box({
+		name = "Wedge",
+		size = UDim2.fromOffset(wedgeWidth, TAB_SIZE.Y * 2),
+		position = UDim2.fromOffset(
+			edgeX - wedgeWidth / 2 * math.cos(angle),
+			TAB_SIZE.Y / 2 - inset - wedgeWidth / 2 * math.sin(angle)
+		),
+		anchor = Vector2.new(0.5, 0.5),
+		color = color,
+		parent = group,
+	}).Rotation =
+		math.deg(angle)
+	return group
 end
 
--- Iconless button (the Check-UI standard): sharp corners, 3 px dark border,
--- vertical gradient, black checkerboard, triple inner highlight and a
--- GothamBlack label. `subText` adds a smaller second line (e.g. a price).
+-- Header inside the window body (dark, with `accent` stripes and the two-line
+-- divider), the slanted title tab sticking out above the window and the [X]
+-- on the top-right corner. Returns the header, the close button and the title.
+function CheckUI.header(window: GuiObject, title: string, accent: Color3): (Frame, ImageButton, TextLabel)
+	local colors = CheckUI.Colors
+	local body = window:FindFirstChild("Body") :: Frame
+	local header = CheckUI.box({
+		name = "Header",
+		size = UDim2.new(1, 0, 0, HEADER_HEIGHT),
+		radius = WINDOW_RADIUS - 7,
+		zIndex = 4,
+		parent = body,
+	})
+	CheckUI.gradient(header, colors.HeaderTop, colors.HeaderBottom)
+	-- Squares the header's bottom corners, matching its gradient there.
+	local fillStart = 1 - 20 / HEADER_HEIGHT
+	local fill = CheckUI.box({
+		name = "SquareBottom",
+		size = UDim2.new(1, 0, 0, 20),
+		position = UDim2.new(0, 0, 1, -20),
+		zIndex = 4,
+		parent = header,
+	})
+	CheckUI.gradient(fill, colors.HeaderTop:Lerp(colors.HeaderBottom, fillStart), colors.HeaderBottom)
+	local stripes = CheckUI.stripes(header, Vector2.new(300, HEADER_HEIGHT - 6), accent, 5)
+	stripes.AnchorPoint = Vector2.new(1, 0)
+	stripes.Position = UDim2.new(1, -40, 0, 0)
+	for index, color in { accent, BLACK } do
+		CheckUI.box({
+			name = "Divider",
+			size = UDim2.new(1, 0, 0, 3),
+			position = UDim2.new(0, 0, 1, -9 + index * 3),
+			color = color,
+			zIndex = 6,
+			parent = header,
+		})
+	end
+
+	-- Title tab: shadow, black outline, dark gradient face and an accent edge.
+	local tab = CheckUI.box({
+		name = "TitleTab",
+		size = UDim2.fromOffset(TAB_SIZE.X, TAB_SIZE.Y),
+		position = UDim2.fromOffset(RIM + 9, -TAB_RISE),
+		transparency = 1,
+		zIndex = 8,
+		parent = window,
+	})
+	local tabShadow = tabShape(tab, "Shadow", 0, BLACK, 1)
+	tabShadow.Position += UDim2.fromOffset(4, 8)
+	tabShadow.GroupTransparency = 0.5
+	tabShape(tab, "Outline", 0, BLACK, 2)
+	local face = tabShape(tab, "Face", 3.5, WHITE, 3)
+	CheckUI.gradient(face, colors.TabTop, colors.TabBottom)
+	CheckUI.box({
+		name = "AccentEdge",
+		size = UDim2.fromOffset(TAB_SIZE.X - 24, 2),
+		position = UDim2.fromOffset(12, 4),
+		color = accent,
+		transparency = 0.15,
+		zIndex = 4,
+		parent = tab,
+	})
+	local titleLabel = CheckUI.text({
+		text = title,
+		size = UDim2.fromOffset(TAB_SIZE.X - 60, TAB_SIZE.Y),
+		position = UDim2.fromOffset(18, TAB_SIZE.Y / 2),
+		anchor = Vector2.new(0, 0.5),
+		textSize = 30,
+		stroke = 3.8,
+		align = Enum.TextXAlignment.Left,
+		italic = true,
+		zIndex = 5,
+		parent = tab,
+	})
+	titleLabel.TextScaled = true
+	local maxSize = Instance.new("UITextSizeConstraint")
+	maxSize.MaxTextSize = 30
+	maxSize.Parent = titleLabel
+
+	local close = CheckUI.closeButton(window, UDim2.new(1, -13, 0, 7), 9)
+	return header, close, titleLabel
+end
+
+-- Inset panel for window content: darker, inner shadow at the top and a light
+-- edge at the bottom.
+function CheckUI.well(props: { name: string, size: UDim2, position: UDim2?, zIndex: number?, parent: Instance }): Frame
+	local z = props.zIndex or 10
+	local well = CheckUI.box({
+		name = props.name,
+		size = props.size,
+		position = props.position,
+		color = CheckUI.Colors.Well,
+		radius = 12,
+		zIndex = z,
+		parent = props.parent,
+	})
+	CheckUI.stroke(well, BLACK, 2.5, true)
+	local inner = CheckUI.box({
+		name = "InnerShadow",
+		size = UDim2.new(1, 0, 0, 10),
+		color = BLACK,
+		radius = 12,
+		zIndex = z,
+		parent = well,
+	})
+	local fade = Instance.new("UIGradient")
+	fade.Rotation = 90
+	fade.Transparency = NumberSequence.new(0.4, 1)
+	fade.Parent = inner
+	CheckUI.box({
+		name = "LightEdge",
+		size = UDim2.new(1, -16, 0, 3),
+		position = UDim2.new(0.5, 0, 1, -3),
+		anchor = Vector2.new(0.5, 0),
+		color = CheckUI.Colors.WellEdge,
+		transparency = 0.45,
+		zIndex = z,
+		parent = well,
+	})
+	return well
+end
+
+-- Rarity card frame: shadow, a thick border in the rarity color and a dark
+-- inner panel tinted towards it at the bottom. Secret is black with a thin
+-- white edge (never a rainbow). Returns the card and its inner panel.
+function CheckUI.rarityCard(props: {
+	name: string,
+	size: Vector2,
+	position: UDim2?,
+	color: Color3,
+	secret: boolean,
+	zIndex: number?,
+	parent: Instance,
+}): (Frame, Frame)
+	local colors = CheckUI.Colors
+	local card = CheckUI.box({
+		name = props.name,
+		size = UDim2.fromOffset(props.size.X, props.size.Y),
+		position = props.position,
+		transparency = 1,
+		zIndex = props.zIndex or 20,
+		parent = props.parent,
+	})
+	CheckUI.shadow(card, 12, 5)
+	local border = CheckUI.box({
+		name = "Border",
+		size = UDim2.fromScale(1, 1),
+		radius = 12,
+		zIndex = 2,
+		parent = card,
+	})
+	if props.secret then
+		CheckUI.gradient(border, Color3.fromRGB(40, 40, 44), Color3.fromRGB(4, 4, 6))
+		CheckUI.stroke(border, WHITE, 1.6, true)
+		edge(border, 3, 10, WHITE, 0.45, 3)
+	else
+		CheckUI.gradient(border, props.color:Lerp(WHITE, 0.25), props.color:Lerp(BLACK, 0.35))
+		CheckUI.stroke(border, BLACK, 2.5, true)
+	end
+	local inner = CheckUI.box({
+		name = "Inner",
+		size = UDim2.new(1, -10, 1, -10),
+		position = UDim2.fromScale(0.5, 0.5),
+		anchor = Vector2.new(0.5, 0.5),
+		radius = 8,
+		zIndex = 3,
+		parent = card,
+	})
+	local tint = Instance.new("UIGradient")
+	tint.Rotation = 90
+	tint.Color = ColorSequence.new({
+		ColorSequenceKeypoint.new(0, colors.CardInner),
+		ColorSequenceKeypoint.new(0.35, colors.CardInner),
+		ColorSequenceKeypoint.new(1, if props.secret then BLACK else props.color:Lerp(BLACK, 0.55)),
+	})
+	tint.Parent = inner
+	CheckUI.stroke(inner, BLACK, 2, true).Transparency = 0.1
+	gloss(inner, 0.3, 8, 0.1, 3)
+	return card, inner
+end
+
+-- Rounded button with a shadow, a bevel base, a gradient face, a faint
+-- checkerboard, a white gloss, a light inner edge and a GothamBlack label.
+-- `subText` adds a smaller second line (e.g. a price).
 function CheckUI.button(props: {
 	name: string,
 	size: Vector2,
@@ -333,55 +699,60 @@ function CheckUI.button(props: {
 	parent: Instance,
 }): (ImageButton, TextLabel, TextLabel?)
 	local zIndex = props.zIndex or 25
+	local radius = 12
 	local button = Instance.new("ImageButton")
 	button.Name = props.name
 	button.Size = UDim2.fromOffset(props.size.X, props.size.Y)
 	button.Position = props.position
 	button.AnchorPoint = Vector2.new(0.5, 0.5)
-	button.BackgroundColor3 = Color3.new(1, 1, 1)
-	button.BorderSizePixel = 0
+	button.BackgroundTransparency = 1
 	button.AutoButtonColor = false
-	button.ClipsDescendants = true
 	button.ZIndex = zIndex
 	button.Parent = props.parent
-	CheckUI.stroke(button, CheckUI.Colors.ButtonBorder, 3, true)
-	local gradient = CheckUI.gradient(button, props.palette.top, props.palette.bottom)
-	gradient.Name = "ButtonGradient"
+	CheckUI.shadow(button, radius, 5, 0.55)
 
-	local damier = CheckUI.damier(button, Color3.new(0, 0, 0), 19, 0.91, 0.62)
-	damier.ZIndex = zIndex + 1
-	for index, transparency in { 0.25, 0.45, 0.8 } do
-		local inner = Instance.new("Frame")
-		inner.Name = `InnerHighlight{index}`
-		inner.Size = UDim2.new(1, -index * 2, 1, -index * 2)
-		inner.Position = UDim2.fromScale(0.5, 0.5)
-		inner.AnchorPoint = Vector2.new(0.5, 0.5)
-		inner.BackgroundTransparency = 1
-		inner.ZIndex = zIndex + 2
-		inner.Parent = button
-		local stroke = CheckUI.stroke(inner, Color3.new(1, 1, 1), 1, true)
-		stroke.Transparency = transparency
-	end
+	local base = CheckUI.box({
+		name = "Bevel",
+		size = UDim2.fromScale(1, 1),
+		color = props.palette.bevel,
+		radius = radius,
+		zIndex = 2,
+		parent = button,
+	})
+	CheckUI.stroke(base, BLACK, 3, true)
+	local face = CheckUI.box({
+		name = "Face",
+		size = UDim2.new(1, 0, 1, -6),
+		radius = radius,
+		zIndex = 3,
+		parent = base,
+	})
+	local gradient = CheckUI.gradient(face, props.palette.top, props.palette.bottom)
+	gradient.Name = "ButtonGradient"
+	CheckUI.damier(face, BLACK, 16, 0.96, 0.84, radius)
+	gloss(face, 0.36, radius - 3, 0.38, 5)
+	local highlight = edge(face, 2, radius - 2, props.palette.highlight, 0.25, 6)
+	highlight.Name = "Highlight"
 
 	local hasSub = props.subText ~= nil
 	local label = CheckUI.text({
 		text = props.text,
-		size = UDim2.fromScale(1, if hasSub then 0.6 else 1),
-		position = UDim2.new(0.5, 0, if hasSub then 0.36 else 0.5, -1),
-		textSize = props.textSize or 36,
+		size = UDim2.new(1, -8, if hasSub then 0.56 else 1, if hasSub then 0 else -6),
+		position = UDim2.new(0.5, 0, if hasSub then 0.32 else 0.5, -3),
+		textSize = props.textSize or 30,
 		stroke = 3,
-		zIndex = zIndex + 3,
+		zIndex = 7,
 		parent = button,
 	})
 	local sub: TextLabel? = nil
 	if props.subText then
 		sub = CheckUI.text({
 			text = props.subText,
-			size = UDim2.fromScale(1, 0.38),
-			position = UDim2.fromScale(0.5, 0.76),
-			textSize = math.floor((props.textSize or 36) * 0.6),
+			size = UDim2.new(1, -8, 0.34, 0),
+			position = UDim2.new(0.5, 0, 0.7, -3),
+			textSize = math.floor((props.textSize or 30) * 0.62),
 			stroke = 2.5,
-			zIndex = zIndex + 3,
+			zIndex = 7,
 			parent = button,
 		})
 	end
@@ -391,11 +762,25 @@ function CheckUI.button(props: {
 	return button, label, sub
 end
 
--- Recolors a button made by CheckUI.button (e.g. Claim -> Locked).
+-- Recolors a button made by CheckUI.button (e.g. Purple -> Gray).
 function CheckUI.setPalette(button: GuiObject, palette: ButtonPalette)
-	local gradient = button:FindFirstChild("ButtonGradient")
+	local base = button:FindFirstChild("Bevel")
+	if not (base and base:IsA("Frame")) then
+		return
+	end
+	base.BackgroundColor3 = palette.bevel
+	local face = base:FindFirstChild("Face")
+	if not face then
+		return
+	end
+	local gradient = face:FindFirstChild("ButtonGradient")
 	if gradient and gradient:IsA("UIGradient") then
 		gradient.Color = ColorSequence.new(palette.top, palette.bottom)
+	end
+	local highlight = face:FindFirstChild("Highlight")
+	local stroke = highlight and highlight:FindFirstChildOfClass("UIStroke")
+	if stroke then
+		stroke.Color = palette.highlight
 	end
 end
 

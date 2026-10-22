@@ -116,7 +116,7 @@ Cómo se tira:
 - A pantalla completa, sobre el HUD: la pantalla se oscurece y entra una estrella dorada desde abajo. La estrella se carga: late cada vez más rápido, tiembla y sacude la pantalla, y sube por los colores de rareza (Común, Poco común...) hasta la mejor rareza obtenida, con un anillo en cada paso. Luego estalla: destello blanco, onda expansiva y confeti.
 - **Una tirada:** aparece una carta grande con rebote: el personaje girando en 3D, la cinta de su rareza, tantas estrellas como su rareza (1 a 7, una tras otra) y su daño.
 - **Diez tiradas:** caen diez cartas boca abajo en dos filas y se voltean una a una, de peor a mejor; antes de cada Legendario o superior hay una pausa de suspense, y al voltearse una onda y una sacudida.
-- Cuanto más rara, más larga la carga, más fuerte la sacudida y el destello y más confeti. Las cartas Épico o superiores tienen rayos detrás; Legendario y superiores, un brillo que las recorre; Mítico y Secreto, doble capa de rayos; Secreto, colores arcoíris.
+- Cuanto más rara, más larga la carga, más fuerte la sacudida y el destello y más confeti. Las cartas Épico o superiores tienen rayos detrás; Legendario y superiores, un brillo que las recorre; Mítico y Secreto, doble capa de rayos; en Secreto la luz (carga, rayos) recorre el arcoíris, pero su carta es negra con filo blanco, como su color de rareza.
 - Un clic, un toque, E, Espacio o A adelantan: primero al estallido, luego a todas las cartas reveladas y luego cierran (no justo al tirar, para que la propia pulsación no la salte). Si no, se cierra sola a los pocos segundos.
 - Solo la ve quien tira; es solo visual (la tirada ya la hizo el servidor). Tiempos y efectos exactos en `src/client/Effects/GachaReveal.luau`.
 
@@ -268,8 +268,28 @@ Los valores de vida y recompensas por dificultad están en `docs/balance.md` (Ra
 - **Gacha:** la estrella entra con un silbido, cada color de rareza que sube suena una nota más aguda, el estallido tiene su golpe, cada carta que se voltea suena y cada estrella de rareza también (más aguda cada una). Una fanfarria acompaña la carta: normal hasta Épico y especial para Legendario, Mítico y Secreto (también al voltear cada carta de esas rarezas en la x10).
 - **Límites:** cada efecto tiene un máximo de copias sonando a la vez y una separación mínima; en total suenan como mucho 16 efectos.
 - **Música:** una pista por isla, por el lobby de Raids y por el Raid; en la última oleada del Raid cambia a la del jefe final. Al cambiar de área, la música se funde en 1.5 s.
-- **Opciones:** música y efectos se activan o desactivan por separado y se guardan en la partida. La ventana de Ajustes llega con la UI Check-UI (Fase 11).
+- **Opciones:** música y efectos se activan o desactivan por separado y se guardan en la partida. La ventana de Ajustes llega con la nueva UI (Fase 11; ver Interfaz).
 - **Audios:** los ids van en `src/shared/Config/Sounds.luau`; un id vacío no suena.
+
+## Interfaz (estilo aprobado)
+
+Diseño de referencia en Figma: https://www.figma.com/design/LQtqRj9irAbduoxtYo4xz0 (página *Componentes* con las piezas y página *Pantallas* con las 8 pantallas). Se basa en Check-UI (skill `check-ui-clean-roblox`) y en la referencia de inventario de `Downloads/ReferenciasUi` (estilo "Units" de Anime Defenders).
+
+- **Paleta:** ~60 % morado oscuro y claro, negro y gris. El color se reserva para acentos con significado: verde confirmar, dorado comprar y precios, rojo eliminar o salir, gris bloqueado, y los colores de rareza.
+- **Tipografía:** GothamBlack con contorno negro; títulos de ventana en cursiva (en Figma se usa Montserrat Black como sustituta).
+- **Profundidad:** cada pieza se apila en capas que Roblox puede dibujar sin desenfoque: sombra dura (marco negro translúcido desplazado hacia abajo), base más oscura que asoma por debajo como relieve, cara con degradado, brillo blanco en la parte de arriba y un filo interior claro.
+- **Ventana:** sombra, marco morado grueso con relieve, cuerpo morado oscuro con degradado, resplandor bajo la cabecera y franjas diagonales muy sutiles. Cabecera oscura con franjas diagonales del color de acento a la derecha y divisor de dos líneas (acento y negro). Pestaña de título negra que sobresale por encima de la ventana, con el borde derecho inclinado y el título en cursiva. Botón de cerrar `[X]` morado y redondo, montado sobre la esquina superior derecha. Acentos: Morado (por defecto: inventario, ajustes), Dorado (tienda), Rojo.
+- **Paneles hundidos:** el contenido de las ventanas va en paneles más oscuros con sombra interior arriba y un filo de luz abajo.
+- **Paneles del HUD:** estado del Raid, fila, lista de Raids, área y avisos usan el mismo marco morado que las ventanas, en pequeño.
+- **Botones:** esquinas redondeadas, relieve, brillo y damero sutil. Morado es el principal (Equipar mejores, Desequipar); Verde confirma (Activar, ON); Rojo es peligro (Eliminar, Salir); Dorado compra (Comprar, Ampliar); Gris está bloqueado (Sin stock, OFF).
+- **HUD:** contadores de Yenes y Gemas arriba a la izquierda (sin cambios en sus iconos), boosts activos con su tiempo arriba al centro, área arriba a la derecha y botones laterales morados (Inventario, Boosts, Ajustes) en el borde izquierdo, por encima de la zona del joystick en móvil.
+- **Tarjeta de personaje:** marco grueso del color de la rareza, interior oscuro que se tiñe de ese color hacia abajo, aura y el personaje en grande, daño arriba a la izquierda (dorado), rombo de rareza arriba a la derecha, nombre abajo sobre un degradado oscuro y una marca verde si está equipado. El Secreto es negro (marco y rombo) con un filo blanco fino; nunca arcoíris.
+- **Inventario:** "Equipados 3 / 3", Equipar mejores y Ampliar con su precio, cuadrícula de tarjetas con desplazamiento, panel de detalle del personaje seleccionado (rareza, daño, cooldown, isla, Desequipar o Equipar, Eliminar) y "Personajes: 37 / 50" en el pie.
+- **Tienda de boosts:** una tarjeta por boost con su icono sobre un aura de su color, descripción, duración, cuántos tiene, Activar y Comprar con el precio en Gemas; las Gemas del jugador en la cabecera.
+- **Ajustes:** filas de Música y Efectos con un botón ON (verde) / OFF (gris).
+- **Raid:** panel arriba al centro con la dificultad, la barra de oleada y el tiempo restante; en el lobby, la fila con el botón Salir y la espera de cada dificultad.
+- **Avisos:** paneles del HUD con una barra del color del tipo (normal, éxito, error, logro, jefe).
+- **Escalado:** `UIScale` según `ViewportSize` (base 1050 × 620, entre 0.52 y 1.18); un móvil de 844 × 390 queda a 0.63. Animaciones desde el centro.
 
 ## Guardado
 

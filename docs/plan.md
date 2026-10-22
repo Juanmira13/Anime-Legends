@@ -8,7 +8,7 @@ Cómo está construido el juego y en qué orden se hace. Las reglas que hay que 
 - Guardado con DataStoreService.
 - Pruebas de lógica pura con el CLI de Luau (`python tests/run.py`) y revisión de tipos con `luau-lsp` (ver `CLAUDE.md`, sección 4).
 - Formato con StyLua (`stylua.toml`) y linter con selene (`selene.toml`); todas las herramientas fijadas en `rokit.toml`.
-- UI con el estilo Check-UI (skill `check-ui-clean-roblox`), implementado en `src/client/UI/Theme`.
+- UI con el estilo aprobado en Figma sobre Check-UI (skill `check-ui-clean-roblox`), implementado en `src/client/UI/Theme` y `src/client/UI/CheckUI`.
 
 ## Arquitectura
 
@@ -154,8 +154,8 @@ Todo en el cliente; el servidor ya envía lo necesario (`CharacterHit` con el da
 
 ### Fase 11 — UI Check-UI
 
-- `UI/Theme` adopta las constantes y constructores de Check-UI (skill `check-ui-clean-roblox`): ventanas, cabeceras por tipo de menú, botón de cerrar, botones con tríada de estados, escalado por `ViewportSize`.
-- Constructores: ventana, cabecera, botón de cerrar `[X]` con relieve, botón estándar sin icono, botones con estados (Reclamar, Reclamado, Bloqueado), barra de progreso y tarjeta de personaje; escalado con `UIScale` según `ViewportSize` (base 1050 × 620, entre 0.52 y 1.18) e interacciones desde el centro.
+- ✅ Diseño aprobado en Figma (https://www.figma.com/design/LQtqRj9irAbduoxtYo4xz0): piezas y 8 pantallas. Detalle en `docs/game-design.md` (Interfaz).
+- `UI/Theme` y `UI/CheckUI` pasan a la paleta morada y a la profundidad del diseño: ventana (sombra, marco con relieve, cabecera con franjas, pestaña de título, `[X]` morado redondo), panel hundido, panel del HUD, botones Morado/Verde/Rojo/Dorado/Gris con relieve y brillo, contador, aviso de boost, botón lateral, barra de progreso y tarjeta de personaje; escalado con `UIScale` según `ViewportSize` (base 1050 × 620, entre 0.52 y 1.18) e interacciones desde el centro.
 - Rehacer con esos constructores el HUD, el inventario, el resultado del gacha, la tienda de boosts, el estado del Raid y los avisos, y añadir la ventana de Ajustes, sin cambiar los Remotes ni la lógica del servidor.
 - Probar en PC, móvil, tableta y mando.
 

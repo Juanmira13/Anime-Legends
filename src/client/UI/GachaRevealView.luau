@@ -1,12 +1,13 @@
 --!strict
--- Full-screen gacha reveal over the HUD, in the Check-UI style. The screen
+-- Full-screen gacha reveal over the HUD, in the official UI style. The screen
 -- darkens, a golden star flies in and charges up (pulsing, wobbling, shaking
 -- and climbing through the rarity colors up to the best roll), then bursts in
 -- a white flash with a shockwave and confetti. One roll pops a big card with
 -- the character spinning in 3D, its rarity ribbon, rarity stars and damage;
 -- ten rolls lay ten face-down cards and flip them one by one, best last, with
 -- a pause and a shockwave for each Legendary or better. Rare cards shine;
--- Mythic and Secret add a second layer of rays; Secret cycles the rainbow.
+-- Mythic and Secret add a second layer of rays; Secret's light cycles the
+-- rainbow while its card stays black.
 -- A click, tap, E, Space or A skips ahead. Each stage has its sound (whoosh,
 -- a rising note per color, burst, flips, stars and a fanfare). Timing and
 -- motion live in Effects/GachaReveal (pure, tested); this module only draws.
@@ -170,11 +171,16 @@ local function buildCard(result: Result, x: number, y: number, size: number, fac
 	local corner = Instance.new("UICorner")
 	corner.CornerRadius = UDim.new(0, 10)
 	corner.Parent = front
-	CheckUI.stroke(front, Color3.new(0, 0, 0), 4, true)
+	-- Secret's card is black with a white edge (its color is black, never a rainbow).
+	CheckUI.stroke(
+		front,
+		if isSecret then Color3.new(1, 1, 1) else Color3.new(0, 0, 0),
+		if isSecret then 3 else 4,
+		true
+	)
 	local gradient: UIGradient
 	if isSecret then
-		gradient = CheckUI.gradient(front, Color3.new(), Color3.new(), 45)
-		gradient.Color = CheckUI.sequence(CheckUI.Rainbow)
+		gradient = CheckUI.gradient(front, Color3.fromRGB(52, 52, 60), Color3.new(0, 0, 0))
 	else
 		gradient = CheckUI.gradient(front, color:Lerp(Color3.new(1, 1, 1), 0.35), color:Lerp(Color3.new(0, 0, 0), 0.45))
 	end
@@ -289,12 +295,12 @@ local function buildCard(result: Result, x: number, y: number, size: number, fac
 		local cover = Instance.new("Frame")
 		cover.Name = "Back"
 		cover.Size = UDim2.fromScale(1, 1)
-		cover.BackgroundColor3 = CheckUI.Colors.Card
+		cover.BackgroundColor3 = CheckUI.Colors.Well
 		cover.ZIndex = 2
 		cover.Parent = root
 		corner:Clone().Parent = cover
 		CheckUI.stroke(cover, Color3.new(0, 0, 0), 4, true)
-		CheckUI.damier(cover, CheckUI.Colors.CardHighlight, 26, 0.85, 0.55)
+		CheckUI.damier(cover, CheckUI.Colors.Lavender, 26, 0.85, 0.55)
 		local icon = image("Star", CheckUI.Assets.Star, 150, 4, cover)
 		icon.Size = UDim2.fromScale(150 / CARD_W, 150 / CARD_H)
 		local mark = CheckUI.text({
@@ -613,9 +619,6 @@ function GachaRevealView.play(results: { Result })
 					CharacterViewport.setYaw(card.view, clock * 1.4 + slot)
 					if card.shine then
 						card.shine.Offset = Vector2.new(GachaReveal.shineAt(clock + slot * 0.2), 0)
-					end
-					if GachaReveal.style(card.rarityId).rainbow then
-						card.gradient.Rotation = (clock * 90) % 360
 					end
 					local showGlow = GachaReveal.style(card.rarityId).order >= 4
 					card.glow.ImageTransparency = if showGlow then 0.2 else 1
