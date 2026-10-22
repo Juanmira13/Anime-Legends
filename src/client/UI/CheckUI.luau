@@ -982,8 +982,8 @@ function CheckUI.hudPanel(props: {
 	return panel, body
 end
 
--- HUD currency counter (Yen, Gems): a pill with a big icon sticking out on
--- the left and the value. Returns the counter and its value label.
+-- HUD currency counter (Yen, Gems): a pill with the icon inside on the left
+-- and the value. Returns the counter and its value label.
 function CheckUI.counter(props: {
 	name: string,
 	icon: string?,
@@ -1010,14 +1010,14 @@ function CheckUI.counter(props: {
 		icon = props.icon,
 		glyph = props.glyph,
 		glyphColor = props.glyphColor,
-		size = math.floor(size.Y * 1.3),
-		position = UDim2.new(0, 10, 0.5, -2),
+		size = math.floor(size.Y * 0.78),
+		position = UDim2.new(0, size.Y / 2 + 2, 0.5, -2),
 		zIndex = 8,
 	})
 	local value = CheckUI.text({
 		text = "0",
-		size = UDim2.new(1, -size.Y - 4, 1, -4),
-		position = UDim2.new(0, size.Y - 4, 0.5, -2),
+		size = UDim2.new(1, -size.Y - 10, 1, -4),
+		position = UDim2.new(0, size.Y + 4, 0.5, -2),
 		anchor = Vector2.new(0, 0.5),
 		textSize = math.floor(size.Y * 0.52),
 		stroke = 3,
@@ -1085,7 +1085,7 @@ function CheckUI.boostChip(props: {
 end
 
 -- Purple square HUD button (Inventory, Boosts, Settings) with an icon and a
--- label across its bottom edge. Centered on `position`.
+-- label inside its bottom part. Centered on `position`.
 function CheckUI.sideButton(props: {
 	name: string,
 	text: string,
@@ -1131,20 +1131,26 @@ function CheckUI.sideButton(props: {
 		icon = props.icon,
 		glyph = props.glyph,
 		glyphColor = props.glyphColor,
-		size = 50,
-		position = UDim2.new(0.5, 0, 0, 32),
+		size = 42,
+		position = UDim2.new(0.5, 0, 0, 29),
 		zIndex = 7,
 	})
-	CheckUI.text({
+	-- The label fits inside the face, shrinking for long words.
+	local label = CheckUI.text({
 		text = props.text,
-		size = UDim2.fromOffset(110, 22),
-		position = UDim2.new(0.5, 0, 1, -6),
-		textSize = 13,
-		stroke = 3,
+		size = UDim2.fromOffset(66, 16),
+		position = UDim2.new(0.5, 0, 1, -18),
+		textSize = 12,
+		color = CheckUI.Colors.Gold,
+		stroke = 2.5,
 		zIndex = 8,
 		parent = button,
-	}).Name =
-		"Label"
+	})
+	label.Name = "Label"
+	label.TextScaled = true
+	local maxSize = Instance.new("UITextSizeConstraint")
+	maxSize.MaxTextSize = 12
+	maxSize.Parent = label
 	local scale = Instance.new("UIScale")
 	scale.Name = "ButtonScale"
 	scale.Parent = button

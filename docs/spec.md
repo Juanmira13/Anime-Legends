@@ -68,8 +68,8 @@ Las 6 islas están construidas por el plugin con su propio terreno, relieve y de
 **Aceptación:** con el Boost de Dinero activo, un enemigo Fácil de Nameku da 10 ¥.
 
 ### R8. Interfaz ✅
-- Yenes y Gemas siempre visibles, con los boosts activos debajo.
-- Botones "Inventario" y "Boosts" en el borde izquierdo (no tapan el joystick en móvil).
+- Yenes y Gemas siempre visibles abajo a la izquierda (contadores al 75 % de su tamaño de diseño, con el símbolo entero dentro del rectángulo); los boosts activos con su tiempo abajo a la derecha y el área actual arriba a la derecha (al 80 % de su tamaño de diseño).
+- Botones laterales morados "Inventario" y "Boosts" en el borde izquierdo, centrados en vertical, con el texto en dorado dentro del botón.
 - Avisos en pantalla para gacha, portales, Raids y boosts.
 - Interacciones con proximidad (panel del gacha), ProximityPrompt y clic/toque: funcionan en PC, móvil y consola.
 - Estilo oficial aprobado en Figma sobre Check-UI: paleta morada (~60 % morado, negro y gris) con acentos de color, ventanas con profundidad (marco con relieve, pestaña de título, `[X]` morado), paneles hundidos, botones con relieve, tarjetas con marco de rareza (Secreto negro), tipografía GothamBlack con contorno y escalado según el tamaño de pantalla. Ver `docs/game-design.md` (Interfaz); la migración de la UI actual es la Fase 11 de `docs/plan.md`.

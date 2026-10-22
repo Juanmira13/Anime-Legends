@@ -179,7 +179,7 @@ Reglas del pity:
 - **Gemas (secundaria):** se obtienen en Raids. Se gastan en boosts en la tienda; otros usos: pendiente.
 - **Boosts:** Suerte, Dinero y Gemas, de 15 minutos. Se obtienen como drop de enemigos en los Raids o comprándolos con Gemas en la tienda.
   - Se gestionan desde el botón "Boosts": muestra cuántos tienes de cada uno, el tiempo activo, y los botones Activar y Comprar.
-  - Los boosts activos aparecen con su tiempo restante debajo de los Yenes y Gemas.
+  - Los boosts activos aparecen con su tiempo restante abajo a la derecha del HUD.
   - Activar un boost que ya está activo suma 15 minutos más.
 
 ## Raids (MVP)
@@ -282,7 +282,7 @@ Diseño de referencia en Figma: https://www.figma.com/design/LQtqRj9irAbduoxtYo4
 - **Paneles hundidos:** el contenido de las ventanas va en paneles más oscuros con sombra interior arriba y un filo de luz abajo.
 - **Paneles del HUD:** estado del Raid, fila, lista de Raids, área y avisos usan el mismo marco morado que las ventanas, en pequeño.
 - **Botones:** esquinas redondeadas, relieve, brillo y damero sutil. Morado es el principal (Equipar mejores, Desequipar); Verde confirma (Activar, ON); Rojo es peligro (Eliminar, Salir); Dorado compra (Comprar, Ampliar); Gris está bloqueado (Sin stock, OFF).
-- **HUD:** contadores de Yenes y Gemas arriba a la izquierda (sin cambios en sus iconos), boosts activos con su tiempo arriba al centro, área arriba a la derecha y botones laterales morados (Inventario, Boosts, Ajustes) en el borde izquierdo, por encima de la zona del joystick en móvil.
+- **HUD:** contadores de Yenes y Gemas abajo a la izquierda, al 75 % de su tamaño de diseño, con el símbolo (sin cambios en su dibujo) entero dentro del rectángulo, a la izquierda del valor; boosts activos con su tiempo abajo a la derecha, apilados hacia arriba; área arriba a la derecha, al 80 % de su tamaño de diseño; botones laterales morados (Inventario, Boosts, Ajustes) en el borde izquierdo, centrados en vertical, con el icono arriba y el texto en dorado dentro del botón. En móvil, los contadores y los boosts quedan junto al joystick y al botón de saltar; no se pulsan, así que no los estorban.
 - **Tarjeta de personaje:** marco grueso del color de la rareza, interior oscuro que se tiñe de ese color hacia abajo, aura y el personaje en grande, daño arriba a la izquierda (dorado), rombo de rareza arriba a la derecha, nombre abajo sobre un degradado oscuro y una marca verde si está equipado. El Secreto es negro (marco y rombo) con un filo blanco fino; nunca arcoíris.
 - **Inventario:** "Equipados 3 / 3", Equipar mejores y Ampliar con su precio, cuadrícula de tarjetas con desplazamiento, panel de detalle del personaje seleccionado (rareza, daño, cooldown, isla, Desequipar o Equipar, Eliminar) y "Personajes: 37 / 50" en el pie.
 - **Tienda de boosts:** una tarjeta por boost con su icono sobre un aura de su color, descripción, duración, cuántos tiene, Activar y Comprar con el precio en Gemas; las Gemas del jugador en la cabecera.

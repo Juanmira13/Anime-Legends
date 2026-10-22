@@ -1,6 +1,6 @@
 --!strict
--- Boosts panel (activate stored boosts, buy with gems) and the list of active
--- boosts with their time left. Reads the player attributes
+-- Boosts panel (activate stored boosts, buy with gems), opened from its HUD
+-- side button. Reads the player attributes
 -- "BoostOwned_<BoostId>" and "BoostTime_<BoostId>" set by the server.
 
 local Players = game:GetService("Players")
@@ -11,6 +11,7 @@ local Boosts = require(Shared.Config.Boosts)
 local UI = script.Parent.Parent.UI
 local Notify = require(UI.Notify)
 local Theme = require(UI.Theme)
+local HudController = require(script.Parent.HudController)
 local SoundController = require(script.Parent.SoundController)
 
 local EFFECTS: { [string]: string } = {
@@ -181,63 +182,26 @@ local function createPanel(gui: ScreenGui): (Frame, { () -> () })
 	return panel, updaters
 end
 
--- Small timers under the currency HUD for every active boost.
-local function createActiveList(gui: ScreenGui): () -> ()
-	local container = Instance.new("Frame")
-	container.BackgroundTransparency = 1
-	container.Position = UDim2.fromOffset(12, 100)
-	container.Size = UDim2.fromOffset(150, 90)
-	container.Parent = gui
-
-	local layout = Instance.new("UIListLayout")
-	layout.Padding = UDim.new(0, 4)
-	layout.SortOrder = Enum.SortOrder.LayoutOrder
-	layout.Parent = container
-
-	local labels: { [string]: TextLabel } = {}
-	for order, boost in Boosts.List do
-		local label = Theme.label({ size = UDim2.fromOffset(150, 24), color = COLORS[boost.id] })
-		label.BackgroundColor3 = Theme.Background
-		label.BackgroundTransparency = 0.3
-		label.LayoutOrder = order
-		label.Visible = false
-		label.Parent = container
-		Theme.corner(label, 6)
-		labels[boost.id] = label
-	end
-
-	return function()
-		for boostId, label in labels do
-			local left = timeLeft(boostId)
-			label.Visible = left > 0
-			label.Text = `{Boosts.get(boostId).displayName} {clock(left)}`
-		end
-	end
-end
-
 function BoostController.start()
 	local gui = Instance.new("ScreenGui")
 	gui.Name = "Boosts"
 	gui.ResetOnSpawn = false
 
 	local panel, rowUpdaters = createPanel(gui)
-	local updateActive = createActiveList(gui)
-
-	-- Under the Inventory button on the left edge.
-	local toggle = Theme.button("Boosts", Theme.Surface)
-	toggle.AnchorPoint = Vector2.new(0, 0.5)
-	toggle.Position = UDim2.new(0, 12, 0.5, 52)
-	toggle.Size = UDim2.fromOffset(140, 44)
-	toggle.Parent = gui
-	toggle.Activated:Connect(function()
-		panel.Visible = not panel.Visible
-	end)
+	-- The active boosts' timers are drawn by HudController.
+	HudController.addSideButton({
+		name = "Boosts",
+		text = "BOOSTS",
+		glyph = "⚡",
+		onActivated = function()
+			panel.Visible = not panel.Visible
+		end,
+	})
 
 	local function update()
 		for _, updateRow in rowUpdaters do
 			updateRow()
 		end
-		updateActive()
 	end
 	update()
 	player.AttributeChanged:Connect(function(name)

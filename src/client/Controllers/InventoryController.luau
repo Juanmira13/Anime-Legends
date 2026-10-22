@@ -13,6 +13,7 @@ local Format = require(Shared.Format)
 local Formulas = require(Shared.Formulas)
 local Rarities = require(Shared.Config.Rarities)
 local Theme = require(script.Parent.Parent.UI.Theme)
+local HudController = require(script.Parent.HudController)
 local SoundController = require(script.Parent.SoundController)
 
 type Snapshot = {
@@ -303,17 +304,15 @@ function InventoryController.start()
 	gui.Name = "Inventory"
 	gui.ResetOnSpawn = false
 
-	-- Left edge, vertically centered: the bottom-left corner is the mobile thumbstick.
-	local toggle = Theme.button("Inventario", Theme.Surface)
-	toggle.AnchorPoint = Vector2.new(0, 0.5)
-	toggle.Position = UDim2.new(0, 12, 0.5, 0)
-	toggle.Size = UDim2.fromOffset(140, 44)
-	toggle.Parent = gui
-
 	createPanel(gui)
-	toggle.Activated:Connect(function()
-		panel.Visible = not panel.Visible
-	end)
+	HudController.addSideButton({
+		name = "Inventory",
+		text = "INVENTARIO",
+		glyph = "🎒",
+		onActivated = function()
+			panel.Visible = not panel.Visible
+		end,
+	})
 
 	gui.Parent = player:WaitForChild("PlayerGui")
 

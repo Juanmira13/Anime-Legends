@@ -134,7 +134,8 @@ Lista de trabajo. Cada tarea hecha indica su commit. Las fases están descritas 
 - [x] Constructores que faltaban en `UI/CheckUI`: `hudPanel` (marco morado, título opcional con franjas), `counter` (Yenes, Gemas), `boostChip`, `sideButton`, `progressBar` (con su función para actualizarla) y `characterCard` (personaje en 3D, daño, rombo de rareza, marca de equipado, selección). Los iconos aceptan una imagen `rbxassetid` o, si no hay, un carácter de texto. Se verán en Studio al rehacer el HUD y el inventario.
 - [ ] Subir a Roblox los iconos del diseño (Yen, Gema, Trébol, Rayo, Mochila, Engranaje, Música, Altavoz, Reloj, Check) o elegirlos de `CheckUIIcons`, y poner sus ids.
 - [ ] Escalado por pantalla (`UIScale` según `ViewportSize`, base 1050 × 620, entre 0.52 y 1.18) e interacciones desde el centro (salto al pasar y al pulsar).
-- [ ] Rehacer el HUD: Yenes y Gemas, boosts activos con su tiempo, botones laterales (no tapan el joystick en móvil).
+- [x] Rehacer el HUD (`HudController`): Yenes y Gemas abajo a la izquierda (×0.75), boosts activos con su tiempo abajo a la derecha (movidos desde `BoostController`), área actual arriba a la derecha (×0.8) y botones laterales morados en el borde izquierdo con el texto dentro (`HudController.addSideButton`: Inventario y Boosts), cada esquina con su escalado. Iconos provisionales con caracteres de texto. Distribución ajustada tras la primera prueba del usuario en Studio; después, símbolos de Yen y Gema dentro del rectángulo y texto dorado en los botones laterales.
+- [ ] Botón lateral de Ajustes cuando exista la ventana de Ajustes.
 - [ ] Rehacer el inventario: tarjetas por rareza, equipar y desequipar, "Equipar mejores", eliminar con confirmación, ampliar espacio.
 - [x] Rehacer el resultado del gacha junto con la animación de la Fase 10 (panel y animación ya en Check-UI).
 - [ ] Rehacer la tienda de boosts, el estado del Raid (oleada, tiempo, fila) y los avisos (`Notify`).
