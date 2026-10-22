@@ -215,7 +215,7 @@ El diseño detallado (islas, personajes, probabilidades, pity) está en `docs/ga
 
 ## 8. Registro de decisiones
 
-Decisiones cerradas. Las tareas pendientes están en `docs/tasks.md`.
+Decisiones cerradas. Las tareas pendientes están en la sección 9 (resumen) y en `docs/tasks.md` (detalle).
 
 - [x] Definir la visión y el MVP (sección 1).
 - [x] Elegir motor y stack (sección 2).
@@ -261,3 +261,18 @@ Decisiones cerradas. Las tareas pendientes están en `docs/tasks.md`.
 - [x] Sonido: los ids de audio los elige el usuario (Toolbox o subidos) y se ponen en `Config/Sounds`; mientras tanto el sistema está completo y en silencio.
 - [x] Estilo de la UI aprobado en Figma: paleta morada (~60 % morado, negro y gris), ventanas con profundidad inspiradas en la referencia "Units", `[X]` morado redondo, tarjetas con marco de rareza y Secreto negro.
 - [x] Gacha en el HUD: panel Check-UI junto a la máquina con Tirar x1 y Tirar x10 (10 veces el costo, sin descuento; necesita 10 espacios) y animación a pantalla completa; la máquina es una estrella dorada que gira.
+
+## 9. Tareas pendientes
+
+Resumen de lo que falta en la fase actual; el detalle y lo hecho están en `docs/tasks.md`. Al terminar una tarea, quitarla de aquí y marcarla en `tasks.md` en el mismo commit.
+
+**Fase 11 — UI con el estilo aprobado** (hecho: estilo en `CheckUI`, gacha, HUD e inventario):
+- [ ] Tienda de boosts con el estilo nuevo (pantalla "03 · Tienda de boosts" de Figma).
+- [ ] Estado del Raid (dificultad, barra de oleada, tiempo) y lobby de Raids (fila con Salir, espera de cada dificultad) con `hudPanel` y `progressBar` (pantallas "05" y "06").
+- [ ] Avisos (`Notify`) como paneles del HUD con la barra del color del tipo (pantalla "07").
+- [ ] Ventana de Ajustes (Música y Efectos, ON verde / OFF gris; pantalla "04") y su botón lateral.
+- [ ] Iconos del diseño subidos a Roblox (o elegidos de `CheckUIIcons`) en lugar de los caracteres de texto provisionales.
+- [ ] Probar en Studio en PC, emulador de móvil y tableta, y con mando.
+- [ ] Documentos al día y commit.
+
+**Después:** Fase 12 (prueba en servidor publicado), Fase 13 (publicación) y, en paralelo, los audios de `Config/Sounds` y los modelos de Blender (ver `docs/tasks.md`).
