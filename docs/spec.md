@@ -38,8 +38,9 @@ Simulador de progresión de Roblox al estilo Anime Fighters Simulator. El jugado
 - 50 espacios al inicio, ampliables de 10 en 10 con Yenes (costo ×1.5) hasta 250.
 - Equipar y desequipar hasta el límite de ranuras (3 al inicio, máximo 6). "Equipar mejores" llena las ranuras con más daño por segundo.
 - Eliminar personajes con confirmación; no los equipados ni el último.
+- Ventana con el estilo oficial (pantalla "02 · Inventario" de Figma, 880 × 560 en la base 1050 × 620, dibujada al 70 % de ese tamaño): tocar una tarjeta la selecciona y el panel de detalle muestra sus datos con Equipar/Desequipar y Eliminar.
 
-**Aceptación:** el panel muestra "Personajes x/50 · Equipados y/3" y se actualiza al tirar en el gacha.
+**Aceptación:** la ventana muestra "Equipados y / 3" arriba y "Personajes: x / 50" en el pie, y se actualiza al tirar en el gacha.
 
 ### R5. Islas y portales ✅
 - 6 islas en orden: Nameku, Kono, Clover Kingdom, Titan Village, Hero Academy, Demon Corps.

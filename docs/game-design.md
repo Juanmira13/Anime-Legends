@@ -167,10 +167,10 @@ Reglas del pity:
 
 - Capacidad inicial: 50 personajes.
 - Se amplía comprando espacio con Yenes, con un costo que sube proporcionalmente.
-- Se abre con el botón "Inventario". Muestra los personajes ordenados: equipados primero, luego por rareza y daño.
-- Tocar un personaje lo equipa o desequipa. "Equipar mejores" equipa los de más daño por segundo en todas las ranuras.
+- Se abre con el botón lateral "Inventario". Muestra los personajes ordenados: equipados primero, luego por rareza y daño.
+- Tocar un personaje lo selecciona: el panel de detalle muestra su rareza, daño, cooldown e isla, con los botones Equipar o Desequipar y Eliminar. "Equipar mejores" equipa los de más daño por segundo en todas las ranuras.
 - Se pueden tener copias repetidas del mismo personaje, y también equiparlas a la vez.
-- **Eliminar:** botón de papelera con confirmación (pulsar dos veces). No se puede eliminar un personaje equipado ni el último que queda. Por ahora no da recompensa.
+- **Eliminar:** botón Eliminar del panel de detalle, con confirmación (pulsar dos veces: "¿Seguro?"; gris si no se puede). No se puede eliminar un personaje equipado ni el último que queda. Por ahora no da recompensa.
 - Con el inventario lleno no se puede tirar en el gacha.
 
 ## Economía
@@ -284,7 +284,7 @@ Diseño de referencia en Figma: https://www.figma.com/design/LQtqRj9irAbduoxtYo4
 - **Botones:** esquinas redondeadas, relieve, brillo y damero sutil. Morado es el principal (Equipar mejores, Desequipar); Verde confirma (Activar, ON); Rojo es peligro (Eliminar, Salir); Dorado compra (Comprar, Ampliar); Gris está bloqueado (Sin stock, OFF).
 - **HUD:** contadores de Yenes y Gemas abajo a la izquierda, al 75 % de su tamaño de diseño, con el símbolo (sin cambios en su dibujo) entero dentro del rectángulo, a la izquierda del valor; boosts activos con su tiempo abajo a la derecha, apilados hacia arriba; área arriba a la derecha, al 80 % de su tamaño de diseño; botones laterales morados (Inventario, Boosts, Ajustes) en el borde izquierdo, centrados en vertical, con el icono arriba y el texto en dorado dentro del botón. En móvil, los contadores y los boosts quedan junto al joystick y al botón de saltar; no se pulsan, así que no los estorban.
 - **Tarjeta de personaje:** marco grueso del color de la rareza, interior oscuro que se tiñe de ese color hacia abajo, aura y el personaje en grande, daño arriba a la izquierda (dorado), rombo de rareza arriba a la derecha, nombre abajo sobre un degradado oscuro y una marca verde si está equipado. El Secreto es negro (marco y rombo) con un filo blanco fino; nunca arcoíris.
-- **Inventario:** "Equipados 3 / 3", Equipar mejores y Ampliar con su precio, cuadrícula de tarjetas con desplazamiento, panel de detalle del personaje seleccionado (rareza, daño, cooldown, isla, Desequipar o Equipar, Eliminar) y "Personajes: 37 / 50" en el pie.
+- **Inventario:** ventana al 70 % del tamaño de la pantalla de diseño (todo proporcional). "Equipados 3 / 3", Equipar mejores y Ampliar con su precio, cuadrícula de tarjetas con desplazamiento, panel de detalle del personaje seleccionado (rareza, daño, cooldown, isla, Desequipar o Equipar, Eliminar) y "Personajes: 37 / 50" en el pie.
 - **Tienda de boosts:** una tarjeta por boost con su icono sobre un aura de su color, descripción, duración, cuántos tiene, Activar y Comprar con el precio en Gemas; las Gemas del jugador en la cabecera.
 - **Ajustes:** filas de Música y Efectos con un botón ON (verde) / OFF (gris).
 - **Raid:** panel arriba al centro con la dificultad, la barra de oleada y el tiempo restante; en el lobby, la fila con el botón Salir y la espera de cada dificultad.

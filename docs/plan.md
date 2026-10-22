@@ -157,7 +157,8 @@ Todo en el cliente; el servidor ya envía lo necesario (`CharacterHit` con el da
 - ✅ Diseño aprobado en Figma (https://www.figma.com/design/LQtqRj9irAbduoxtYo4xz0): piezas y 8 pantallas. Detalle en `docs/game-design.md` (Interfaz).
 - `UI/Theme` y `UI/CheckUI` pasan a la paleta morada y a la profundidad del diseño: ventana (sombra, marco con relieve, cabecera con franjas, pestaña de título, `[X]` morado redondo), panel hundido, panel del HUD, botones Morado/Verde/Rojo/Dorado/Gris con relieve y brillo, contador, aviso de boost, botón lateral, barra de progreso y tarjeta de personaje; escalado con `UIScale` según `ViewportSize` (base 1050 × 620, entre 0.52 y 1.18) e interacciones desde el centro.
 - ✅ HUD (`HudController`): contadores de Yenes y Gemas (abajo a la izquierda, ×0.75), boosts activos (abajo a la derecha; antes en `BoostController`), área actual (`CurrentArea`, arriba a la derecha, ×0.8) y columna de botones laterales (`HudController.addSideButton`, usada por el inventario y los boosts); cada esquina escala con la pantalla.
-- Rehacer con esos constructores el inventario, el resultado del gacha, la tienda de boosts, el estado del Raid y los avisos, y añadir la ventana de Ajustes, sin cambiar los Remotes ni la lógica del servidor.
+- ✅ Inventario (`InventoryController`): ventana 880 × 560 de la pantalla "02 · Inventario", barra (Equipados, Equipar mejores, Ampliar), cuadrícula de `characterCard` en un panel hundido, panel de detalle (Equipar/Desequipar, Eliminar con confirmación) y pie con la capacidad; errores con `Notify.error`.
+- Rehacer con esos constructores el resultado del gacha, la tienda de boosts, el estado del Raid y los avisos, y añadir la ventana de Ajustes, sin cambiar los Remotes ni la lógica del servidor.
 - Probar en PC, móvil, tableta y mando.
 
 ### Fase 12 — Prueba temprana en servidor publicado
