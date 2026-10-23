@@ -22,6 +22,9 @@ Simulador de progresión de Roblox al estilo Anime Fighters Simulator. El jugado
 - El jugador hace clic en un enemigo para elegirlo como objetivo; sus personajes equipados le pegan según su daño y cooldown mientras esté a menos de 60 studs.
 - Al morir suelta monedas flotantes de Yenes para cada jugador que lo golpeó (×2 con Boost de Dinero). Al acercarse, las monedas vuelan al jugador y su dinero sube en ese momento; las que no recoge se pagan solas a los 30 s. Reaparece a los 20 s (jefes: 60 s).
 - Solo se puede atacar en islas desbloqueadas.
+- **Botón de Ataque** (abajo al centro del HUD, también tecla y mando): cada clic hace al objetivo un 5 % del DPS del equipo equipado (mínimo 1). El servidor acepta como mucho 8 clics por segundo, así que el clic añade como mucho un +40 % de daño (un jugador que pulsa unas 5 veces por segundo, +25 %). Sin objetivo, fuera de rango o en una isla bloqueada, el clic no hace nada. Ver `docs/balance.md` (Ataque por clic).
+
+**Aceptación (clic):** con solo Kurilin equipado (5 de DPS), cada clic hace 1 de daño (5 % de 5 = 0.25, mínimo 1), y de 20 clics en un segundo solo cuentan 8.
 
 **Aceptación:** con Kurilin, un enemigo Fácil de Nameku (170 de vida) baja 10 cada 2 s, suelta monedas por 5 ¥ que al recogerlas suben el contador de Yenes y reaparece a los 20 s.
 
@@ -34,11 +37,11 @@ Simulador de progresión de Roblox al estilo Anime Fighters Simulator. El jugado
 
 **Aceptación:** una tirada en Nameku cuesta 50 ¥ y una x10, 500 ¥; el resultado se muestra en el HUD con el personaje y el color de su rareza.
 
-### R4. Inventario ✅
+### R4. Personajes (inventario de personajes) ✅
 - 50 espacios al inicio, ampliables de 10 en 10 con Yenes (costo ×1.5) hasta 250.
 - Equipar y desequipar hasta el límite de ranuras (3 al inicio, máximo 6). "Equipar mejores" llena las ranuras con más daño por segundo.
 - Eliminar personajes con confirmación; no los equipados ni el último.
-- Ventana con el estilo oficial (pantalla "02 · Inventario" de Figma, 880 × 560 en la base 1050 × 620, dibujada al 70 % de ese tamaño): tocar una tarjeta la selecciona y el panel de detalle muestra sus datos con Equipar/Desequipar y Eliminar.
+- Ventana **Personajes** (título y botón lateral PERSONAJES) con el estilo oficial (pantalla "02 · Inventario" de Figma, 880 × 560 en la base 1050 × 620, dibujada al 70 % de ese tamaño): tocar una tarjeta la selecciona y el panel de detalle muestra sus datos con Equipar/Desequipar y Eliminar.
 
 **Aceptación:** la ventana muestra "Equipados y / 3" arriba y "Personajes: x / 50" en el pie, y se actualiza al tirar en el gacha.
 
@@ -65,12 +68,20 @@ Las 6 islas están construidas por el plugin con su propio terreno, relieve y de
 ### R7. Boosts ✅
 - Suerte, Dinero y Gemas, de 15 minutos. Se obtienen como drop en Raids o se compran con Gemas (125, 200, 300).
 - Activar suma 15 minutos al tiempo restante. El tiempo solo corre con el jugador conectado.
+- **Tienda en el lobby de Raids:** un NPC con un ProximityPrompt abre la ventana Tienda: un listado de los boosts con su efecto, duración, precio en Gemas y Comprar (dorado; rojo si no alcanzan), con las Gemas del jugador en la cabecera. El servidor solo acepta la compra cerca del NPC. No se puede comprar desde el HUD.
+- **Ventana Inventario** (botón lateral INVENTARIO): inventario por categorías con la misma estructura y medidas que la ventana Personajes (880 × 560 en la base, al 70 %). Pestañas OBJETOS y MONTURAS (muestran "PRÓXIMAMENTE"; se añadirán después) y BOOSTS: cuadrícula con una tarjeta por boost que tiene el jugador (marco de su color, cantidad "xN", etiqueta "ACTIVO") y panel de detalle con efecto, duración por unidad, tiempo activo y Activar (verde; gris "SIN STOCK" sin unidades). No permite comprar.
+- Ambas ventanas con el estilo oficial, al 70 % de su tamaño de diseño (la pantalla de Figma "03 · Tienda de boosts", 820 × 500 en la base 1050 × 620, es la base); los diseños nuevos se aprueban primero en Figma.
 
 **Aceptación:** con el Boost de Dinero activo, un enemigo Fácil de Nameku da 10 ¥.
 
 ### R8. Interfaz ✅
 - Yenes y Gemas siempre visibles abajo a la izquierda (contadores al 75 % de su tamaño de diseño, con el símbolo entero dentro del rectángulo); los boosts activos con su tiempo abajo a la derecha y el área actual arriba a la derecha (al 80 % de su tamaño de diseño).
-- Botones laterales morados "Inventario" y "Boosts" en el borde izquierdo, centrados en vertical, con el texto en dorado dentro del botón.
+- Botones laterales "PERSONAJES", "INVENTARIO" y "AJUSTES" en el borde izquierdo, centrados en vertical: fondo negro grisáceo, borde morado brillante y el texto en negro con contorno blanco, pequeño, dentro del botón.
+- El nombre del área actual (arriba a la derecha) también va en negro con contorno blanco.
+- Botón de **Ataque** redondo abajo al centro, con el mismo estilo (negro grisáceo con borde morado brillante), una espada y "ATACAR" en negro con contorno blanco.
+- Iconos del diseño (Yen, Gema, Trébol, Rayo, Mochila, Engranaje, Espada, Música, Altavoz, Reloj, Check) como imágenes subidas a Roblox; hasta tenerlas, caracteres provisionales.
+- Los boosts activos (abajo a la derecha) llevan su icono entero dentro del rectángulo, sin salirse, como los contadores de Yenes y Gemas.
+- Todo diseño nuevo de la interfaz se muestra primero en Figma y se aprueba antes de programarlo.
 - Avisos en pantalla para gacha, portales, Raids y boosts.
 - Interacciones con proximidad (panel del gacha), ProximityPrompt y clic/toque: funcionan en PC, móvil y consola.
 - Estilo oficial aprobado en Figma sobre Check-UI: paleta morada (~60 % morado, negro y gris) con acentos de color, ventanas con profundidad (marco con relieve, pestaña de título, `[X]` morado), paneles hundidos, botones con relieve, tarjetas con marco de rareza (Secreto negro), tipografía GothamBlack con contorno y escalado según el tamaño de pantalla. Ver `docs/game-design.md` (Interfaz); la migración de la UI actual es la Fase 11 de `docs/plan.md`.

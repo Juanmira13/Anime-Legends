@@ -62,6 +62,11 @@ local Balance = {
 	Combat = {
 		-- Max distance in studs between the player and their target.
 		range = 60,
+		-- Attack button: each click deals this share of the active team's DPS
+		-- (at least 1), and the server counts at most this many clicks per
+		-- second, so clicking adds at most +40% damage (see docs/balance.md).
+		clickDamageShare = 0.05,
+		maxClicksPerSecond = 8,
 	},
 
 	-- Yen from a defeated enemy drops as floating coins for each player who hit it.

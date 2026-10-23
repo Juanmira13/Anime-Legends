@@ -6,7 +6,8 @@ local CollectionService = game:GetService("CollectionService")
 
 local MapCheck = require(script.Parent.MapCheck)
 
-local TAGS = { "IslandSpawn", "EnemySpawn", "GachaStand", "Portal", "RaidPortal", "RaidLobbySpawn", "RaidPad" }
+local TAGS =
+	{ "IslandSpawn", "EnemySpawn", "GachaStand", "Portal", "RaidPortal", "RaidLobbySpawn", "RaidPad", "BoostShop" }
 
 local MapScan = {}
 

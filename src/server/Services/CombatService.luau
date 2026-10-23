@@ -7,6 +7,10 @@
 -- The current target id is replicated as the player attribute "TargetEnemyId".
 -- Each frame with hits fires Remotes.CharacterHit (owner, enemyId, hits) to all
 -- clients, only so they can animate the hits.
+-- The HUD's Attack button fires Remotes.AttackClick; each accepted click (a
+-- target in range, at most Balance.Combat.maxClicksPerSecond per second) deals
+-- Formulas.clickDamage of the team's DPS and answers Remotes.ClickHit
+-- (enemyId, damage) to that player so they can draw the number.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -18,6 +22,7 @@ local Formulas = require(Shared.Formulas)
 
 local Server = script.Parent.Parent
 local AttackClock = require(Server.Combat.AttackClock)
+local ClickLimiter = require(Server.Combat.ClickLimiter)
 local InventoryOps = require(Server.Inventory.InventoryOps)
 local Remotes = require(Server.Remotes)
 local CoinService = require(script.Parent.CoinService)
@@ -32,17 +37,20 @@ export type Hit = {
 type State = {
 	target: EnemyService.Enemy?,
 	clock: AttackClock.Clock,
+	clicks: ClickLimiter.Limiter,
 }
 
 local states: { [Player]: State } = {}
 local hitRemote = Remotes.event("CharacterHit")
+local clickRemote = Remotes.event("AttackClick")
+local clickHitRemote = Remotes.event("ClickHit")
 
 local CombatService = {}
 
 local function getState(player: Player): State
 	local state = states[player]
 	if state == nil then
-		state = { target = nil, clock = AttackClock.new() }
+		state = { target = nil, clock = AttackClock.new(), clicks = ClickLimiter.new() }
 		states[player] = state
 	end
 	return state
@@ -91,6 +99,29 @@ local function onEnemyClicked(player: Player, enemy: EnemyService.Enemy)
 		return
 	end
 	setTarget(player, enemy)
+end
+
+-- An Attack button click: a share of the team's DPS on the current target.
+local function onAttackClick(player: Player)
+	local state = states[player]
+	local enemy = state and state.target
+	if state == nil or enemy == nil or not enemy.alive or not isInRange(player, enemy) then
+		return
+	end
+	local data = DataService.getData(player)
+	if data == nil or not canAttack(player, data, enemy) then
+		return
+	end
+	if not ClickLimiter.allow(state.clicks, time(), Balance.Combat.maxClicksPerSecond) then
+		return
+	end
+	local team = {}
+	for _, member in InventoryOps.activeTeam(data) do
+		table.insert(team, member.id)
+	end
+	local damage = Formulas.clickDamage(Formulas.teamDps(team))
+	EnemyService.damage(enemy, player, damage)
+	clickHitRemote:FireClient(player, enemy.id, damage)
 end
 
 local function onEnemyDied(enemy: EnemyService.Enemy)
@@ -148,6 +179,7 @@ end
 function CombatService.start()
 	EnemyService.Clicked:Connect(onEnemyClicked)
 	EnemyService.Died:Connect(onEnemyDied)
+	clickRemote.OnServerEvent:Connect(onAttackClick)
 	Players.PlayerRemoving:Connect(function(player)
 		states[player] = nil
 	end)

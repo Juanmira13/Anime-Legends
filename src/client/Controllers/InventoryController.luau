@@ -1,5 +1,6 @@
 --!strict
--- Inventory window, in the official UI style (Figma screen "02 · Inventario",
+-- Characters window ("PERSONAJES": the character inventory), in the official
+-- UI style (Figma screen "02 · Inventario",
 -- 880 x 560 at the 1050 x 620 base). A toolbar with the equipped count,
 -- "Equip best" and the upgrade with its price; a scrolling grid of character
 -- cards (equipped first, then by rarity and damage); and a detail panel for
@@ -10,7 +11,6 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
-local TweenService = game:GetService("TweenService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Characters = require(Shared.Data.Characters)
@@ -21,6 +21,7 @@ local Rarities = require(Shared.Config.Rarities)
 local UI = script.Parent.Parent.UI
 local CharacterViewport = require(UI.CharacterViewport)
 local CheckUI = require(UI.CheckUI)
+local Icons = require(UI.Icons)
 local Notify = require(UI.Notify)
 local Theme = require(UI.Theme)
 local HudController = require(script.Parent.HudController)
@@ -40,10 +41,9 @@ type Snapshot = {
 type CardSlot = { cell: Frame, card: CheckUI.CharacterCard, id: string }
 
 -- Layout in base pixels (window coordinates), from the approved design. The
--- whole window is drawn at WINDOW_FACTOR of that size, so it keeps its
+-- whole window is drawn at CheckUI.WindowFactor of that size, so it keeps its
 -- proportions.
 local WINDOW_SIZE = Vector2.new(880, 560)
-local WINDOW_FACTOR = 0.7
 local TOOLBAR_Y = 95 -- center line of the toolbar
 local GRID_POSITION = Vector2.new(24, 136)
 local GRID_SIZE = Vector2.new(644, 352)
@@ -94,7 +94,6 @@ local slots: { [string]: CardSlot } = {}
 local equippedSet: { [string]: boolean } = {}
 local selected: string? = nil
 local pendingDelete: string? = nil
-local shown = false
 
 local render: () -> ()
 
@@ -266,31 +265,6 @@ render = function()
 	renderDetail(current)
 end
 
-local function show()
-	shown = true
-	window.Visible = true
-	windowScale.Scale = 0
-	TweenService:Create(
-		windowScale,
-		TweenInfo.new(0.28, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
-		{ Scale = CheckUI.deviceScale() * WINDOW_FACTOR }
-	):Play()
-end
-
-local function hide()
-	shown = false
-	local tween =
-		TweenService:Create(windowScale, TweenInfo.new(0.14, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
-			Scale = 0,
-		})
-	tween.Completed:Connect(function()
-		if not shown then
-			window.Visible = false
-		end
-	end)
-	tween:Play()
-end
-
 local function toolbarButton(name: string, palette: CheckUI.ButtonPalette, size: Vector2, centerX: number, text: string)
 	local button, label = CheckUI.button({
 		name = name,
@@ -408,8 +382,10 @@ end
 
 local function buildWindow(gui: ScreenGui)
 	window, windowScale = CheckUI.window("Inventory", WINDOW_SIZE, gui)
-	local _, close = CheckUI.header(window, "INVENTARIO", CheckUI.Accents.Purple)
-	CheckUI.bind(close, hide)
+	local _, close = CheckUI.header(window, "PERSONAJES", CheckUI.Accents.Purple)
+	CheckUI.bind(close, function()
+		CheckUI.closeWindow(window, windowScale)
+	end)
 
 	equippedLabel = CheckUI.text({
 		text = "",
@@ -487,38 +463,31 @@ local function buildWindow(gui: ScreenGui)
 		parent = window,
 	})
 
-	CheckUI.onScaleChanged(function(scale: number)
-		if shown then
-			windowScale.Scale = scale * WINDOW_FACTOR
-		end
-	end)
+	CheckUI.keepScaled(window, windowScale)
 end
 
 function InventoryController.start()
 	local gui = Instance.new("ScreenGui")
-	gui.Name = "Inventory"
+	gui.Name = "Characters"
 	gui.ResetOnSpawn = false
 	gui.DisplayOrder = 6
 	gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
 	buildWindow(gui)
 	HudController.addSideButton({
-		name = "Inventory",
-		text = "INVENTARIO",
-		glyph = "🎒",
+		name = "Characters",
+		text = "PERSONAJES",
+		icon = Icons.get("Bag").icon,
+		glyph = Icons.get("Bag").glyph,
 		onActivated = function()
-			if shown then
-				hide()
-			else
-				show()
-			end
+			CheckUI.toggleWindow(window, windowScale)
 		end,
 	})
 
 	-- The selected character turns slowly in the detail panel.
 	RunService.RenderStepped:Connect(function()
 		local card = detailCard
-		if shown and card and card.view then
+		if card and card.view and CheckUI.isOpen(window) then
 			CharacterViewport.setYaw(card.view, math.sin(os.clock() * 0.8) * 0.6)
 		end
 	end)

@@ -26,6 +26,8 @@ end
 
 local Boosts = {
 	List = List,
+	-- Buying is only accepted this close (studs) to the shop NPC in the raid lobby.
+	ShopRange = 16,
 	-- Rarities affected by the Luck boost.
 	LuckRarities = { "Legendary", "Mythic", "Secret" },
 }

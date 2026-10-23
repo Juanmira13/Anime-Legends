@@ -40,6 +40,7 @@ local function completeMap()
 	end
 	add("RaidPortal", Islands.List[1].id, {})
 	add("RaidLobbySpawn", "RaidLobby", {})
+	add("BoostShop", "RaidLobby", {})
 	add("Portal", "RaidLobby", { TargetIsland = Islands.List[1].id })
 	for _, difficulty in Raids.Difficulties do
 		add("RaidPad", "RaidLobby", { Difficulty = difficulty.id })
@@ -175,6 +176,24 @@ check(
 	contains(
 		withExtra({ tag = "RaidPad", name = "pad", area = "RaidLobby", attributes = { Difficulty = "Insane" } }),
 		'pad: RaidPad has unknown Difficulty "Insane"'
+	),
+	true
+)
+check(
+	"missing boost shop",
+	contains(
+		without(function(e)
+			return e.tag == "BoostShop"
+		end),
+		"Raid lobby needs exactly one BoostShop (found 0)"
+	),
+	true
+)
+check(
+	"boost shop outside the lobby",
+	contains(
+		withExtra({ tag = "BoostShop", name = "shop", area = "Nameku", attributes = {} }),
+		"shop: BoostShop must be in the raid lobby"
 	),
 	true
 )

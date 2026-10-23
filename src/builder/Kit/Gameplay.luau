@@ -1,7 +1,7 @@
 --!strict
 -- Gameplay pieces of a map, tagged as CLAUDE.md describes: arrival point,
--- gacha machine, portals, raid portal and pads, enemy spawn points, plus the
--- signs that name each zone. Placed from the island layout so they always
+-- gacha machine, portals, raid portal and pads, the boost shop NPC, enemy
+-- spawn points, plus the signs that name each zone. Placed from the island layout so they always
 -- match the terrain.
 
 local CollectionService = game:GetService("CollectionService")
@@ -201,6 +201,48 @@ function Gameplay.raidPad(
 	tag(pad, "RaidPad", { Difficulty = difficultyId })
 	Parts.light(pad, color, 20, 2)
 	label(pad, title, color, 7, 100, 14)
+end
+
+-- Boost shop in the raid lobby: a stall with a golden awning and a
+-- shopkeeper shaped like an R6 rig, looking along `facing` (yaw). The
+-- shopkeeper's invisible root is tagged "BoostShop"; the server gives it the
+-- ProximityPrompt that opens the shop.
+function Gameplay.boostShop(x: number, ground: number, z: number, facing: number, parent: Instance)
+	local model = Parts.model("BoostShop", parent)
+	local base = CFrame.new(x, ground, z) * CFrame.Angles(0, facing, 0)
+	local robe = Color3.fromRGB(130, 75, 215)
+	local skin = Color3.fromRGB(255, 214, 170)
+	local gold = Color3.fromRGB(255, 190, 30)
+
+	-- Stall: counter in front of the shopkeeper, two posts and the awning.
+	Parts.block(Vector3.new(10, 3.5, 2.5), base * CFrame.new(0, 1.75, -3.2), robe, model, { collide = true })
+	Parts.block(Vector3.new(10.4, 0.4, 2.9), base * CFrame.new(0, 3.7, -3.2), WOOD, model, { collide = true })
+	for _, side in { -1, 1 } do
+		Parts.block(Vector3.new(0.6, 9, 0.6), base * CFrame.new(side * 4.9, 4.5, -4.1), WOOD, model)
+	end
+	local awning = Parts.block(
+		Vector3.new(11.5, 0.6, 5.5),
+		base * CFrame.new(0, 9.2, -2) * CFrame.Angles(math.rad(-10), 0, 0),
+		gold,
+		model,
+		{ material = Enum.Material.Neon, shadow = false }
+	)
+	label(awning, "TIENDA DE BOOSTS", gold, 2.5, 140, 14)
+
+	-- Shopkeeper (anchored, decorative): legs, torso, arms and head.
+	for _, side in { -0.5, 0.5 } do
+		Parts.block(Vector3.new(1, 2, 1), base * CFrame.new(side, 1, 0), Color3.fromRGB(45, 30, 70), model)
+		Parts.block(Vector3.new(1, 2, 1), base * CFrame.new(side * 3, 3, 0), robe, model)
+	end
+	Parts.block(Vector3.new(2, 2, 1), base * CFrame.new(0, 3, 0), robe, model)
+	Parts.block(Vector3.new(1.2, 1.2, 1.2), base * CFrame.new(0, 4.6, 0), skin, model)
+	local root = Parts.block(Vector3.new(2, 5, 1), base * CFrame.new(0, 2.5, 0), Color3.new(1, 1, 1), model, {
+		transparency = 1,
+		shadow = false,
+		name = "ShopKeeper",
+	})
+	tag(root, "BoostShop", {})
+	label(root, "Tendero", gold, 3.6, 60, 5)
 end
 
 function Gameplay.enemySpawn(islandId: string, rankId: string, x: number, ground: number, z: number, parent: Instance)

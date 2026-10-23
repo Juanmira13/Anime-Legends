@@ -162,7 +162,8 @@ local function buildIsland(index: number, folder: Folder)
 	end
 end
 
--- Raid lobby: arrival point, one pad per difficulty and a portal back to the first island.
+-- Raid lobby: arrival point, one pad per difficulty, the boost shop NPC and a
+-- portal back to the first island.
 local function buildRaidLobby(folder: Folder)
 	local lobbyFolder = Instance.new("Folder")
 	lobbyFolder.Name = "RaidLobby"
@@ -178,6 +179,12 @@ local function buildRaidLobby(folder: Folder)
 		part.Material = Enum.Material.Neon
 		tagged(part, "RaidPad", { Difficulty = pad.difficulty }, lobbyFolder)
 	end
+	local shop = Instance.new("Part")
+	shop.Name = "BoostShop"
+	shop.Size = Vector3.new(3, 5, 2)
+	shop.Position = RAID_LOBBY_ORIGIN + Vector3.new(28, 2.5, 12)
+	shop.Color = Color3.fromRGB(130, 75, 215)
+	tagged(shop, "BoostShop", {}, lobbyFolder)
 	local first = LAYOUT[1]
 	buildPortal(
 		`Portal_{first.island}`,

@@ -8,6 +8,7 @@ local Islands = require(Shared.Data.Islands)
 local Characters = require(Shared.Data.Characters)
 local PlayerRecord = require(Server.Data.PlayerRecord)
 local AttackClock = require(Server.Combat.AttackClock)
+local ClickLimiter = require(Server.Combat.ClickLimiter)
 local GachaRoll = require(Server.Gacha.GachaRoll)
 local InventoryOps = require(Server.Inventory.InventoryOps)
 local PortalOps = require(Server.Portals.PortalOps)
@@ -50,6 +51,17 @@ check("R2 the 5 yen drop as coins", #coins > 1 and coins[1] + coins[2] == 5, tru
 check("R2 respawn normal", Formulas.enemyRespawnTime("Easy"), 20)
 check("R2 respawn boss", Formulas.enemyRespawnTime("Boss"), 60)
 check("R2 attack range", Balance.Combat.range, 60)
+-- R2 (click). With only Kurilin (5 DPS) each click deals 1, and of 20 clicks
+-- in one second only 8 count.
+check("R2 click damage with Kurilin", Formulas.clickDamage(Formulas.teamDps({ "Krilin" })), 1)
+local clicks = ClickLimiter.new()
+local counted = 0
+for click = 1, 20 do
+	if ClickLimiter.allow(clicks, click * 0.045, Balance.Combat.maxClicksPerSecond) then
+		counted += 1
+	end
+end
+check("R2 clicks counted in a second", counted, 8)
 
 -- R3. A roll in Nameku costs 50 yen; pity at 500 / 5,000 / 1,000,000; Luck
 -- doubles Legendary, Mythic and Secret, taken from Common.

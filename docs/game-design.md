@@ -146,6 +146,7 @@ Reglas del pity:
 - Solo se puede atacar a enemigos de islas desbloqueadas.
 - Cada personaje tiene daño (según su rareza) y un cooldown entre golpes. Valores: pendientes.
 - Personajes equipados: 3 al inicio, hasta 6 con las ranuras extra de los logros de Raid (ver sección Raids).
+- **Ataque por clic (estilo AFS):** un botón de Ataque abajo al centro del HUD (también la tecla F y el gatillo derecho del mando) golpea al objetivo actual. Cada clic hace un 5 % del DPS del equipo equipado (mínimo 1) y el servidor cuenta como mucho 8 clics por segundo: pulsar ayuda (hasta +40 % de daño), pero el equipo sigue siendo la fuente principal y un autoclicker no rompe el balance. Sin objetivo o fuera de rango, el botón no hace nada. El golpe muestra el número de daño propio sobre el enemigo. Valores en `docs/balance.md` (Ataque por clic).
 
 ### Personajes visibles (estilo AFS)
 
@@ -163,11 +164,11 @@ Reglas del pity:
 - Los golpes propios se ven grandes y opacos; los de otros jugadores, más pequeños, más transparentes y solo cerca (hasta 80 studs), con un máximo en pantalla para que una pelea llena siga siendo legible.
 - En el punto de impacto hay un destello y unas chispas del mismo color. Cuando un enemigo muere, estalla en una nube de humo blanco.
 
-## Inventario
+## Personajes (inventario de personajes)
 
 - Capacidad inicial: 50 personajes.
 - Se amplía comprando espacio con Yenes, con un costo que sube proporcionalmente.
-- Se abre con el botón lateral "Inventario". Muestra los personajes ordenados: equipados primero, luego por rareza y daño.
+- Se abre con el botón lateral "PERSONAJES" (la ventana se titula PERSONAJES). Muestra los personajes ordenados: equipados primero, luego por rareza y daño.
 - Tocar un personaje lo selecciona: el panel de detalle muestra su rareza, daño, cooldown e isla, con los botones Equipar o Desequipar y Eliminar. "Equipar mejores" equipa los de más daño por segundo en todas las ranuras.
 - Se pueden tener copias repetidas del mismo personaje, y también equiparlas a la vez.
 - **Eliminar:** botón Eliminar del panel de detalle, con confirmación (pulsar dos veces: "¿Seguro?"; gris si no se puede). No se puede eliminar un personaje equipado ni el último que queda. Por ahora no da recompensa.
@@ -191,6 +192,7 @@ Reglas del pity:
 ### Acceso
 - Lugar común para todos los Raids, al que se llega por un portal ubicado en la primera isla (Nameku).
 - Las 3 dificultades están desbloqueadas desde el inicio.
+- **Tienda de boosts:** en el lobby hay un NPC tendero. Al acercarse aparece su ProximityPrompt ("Tienda"); al usarlo se abre la ventana Tienda con el listado de boosts para comprar con Gemas. Es el único sitio donde se compran boosts.
 - Tiempo de espera por jugador, independiente para cada dificultad (ver tabla de Dificultades).
 
 ### Jugadores
@@ -282,10 +284,11 @@ Diseño de referencia en Figma: https://www.figma.com/design/LQtqRj9irAbduoxtYo4
 - **Paneles hundidos:** el contenido de las ventanas va en paneles más oscuros con sombra interior arriba y un filo de luz abajo.
 - **Paneles del HUD:** estado del Raid, fila, lista de Raids, área y avisos usan el mismo marco morado que las ventanas, en pequeño.
 - **Botones:** esquinas redondeadas, relieve, brillo y damero sutil. Morado es el principal (Equipar mejores, Desequipar); Verde confirma (Activar, ON); Rojo es peligro (Eliminar, Salir); Dorado compra (Comprar, Ampliar); Gris está bloqueado (Sin stock, OFF).
-- **HUD:** contadores de Yenes y Gemas abajo a la izquierda, al 75 % de su tamaño de diseño, con el símbolo (sin cambios en su dibujo) entero dentro del rectángulo, a la izquierda del valor; boosts activos con su tiempo abajo a la derecha, apilados hacia arriba; área arriba a la derecha, al 80 % de su tamaño de diseño; botones laterales morados (Inventario, Boosts, Ajustes) en el borde izquierdo, centrados en vertical, con el icono arriba y el texto en dorado dentro del botón. En móvil, los contadores y los boosts quedan junto al joystick y al botón de saltar; no se pulsan, así que no los estorban.
+- **HUD:** contadores de Yenes y Gemas abajo a la izquierda, al 75 % de su tamaño de diseño, con el símbolo entero dentro del rectángulo; boosts activos con su tiempo abajo a la derecha, apilados hacia arriba, también con el icono dentro; área arriba a la derecha, al 80 %; botones laterales PERSONAJES, INVENTARIO y AJUSTES en el borde izquierdo, centrados en vertical, con fondo negro grisáceo, borde morado brillante, el icono arriba y el texto en negro con contorno blanco dentro; el nombre del área también en negro con contorno blanco; botón de **Ataque** redondo abajo al centro con el mismo estilo (espada y "ATACAR" en negro con contorno blanco, con la tecla F indicada en PC). Los iconos son imágenes exportadas del diseño (`assets/Icons`). En móvil, los contadores y los boosts quedan junto al joystick y al botón de saltar; no se pulsan, así que no los estorban.
 - **Tarjeta de personaje:** marco grueso del color de la rareza, interior oscuro que se tiñe de ese color hacia abajo, aura y el personaje en grande, daño arriba a la izquierda (dorado), rombo de rareza arriba a la derecha, nombre abajo sobre un degradado oscuro y una marca verde si está equipado. El Secreto es negro (marco y rombo) con un filo blanco fino; nunca arcoíris.
-- **Inventario:** ventana al 70 % del tamaño de la pantalla de diseño (todo proporcional). "Equipados 3 / 3", Equipar mejores y Ampliar con su precio, cuadrícula de tarjetas con desplazamiento, panel de detalle del personaje seleccionado (rareza, daño, cooldown, isla, Desequipar o Equipar, Eliminar) y "Personajes: 37 / 50" en el pie.
-- **Tienda de boosts:** una tarjeta por boost con su icono sobre un aura de su color, descripción, duración, cuántos tiene, Activar y Comprar con el precio en Gemas; las Gemas del jugador en la cabecera.
+- **Personajes:** ventana al 70 % del tamaño de la pantalla de diseño (todo proporcional). "Equipados 3 / 3", Equipar mejores y Ampliar con su precio, cuadrícula de tarjetas con desplazamiento, panel de detalle del personaje seleccionado (rareza, daño, cooldown, isla, Desequipar o Equipar, Eliminar) y "Personajes: 37 / 50" en el pie.
+- **Inventario:** botón lateral INVENTARIO. Ventana por categorías con la misma estructura que Personajes: pestañas OBJETOS, BOOSTS y MONTURAS (Objetos y Monturas muestran "PRÓXIMAMENTE" hasta que existan). En BOOSTS, una tarjeta por boost que tiene el jugador (marco de su color, icono sobre un aura, cantidad "xN" en dorado, etiqueta ACTIVO), huecos vacíos tenues hasta 10, y el panel de detalle con efecto, duración por unidad, tiempo activo y Activar (verde; gris "SIN STOCK"). Pie con el total de boosts y el aviso de que se compran en la Tienda del lobby. No vende nada.
+- **Tienda (NPC del lobby de Raids):** ventana al 70 % del tamaño de la pantalla de diseño, con acento dorado. Una tarjeta por boost con su icono sobre un aura de su color, descripción, duración, cuántos tiene, Activar y Comprar con el precio en Gemas; las Gemas del jugador en la cabecera.
 - **Ajustes:** filas de Música y Efectos con un botón ON (verde) / OFF (gris).
 - **Raid:** panel arriba al centro con la dificultad, la barra de oleada y el tiempo restante; en el lobby, la fila con el botón Salir y la espera de cada dificultad.
 - **Avisos:** paneles del HUD con una barra del color del tipo (normal, éxito, error, logro, jefe).

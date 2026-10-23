@@ -1,7 +1,7 @@
 --!strict
 -- Raid lobby: a temple floating in the sky. Round stone platform with a ring
 -- of pillars, one altar pad per difficulty, the portal back to the first
--- island, a rocky underside, crystals and clouds around it.
+-- island, the boost shop NPC, a rocky underside, crystals and clouds around it.
 
 local Root = script.Parent
 local Shared = Root.Shared
@@ -99,6 +99,9 @@ function RaidLobby.build(onStatus: (string) -> ())
 		)
 	end
 	Gameplay.raidLobbyArrival(center.X, center.Y, center.Z + radius * 0.35, gameplay)
+	-- Boost shop on the side opposite the portal, facing the center.
+	local shopX, shopZ = center.X + radius * 0.5, center.Z + radius * 0.3
+	Gameplay.boostShop(shopX, center.Y, shopZ, math.atan2(-(center.X - shopX), -(center.Z - shopZ)), gameplay)
 	local first = Islands.List[1]
 	local portalX, portalZ = center.X - radius * 0.45, center.Z + radius * 0.45
 	Gameplay.islandPortal(

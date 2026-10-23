@@ -1,5 +1,8 @@
--- Checks attack timing, kill rewards and number formatting.
+-- Checks attack timing, the Attack button (click damage and click cap), kill
+-- rewards and number formatting.
 local AttackClock = require(Server.Combat.AttackClock)
+local ClickLimiter = require(Server.Combat.ClickLimiter)
+local Balance = require(Shared.Config.Balance)
 local Formulas = require(Shared.Formulas)
 local Format = require(Shared.Format)
 
@@ -36,6 +39,44 @@ for frame = 0, 8 * 60 do
 	count += #AttackClock.collectHits(timing, { { uid = "x", cooldown = 2 } }, frame / 60)
 end
 check("hits over 8 seconds", count, 5)
+
+-- Attack button: a share of the team's DPS, at least 1
+check("Kurilin team DPS", Formulas.teamDps({ "Krilin" }), 5)
+check("empty team DPS", Formulas.teamDps({}), 0)
+check("click on a weak team is 1", Formulas.clickDamage(5), 1)
+check("click with no team is 1", Formulas.clickDamage(0), 1)
+check("click is 5% of 300 DPS", Formulas.clickDamage(300), 15)
+check("click rounds", Formulas.clickDamage(250), 13) -- 12.5 -> 13
+local twoKurilin = Formulas.teamDps({ "Krilin", "Krilin" })
+check("team DPS adds up", twoKurilin, 10)
+
+-- Click cap: at most maxClicksPerSecond in any one-second window
+local cap = Balance.Combat.maxClicksPerSecond
+local limiter = ClickLimiter.new()
+local accepted = 0
+for click = 0, 19 do -- 20 clicks within the first second
+	if ClickLimiter.allow(limiter, click * 0.04, cap) then
+		accepted += 1
+	end
+end
+check("20 clicks in a second count as the cap", accepted, cap)
+check("next window accepts again", ClickLimiter.allow(limiter, 1.0, cap), true)
+local steady = ClickLimiter.new()
+local steadyAccepted = 0
+for click = 0, 49 do -- 5 clicks per second for 10 seconds
+	if ClickLimiter.allow(steady, click * 0.2, cap) then
+		steadyAccepted += 1
+	end
+end
+check("human clicking is never capped", steadyAccepted, 50)
+local auto = ClickLimiter.new()
+local autoAccepted = 0
+for click = 0, 999 do -- an autoclicker at 100 clicks per second for 10 seconds
+	if ClickLimiter.allow(auto, click * 0.01, cap) then
+		autoAccepted += 1
+	end
+end
+check("autoclicker capped over 10 s", autoAccepted, cap * 10)
 
 -- Kill rewards
 check("reward Nameku Easy", Formulas.killReward("Nameku", "Easy", false), 5)

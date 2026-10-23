@@ -191,6 +191,19 @@ El Boost de Gemas es el más caro porque se paga a sí mismo: activado durante u
 
 Pendiente: otros usos de las Gemas (tiradas de gacha con Gemas, items).
 
+## Ataque por clic (propuesta)
+
+Inspirado en el ataque por clic de Anime Fighters Simulator, donde pulsar suma daño a lo que hacen los luchadores y se usan autoclickers: por eso el clic se mide contra el DPS del propio equipo y tiene un tope en el servidor, para que nunca sea la fuente principal de daño.
+
+| Valor | Propuesta |
+|---|---|
+| Daño por clic (`Balance.Combat.clickDamageShare`) | 5 % del DPS del equipo activo (suma de daño ÷ cooldown de los equipados), mínimo 1 |
+| Clics aceptados por segundo (`Balance.Combat.maxClicksPerSecond`) | 8 (los demás se descartan) |
+| Aporte máximo | +40 % del DPS del equipo (8 × 5 %) |
+| Aporte típico (unos 5 clics por segundo) | +25 % |
+
+Ejemplos: con solo Kurilin (5 de DPS) cada clic hace 1 (mínimo); con un equipo de 300 de DPS, 15 por clic y como mucho 120 por segundo extra.
+
 ## Inicio del jugador
 
 El jugador nuevo empieza con 0 Yenes y solo Kurilin (10 de daño cada 2 s). Un enemigo Fácil de Nameku tarda ~34 s y la primera tirada de gacha llega a los ~6 minutos. Es un ritmo de inicio aceptado a propósito: no acelerarlo sin decidirlo antes.

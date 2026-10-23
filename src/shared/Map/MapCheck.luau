@@ -54,7 +54,7 @@ function MapCheck.run(entries: { Entry }, partCounts: { [string]: number }?): Re
 	local ranksByIsland: { [string]: { [string]: boolean } } = {}
 	local gachaByIsland: { [string]: number } = {}
 	local portalsByArea: { [string]: { [string]: boolean } } = {}
-	local raidPortals, lobbySpawns = 0, 0
+	local raidPortals, lobbySpawns, shops = 0, 0, 0
 	local padsByDifficulty: { [string]: number } = {}
 
 	for _, entry in entries do
@@ -95,6 +95,12 @@ function MapCheck.run(entries: { Entry }, partCounts: { [string]: number }?): Re
 			raidPortals += 1
 		elseif entry.tag == "RaidLobbySpawn" then
 			lobbySpawns += 1
+		elseif entry.tag == "BoostShop" then
+			if entry.area == "RaidLobby" then
+				shops += 1
+			else
+				err(`{entry.name}: BoostShop must be in the raid lobby`)
+			end
 		elseif entry.tag == "RaidPad" then
 			local difficulty = attributes.Difficulty
 			if isDifficulty(difficulty) then
@@ -131,6 +137,9 @@ function MapCheck.run(entries: { Entry }, partCounts: { [string]: number }?): Re
 	end
 	if lobbySpawns ~= 1 then
 		err(`Raid lobby needs exactly one RaidLobbySpawn (found {lobbySpawns})`)
+	end
+	if shops ~= 1 then
+		err(`Raid lobby needs exactly one BoostShop (found {shops})`)
 	end
 	for _, difficulty in Raids.Difficulties do
 		local pads = padsByDifficulty[difficulty.id] or 0

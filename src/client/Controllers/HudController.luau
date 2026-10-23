@@ -1,28 +1,35 @@
 --!strict
 -- The HUD, in the official UI style: Yen and Gems counters (bottom left, at
 -- 75% size), the timers of the active boosts (bottom right, stacked upwards),
--- the current area (top right, at 80% size) and the purple side buttons (left
--- edge, vertically centered). Each group scales with the screen. Other
--- controllers add their side button with HudController.addSideButton.
+-- the current area (top right, at 80% size), the side buttons (left edge,
+-- vertically centered; charcoal with a bright purple border) and the round
+-- Attack button (bottom center; also F and the gamepad's right trigger). Each
+-- group scales with the screen. Other controllers add their side button with
+-- HudController.addSideButton. An Attack click only asks the server
+-- (Remotes.AttackClick), which decides the damage and caps clicks per second.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
+local Balance = require(Shared.Config.Balance)
 local Boosts = require(Shared.Config.Boosts)
 local Format = require(Shared.Format)
 local Islands = require(Shared.Data.Islands)
 local CheckUI = require(script.Parent.Parent.UI.CheckUI)
+local Icons = require(script.Parent.Parent.UI.Icons)
 
 local GOLD = Color3.fromRGB(255, 194, 26)
 local CYAN = Color3.fromRGB(63, 216, 255)
 local GREEN = Color3.fromRGB(82, 224, 74)
 
--- Text glyphs until the design's icons are uploaded to Roblox.
-local BOOST_GLYPHS: { [string]: { glyph: string, color: Color3 } } = {
-	Luck = { glyph = "🍀", color = GREEN },
-	Money = { glyph = "¥", color = GOLD },
-	Gems = { glyph = "💎", color = CYAN },
+-- Icon (UI/Icons) and glyph color of each boost.
+local BOOST_ICONS: { [string]: { icon: string, color: Color3 } } = {
+	Luck = { icon = "Clover", color = GREEN },
+	Money = { icon = "Yen", color = GOLD },
+	Gems = { icon = "Gem", color = CYAN },
 }
 local AREA_NAMES: { [string]: string } = {
 	RaidLobby = "LOBBY DE RAIDS",
@@ -78,7 +85,8 @@ local function buildCounters()
 		anchored("Currencies", Vector2.new(0, 1), UDim2.new(0, 16, 1, -16), Vector2.new(260, 116), COUNTER_SCALE)
 	local _, yen = CheckUI.counter({
 		name = "Yen",
-		glyph = "¥",
+		icon = Icons.get("Yen").icon,
+		glyph = Icons.get("Yen").glyph,
 		glyphColor = GOLD,
 		position = UDim2.fromOffset(0, 0),
 		parent = group,
@@ -86,7 +94,8 @@ local function buildCounters()
 	bindNumber(yen, "Yen")
 	local _, gems = CheckUI.counter({
 		name = "Gems",
-		glyph = "💎",
+		icon = Icons.get("Gem").icon,
+		glyph = Icons.get("Gem").glyph,
 		glyphColor = CYAN,
 		position = UDim2.fromOffset(0, 62),
 		parent = group,
@@ -108,10 +117,12 @@ local function buildBoosts()
 	layout.SortOrder = Enum.SortOrder.LayoutOrder
 	layout.Parent = group
 	for order, boost in Boosts.List do
-		local style = BOOST_GLYPHS[boost.id]
+		local style = BOOST_ICONS[boost.id]
+		local boostIcon = Icons.get(style.icon)
 		local chip, time = CheckUI.boostChip({
 			name = boost.id,
-			glyph = style.glyph,
+			icon = boostIcon.icon,
+			glyph = boostIcon.glyph,
 			glyphColor = style.color,
 			multiplier = `x{boost.multiplier}`,
 			parent = group,
@@ -146,8 +157,9 @@ local function buildArea()
 		text = "",
 		size = UDim2.new(1, -16, 1, 0),
 		textSize = 22,
-		color = GOLD,
-		stroke = 3,
+		color = Color3.new(0, 0, 0),
+		stroke = 2,
+		strokeColor = Color3.new(1, 1, 1),
 		italic = true,
 		zIndex = 10,
 		parent = body,
@@ -189,6 +201,41 @@ function HudController.addSideButton(props: {
 	return button
 end
 
+-- Round Attack button at the bottom center. Clicks without a target are not
+-- sent; the client never sends faster than the server would count.
+local function buildAttack()
+	local group = anchored("Attack", Vector2.new(0.5, 1), UDim2.new(0.5, 0, 1, -16), Vector2.new(124, 124))
+	local button = CheckUI.attackButton({
+		name = "AttackButton",
+		position = UDim2.fromOffset(62, 62),
+		keyHint = if UserInputService.KeyboardEnabled then "F" else nil,
+		parent = group,
+	})
+	local scale = button:FindFirstChild("ButtonScale") :: UIScale
+	local remote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("AttackClick") :: RemoteEvent
+	local minGap = 1 / Balance.Combat.maxClicksPerSecond
+	local lastClick = -math.huge
+
+	local function attack()
+		scale.Scale = 0.9
+		TweenService:Create(scale, TweenInfo.new(0.12, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+			Scale = 1,
+		}):Play()
+		local now = os.clock()
+		if player:GetAttribute("TargetEnemyId") == nil or now - lastClick < minGap then
+			return
+		end
+		lastClick = now
+		remote:FireServer()
+	end
+	button.Activated:Connect(attack)
+	UserInputService.InputBegan:Connect(function(input: InputObject, processed: boolean)
+		if not processed and (input.KeyCode == Enum.KeyCode.F or input.KeyCode == Enum.KeyCode.ButtonR2) then
+			attack()
+		end
+	end)
+end
+
 function HudController.start()
 	gui = Instance.new("ScreenGui")
 	gui.Name = "Hud"
@@ -198,6 +245,7 @@ function HudController.start()
 	buildCounters()
 	buildBoosts()
 	buildArea()
+	buildAttack()
 	-- Centered on the left edge, a little above the middle.
 	sideColumn = anchored("SideButtons", Vector2.new(0, 0.5), UDim2.new(0, 16, 0.5, -30), Vector2.new(SIDE_WIDTH, 0))
 

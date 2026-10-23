@@ -12,6 +12,7 @@
 local TweenService = game:GetService("TweenService")
 
 local CharacterViewport = require(script.Parent.CharacterViewport)
+local Icons = require(script.Parent.Icons)
 local SoundController = require(script.Parent.Parent.Controllers.SoundController)
 
 local CheckUI = {}
@@ -42,6 +43,11 @@ CheckUI.Colors = {
 	WellEdge = Color3.fromRGB(125, 85, 200),
 	CardInner = Color3.fromRGB(26, 16, 42),
 	Lavender = Color3.fromRGB(190, 140, 255),
+	-- HUD buttons (side buttons, Attack): charcoal with a bright purple border.
+	CharcoalTop = Color3.fromRGB(58, 55, 68),
+	CharcoalBottom = Color3.fromRGB(22, 21, 28),
+	CharcoalBase = Color3.fromRGB(12, 11, 16),
+	Neon = Color3.fromRGB(190, 120, 255),
 	Gold = Color3.fromRGB(255, 194, 26),
 	Muted = Color3.fromRGB(190, 172, 222),
 	Outline = BLACK,
@@ -321,6 +327,7 @@ function CheckUI.text(props: {
 	textSize: number,
 	color: Color3?,
 	stroke: number?,
+	strokeColor: Color3?,
 	align: Enum.TextXAlignment?,
 	italic: boolean?,
 	zIndex: number?,
@@ -341,7 +348,7 @@ function CheckUI.text(props: {
 	label.TextXAlignment = props.align or Enum.TextXAlignment.Center
 	label.ZIndex = props.zIndex or 1
 	label.Parent = props.parent
-	CheckUI.stroke(label, BLACK, props.stroke or 2.5)
+	CheckUI.stroke(label, props.strokeColor or BLACK, props.stroke or 2.5)
 	return label
 end
 
@@ -408,6 +415,55 @@ function CheckUI.window(name: string, size: Vector2, parent: Instance, zIndex: n
 	scale.Name = "WindowScale"
 	scale.Parent = window
 	return window, scale
+end
+
+-- Modal windows (inventory, boost shop, settings) are drawn at this fraction
+-- of their design size, so they never cover most of the screen.
+CheckUI.WindowFactor = 0.7
+
+function CheckUI.isOpen(window: GuiObject): boolean
+	return window:GetAttribute("Open") == true
+end
+
+-- Pops a modal window open from its center, at the screen scale times WindowFactor.
+function CheckUI.openWindow(window: GuiObject, scale: UIScale)
+	window:SetAttribute("Open", true)
+	window.Visible = true
+	scale.Scale = 0
+	TweenService:Create(
+		scale,
+		TweenInfo.new(0.28, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+		{ Scale = CheckUI.deviceScale() * CheckUI.WindowFactor }
+	):Play()
+end
+
+function CheckUI.closeWindow(window: GuiObject, scale: UIScale)
+	window:SetAttribute("Open", false)
+	local tween =
+		TweenService:Create(scale, TweenInfo.new(0.14, Enum.EasingStyle.Quad, Enum.EasingDirection.In), { Scale = 0 })
+	tween.Completed:Connect(function()
+		if not CheckUI.isOpen(window) then
+			window.Visible = false
+		end
+	end)
+	tween:Play()
+end
+
+function CheckUI.toggleWindow(window: GuiObject, scale: UIScale)
+	if CheckUI.isOpen(window) then
+		CheckUI.closeWindow(window, scale)
+	else
+		CheckUI.openWindow(window, scale)
+	end
+end
+
+-- Keeps an open modal window at the right size when the screen changes.
+function CheckUI.keepScaled(window: GuiObject, scale: UIScale)
+	CheckUI.onScaleChanged(function(value: number)
+		if CheckUI.isOpen(window) then
+			scale.Scale = value * CheckUI.WindowFactor
+		end
+	end)
 end
 
 -- Round purple [X] with a bevel, gloss and shadow (46 x 46), centered on `position`.
@@ -855,6 +911,8 @@ local function icon(
 	return label
 end
 
+CheckUI.icon = icon
+
 -- Dark purple pill (HUD counters and boost timers): shadow, base, gradient
 -- face, gloss and a lavender inner edge.
 local function pill(root: GuiObject, radius: number)
@@ -1029,7 +1087,8 @@ function CheckUI.counter(props: {
 	return counter, value
 end
 
--- HUD timer of an active boost: icon, multiplier (e.g. "x2") and time left.
+-- HUD timer of an active boost: icon (inside the pill), multiplier (e.g.
+-- "x2") and time left.
 -- Returns the chip and its time label.
 function CheckUI.boostChip(props: {
 	name: string,
@@ -1056,14 +1115,14 @@ function CheckUI.boostChip(props: {
 		icon = props.icon,
 		glyph = props.glyph,
 		glyphColor = props.glyphColor,
-		size = 44,
-		position = UDim2.new(0, 10, 0.5, -2),
+		size = 32,
+		position = UDim2.new(0, 24, 0.5, -2),
 		zIndex = 8,
 	})
 	CheckUI.text({
 		text = props.multiplier,
 		size = UDim2.fromOffset(34, 40),
-		position = UDim2.new(0, 49, 0.5, -2),
+		position = UDim2.new(0, 58, 0.5, -2),
 		textSize = 16,
 		color = Color3.fromRGB(190, 255, 60),
 		stroke = 2.5,
@@ -1073,8 +1132,8 @@ function CheckUI.boostChip(props: {
 		"Multiplier"
 	local time = CheckUI.text({
 		text = "0:00",
-		size = UDim2.fromOffset(80, 40),
-		position = UDim2.new(0, 106, 0.5, -2),
+		size = UDim2.fromOffset(72, 40),
+		position = UDim2.new(0, 110, 0.5, -2),
 		textSize = 20,
 		stroke = 2.8,
 		zIndex = 8,
@@ -1084,8 +1143,49 @@ function CheckUI.boostChip(props: {
 	return chip, time
 end
 
--- Purple square HUD button (Inventory, Boosts, Settings) with an icon and a
--- label inside its bottom part. Centered on `position`.
+-- HUD button body (side buttons and Attack): shadow, a faint purple glow
+-- ring, a charcoal base with a bright purple border, the charcoal gradient
+-- face (bevel showing below), a gloss and a light inner edge. `radius` 0.5 of
+-- the size makes it round.
+local function hudButtonBody(button: GuiObject, radius: number, glowRadius: number)
+	local colors = CheckUI.Colors
+	CheckUI.shadow(button, radius, 6)
+	local glow = CheckUI.box({
+		name = "Glow",
+		size = UDim2.new(1, 10, 1, 10),
+		position = UDim2.fromScale(0.5, 0.5),
+		anchor = Vector2.new(0.5, 0.5),
+		transparency = 1,
+		radius = glowRadius,
+		zIndex = 2,
+		parent = button,
+	})
+	CheckUI.stroke(glow, colors.Neon, 3, true).Transparency = 0.65
+	local base = CheckUI.box({
+		name = "Bevel",
+		size = UDim2.fromScale(1, 1),
+		color = colors.CharcoalBase,
+		radius = radius,
+		zIndex = 3,
+		parent = button,
+	})
+	CheckUI.stroke(base, colors.Neon, 3, true)
+	local face = CheckUI.box({
+		name = "Face",
+		size = UDim2.new(1, 0, 1, -6),
+		radius = radius,
+		zIndex = 4,
+		parent = base,
+	})
+	CheckUI.gradient(face, colors.CharcoalTop, colors.CharcoalBottom)
+	gloss(face, 0.34, radius - 4, 0.16, 5)
+	edge(face, 2, radius - 2, Color3.fromRGB(235, 215, 255), 0.75, 6)
+end
+
+-- Square HUD side button (Characters, Inventory, Settings): charcoal with a
+-- bright purple border, an icon and a black label with a white outline inside
+-- its bottom part.
+-- Centered on `position`.
 function CheckUI.sideButton(props: {
 	name: string,
 	text: string,
@@ -1106,27 +1206,7 @@ function CheckUI.sideButton(props: {
 	button.AutoButtonColor = false
 	button.ZIndex = props.zIndex or 5
 	button.Parent = props.parent
-	CheckUI.shadow(button, radius, 6)
-	local base = CheckUI.box({
-		name = "Bevel",
-		size = UDim2.fromScale(1, 1),
-		color = CheckUI.Colors.RimBevel,
-		radius = radius,
-		zIndex = 2,
-		parent = button,
-	})
-	CheckUI.stroke(base, BLACK, 3, true)
-	local face = CheckUI.box({
-		name = "Face",
-		size = UDim2.new(1, 0, 1, -6),
-		radius = radius,
-		zIndex = 3,
-		parent = base,
-	})
-	CheckUI.gradient(face, Color3.fromRGB(170, 110, 250), Color3.fromRGB(92, 40, 175))
-	CheckUI.damier(face, BLACK, 12, 0.95, 0.8, radius)
-	gloss(face, 0.36, radius - 4, 0.35, 5)
-	edge(face, 2, radius - 2, Color3.fromRGB(230, 205, 255), 0.2, 6)
+	hudButtonBody(button, radius, radius + 5)
 	icon(button, {
 		icon = props.icon,
 		glyph = props.glyph,
@@ -1138,19 +1218,90 @@ function CheckUI.sideButton(props: {
 	-- The label fits inside the face, shrinking for long words.
 	local label = CheckUI.text({
 		text = props.text,
-		size = UDim2.fromOffset(66, 16),
-		position = UDim2.new(0.5, 0, 1, -18),
-		textSize = 12,
-		color = CheckUI.Colors.Gold,
-		stroke = 2.5,
+		size = UDim2.fromOffset(62, 12),
+		position = UDim2.new(0.5, 0, 1, -16),
+		textSize = 10,
+		color = BLACK,
+		stroke = 1.6,
+		strokeColor = WHITE,
 		zIndex = 8,
 		parent = button,
 	})
 	label.Name = "Label"
 	label.TextScaled = true
 	local maxSize = Instance.new("UITextSizeConstraint")
-	maxSize.MaxTextSize = 12
+	maxSize.MaxTextSize = 10
 	maxSize.Parent = label
+	local scale = Instance.new("UIScale")
+	scale.Name = "ButtonScale"
+	scale.Parent = button
+	return button
+end
+
+-- Round Attack button (112 px) for the bottom center of the HUD: the HUD
+-- button body, a sword, a black "ATACAR" with a white outline and an optional
+-- key hint chip.
+-- Centered on `position`.
+function CheckUI.attackButton(props: {
+	name: string,
+	position: UDim2,
+	keyHint: string?,
+	zIndex: number?,
+	parent: Instance,
+}): ImageButton
+	local size = 112
+	local button = Instance.new("ImageButton")
+	button.Name = props.name
+	button.Size = UDim2.fromOffset(size, size)
+	button.Position = props.position
+	button.AnchorPoint = Vector2.new(0.5, 0.5)
+	button.BackgroundTransparency = 1
+	button.AutoButtonColor = false
+	button.ZIndex = props.zIndex or 5
+	button.Parent = props.parent
+	hudButtonBody(button, size / 2, size / 2 + 5)
+	local sword = Icons.get("Sword")
+	icon(button, {
+		icon = sword.icon,
+		glyph = sword.glyph,
+		size = 50,
+		position = UDim2.new(0.5, 0, 0, 40),
+		zIndex = 7,
+	})
+	local label = CheckUI.text({
+		text = "ATACAR",
+		size = UDim2.fromOffset(size - 20, 22),
+		position = UDim2.new(0.5, 0, 0, 80),
+		textSize = 16,
+		color = BLACK,
+		stroke = 2,
+		strokeColor = WHITE,
+		italic = true,
+		zIndex = 8,
+		parent = button,
+	})
+	label.Name = "Label"
+	if props.keyHint then
+		local chip = CheckUI.box({
+			name = "KeyHint",
+			size = UDim2.fromOffset(28, 22),
+			position = UDim2.new(1, -12, 0, 7),
+			anchor = Vector2.new(0.5, 0.5),
+			color = CheckUI.Colors.CharcoalBase,
+			radius = 8,
+			zIndex = 9,
+			parent = button,
+		})
+		CheckUI.stroke(chip, CheckUI.Colors.Neon, 2, true)
+		CheckUI.text({
+			text = props.keyHint,
+			size = UDim2.fromScale(1, 1),
+			textSize = 13,
+			stroke = 2,
+			zIndex = 10,
+			parent = chip,
+		})
+	end
 	local scale = Instance.new("UIScale")
 	scale.Name = "ButtonScale"
 	scale.Parent = button
@@ -1227,6 +1378,159 @@ function CheckUI.progressBar(props: {
 		end
 	end
 	return bar, set
+end
+
+export type ItemCard = {
+	button: ImageButton,
+	setCount: (number) -> (),
+	setActive: (boolean) -> (),
+	setSelected: (boolean) -> (),
+}
+
+-- Inventory item card (boosts now; objects and mounts later), like the
+-- character card: a frame in the item's color, an aura behind its icon, the
+-- amount ("x2") in gold at the top left, a green "ACTIVO" tag at the top right
+-- while active, the name on a dark strip and a white outline when selected.
+function CheckUI.itemCard(
+	props: {
+		name: string,
+		displayName: string,
+		color: Color3,
+		icon: string?,
+		glyph: string?,
+		size: Vector2?,
+		position: UDim2?, -- center of the card
+		zIndex: number?,
+		parent: Instance,
+	}
+): ItemCard
+	local size = props.size or Vector2.new(112, 136)
+	local button = Instance.new("ImageButton")
+	button.Name = props.name
+	button.Size = UDim2.fromOffset(size.X, size.Y)
+	button.Position = props.position or UDim2.fromOffset(size.X / 2, size.Y / 2)
+	button.AnchorPoint = Vector2.new(0.5, 0.5)
+	button.BackgroundTransparency = 1
+	button.AutoButtonColor = false
+	button.ZIndex = props.zIndex or 10
+	button.Parent = props.parent
+
+	local selection = CheckUI.box({
+		name = "Selection",
+		size = UDim2.new(1, 10, 1, 10),
+		position = UDim2.fromScale(0.5, 0.5),
+		anchor = Vector2.new(0.5, 0.5),
+		transparency = 1,
+		radius = 15,
+		parent = button,
+	})
+	CheckUI.stroke(selection, WHITE, 3, true)
+	selection.Visible = false
+
+	local _, inner = CheckUI.rarityCard({
+		name = "Frame",
+		size = size,
+		color = props.color,
+		secret = false,
+		zIndex = 2,
+		parent = button,
+	})
+	CheckUI.box({
+		name = "Aura",
+		size = UDim2.fromOffset(size.X * 0.72, size.X * 0.72),
+		position = UDim2.new(0.5, 0, 0, size.X * 0.45),
+		anchor = Vector2.new(0.5, 0.5),
+		color = props.color,
+		transparency = 0.75,
+		radius = math.floor(size.X * 0.36),
+		zIndex = 3,
+		parent = inner,
+	})
+	icon(button, {
+		icon = props.icon,
+		glyph = props.glyph,
+		glyphColor = props.color,
+		size = math.floor(size.X * 0.5),
+		position = UDim2.new(0.5, 0, 0, size.X * 0.45 + 5),
+		zIndex = 7,
+	})
+	local strip = CheckUI.box({
+		name = "NameStrip",
+		size = UDim2.new(1, 0, 0, 30),
+		position = UDim2.new(0, 0, 1, -30),
+		color = BLACK,
+		radius = 8,
+		zIndex = 5,
+		parent = inner,
+	})
+	local stripFade = Instance.new("UIGradient")
+	stripFade.Rotation = 90
+	stripFade.Transparency = NumberSequence.new(0.8, 0.15)
+	stripFade.Parent = strip
+	local name = CheckUI.text({
+		text = props.displayName,
+		size = UDim2.new(1, -12, 0, 22),
+		position = UDim2.new(0.5, 0, 1, -19),
+		textSize = 12,
+		stroke = 2.5,
+		zIndex = 8,
+		parent = button,
+	})
+	name.Name = "Name"
+	name.TextScaled = true
+	local maxName = Instance.new("UITextSizeConstraint")
+	maxName.MaxTextSize = 13
+	maxName.Parent = name
+	local count = CheckUI.text({
+		text = "",
+		size = UDim2.fromOffset(size.X * 0.45, 20),
+		position = UDim2.fromOffset(11, 17),
+		anchor = Vector2.new(0, 0.5),
+		textSize = 15,
+		color = CheckUI.Colors.Gold,
+		stroke = 2.6,
+		align = Enum.TextXAlignment.Left,
+		zIndex = 8,
+		parent = button,
+	})
+	count.Name = "Count"
+	local tag = CheckUI.box({
+		name = "ActiveTag",
+		size = UDim2.fromOffset(52, 18),
+		position = UDim2.new(1, -8, 0, 8),
+		anchor = Vector2.new(1, 0),
+		radius = 9,
+		zIndex = 9,
+		parent = button,
+	})
+	CheckUI.gradient(tag, CheckUI.Buttons.Green.top, CheckUI.Buttons.Green.bottom)
+	CheckUI.stroke(tag, BLACK, 2, true)
+	CheckUI.text({
+		text = "ACTIVO",
+		size = UDim2.fromScale(1, 1),
+		textSize = 8,
+		stroke = 2,
+		zIndex = 10,
+		parent = tag,
+	})
+	tag.Visible = false
+
+	local scale = Instance.new("UIScale")
+	scale.Name = "ButtonScale"
+	scale.Parent = button
+
+	return {
+		button = button,
+		setCount = function(amount: number)
+			count.Text = `x{amount}`
+		end,
+		setActive = function(active: boolean)
+			tag.Visible = active
+		end,
+		setSelected = function(selected: boolean)
+			selection.Visible = selected
+		end,
+	}
 end
 
 export type CharacterCard = {

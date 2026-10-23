@@ -38,6 +38,20 @@ function Formulas.characterCooldown(characterId: string): number
 	return Rarities.get(Characters.get(characterId).rarity).cooldown
 end
 
+-- Damage per second of a team of characters (unrounded).
+function Formulas.teamDps(characterIds: { string }): number
+	local total = 0
+	for _, characterId in characterIds do
+		total += Formulas.characterDamage(characterId) / Formulas.characterCooldown(characterId)
+	end
+	return total
+end
+
+-- Damage of one Attack button click: a share of the team's DPS, at least 1.
+function Formulas.clickDamage(teamDps: number): number
+	return math.max(1, math.round(teamDps * Balance.Combat.clickDamageShare))
+end
+
 -- Damage per second of the reference team on an island (unrounded).
 function Formulas.referenceDps(islandId: string): number
 	local rarity = Rarities.get(Balance.ReferenceTeam.rarity)

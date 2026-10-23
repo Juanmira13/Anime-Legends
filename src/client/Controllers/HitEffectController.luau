@@ -5,7 +5,9 @@
 -- rarity, rises and fades, with a flash and sparks at the impact. The local
 -- player's hits are big; other players' hits are smaller, fainter and only
 -- shown nearby (limits in HitStyle). An enemy that dies bursts in a puff of
--- smoke, each with its sound. Purely visual: damage is decided by the server.
+-- smoke, each with its sound. The player's own Attack button clicks
+-- (Remotes.ClickHit) pop as white numbers right away. Purely visual: damage is
+-- decided by the server.
 
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
@@ -209,6 +211,15 @@ local function onHit(owner: Player, enemyId: string, hits: { { slot: number, dam
 	end
 end
 
+-- The player's own Attack button click (Remotes.ClickHit): shown right away,
+-- as an own hit without a rarity (white number).
+local function onClickHit(enemyId: string, damage: number)
+	local shape = shapes[enemyId]
+	if shape and type(damage) == "number" then
+		showHit(shape, enemyId, damage, nil, true)
+	end
+end
+
 local function step()
 	local now = os.clock()
 	for index = #numbers, 1, -1 do
@@ -315,6 +326,8 @@ function HitEffectController.start()
 
 	local remote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("CharacterHit") :: RemoteEvent
 	remote.OnClientEvent:Connect(onHit)
+	local clickRemote = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("ClickHit") :: RemoteEvent
+	clickRemote.OnClientEvent:Connect(onClickHit)
 	RunService.Heartbeat:Connect(step)
 end
 
