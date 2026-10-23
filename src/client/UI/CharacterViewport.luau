@@ -1,12 +1,15 @@
 --!strict
 -- A character's 3D model inside a ViewportFrame, framed to fit, for UI cards
--- (gacha panel and reveal). Uses ReplicatedStorage.CharacterModels.<Island>.<Id>
+-- (gacha panel and reveal). Uses the character's model (an imported avatar in
+-- ReplicatedStorage.ImportedCharacters, else ReplicatedStorage.CharacterModels;
+-- see Shared.ModelLookup)
 -- like the followers, or a block in the rarity color if the model is missing.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Characters = require(Shared.Data.Characters)
+local ModelLookup = require(Shared.ModelLookup)
 
 local Theme = require(script.Parent.Theme)
 
@@ -24,10 +27,14 @@ local CharacterViewport = {}
 
 local function buildModel(characterId: string): Model
 	local character = Characters.get(characterId)
-	local root = ReplicatedStorage:FindFirstChild("CharacterModels")
-	local island = root and root:FindFirstChild(character.island)
-	local template = island and island:FindFirstChild(characterId)
-	if template and template:IsA("Model") and template.PrimaryPart then
+	local template = ModelLookup.find({
+		{
+			root = ReplicatedStorage:FindFirstChild("ImportedCharacters"),
+			name = "ReplicatedStorage.ImportedCharacters",
+		},
+		{ root = ReplicatedStorage:FindFirstChild("CharacterModels"), name = "ReplicatedStorage.CharacterModels" },
+	}, { character.island, characterId })
+	if template then
 		return template:Clone()
 	end
 	local model = Instance.new("Model")

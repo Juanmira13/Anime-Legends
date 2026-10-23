@@ -7,11 +7,13 @@
 --
 -- Reads the player attributes EquippedCharacters (character ids in slot
 -- order) and TargetEnemyId. The model is
--- ReplicatedStorage.CharacterModels.<Island>.<CharacterId> if it exists (a
--- Model with a PrimaryPart; R6 rigs from assets/CharacterModels, made by
--- tools/build_rigs.py), otherwise a placeholder block in the rarity color.
--- Only the PrimaryPart is anchored so rigs keep their limbs free to animate;
--- R6 rigs swing their shoulders and hips while walking.
+-- ReplicatedStorage.ImportedCharacters.<Island>.<CharacterId> (an imported
+-- avatar, inserted in Studio) or else ReplicatedStorage.CharacterModels.<Island>
+-- .<CharacterId> (Rojo placeholders from tools/build_rigs.py), if it exists (a
+-- Model with a PrimaryPart; R15 rigs, found with Shared.ModelLookup),
+-- otherwise a placeholder block in the rarity color. Only the PrimaryPart is
+-- anchored so rigs keep their limbs free to animate; rigs swing their
+-- shoulders and hips while walking (R15, or R6 for older models).
 
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
@@ -20,6 +22,7 @@ local RunService = game:GetService("RunService")
 
 local Shared = ReplicatedStorage:WaitForChild("Shared")
 local Characters = require(Shared.Data.Characters)
+local ModelLookup = require(Shared.ModelLookup)
 local Intangible = require(Shared.Intangible)
 local Client = script.Parent.Parent
 local FollowerMotion = require(Client.Followers.FollowerMotion)
@@ -44,7 +47,7 @@ type Follower = {
 	yaw: number, -- facing angle around the vertical axis
 	walkPhase: number,
 	walkAmount: number, -- 0 standing still, 1 at full speed
-	walkJoints: WalkJoints?, -- nil if the model is not an R6 rig
+	walkJoints: WalkJoints?, -- nil if the model is not an R15 or R6 rig
 	lastHit: number, -- os.clock() of the last hit
 }
 
@@ -53,6 +56,7 @@ type WalkJoints = {
 	leftShoulder: Motor6D,
 	rightHip: Motor6D,
 	leftHip: Motor6D,
+	r15: boolean, -- R15 joint frames are unrotated: the swing is about X
 }
 
 type Team = {
@@ -78,13 +82,13 @@ local FollowerController = {}
 
 local function getTemplate(characterId: string): Model?
 	local character = Characters.get(characterId)
-	local root = ReplicatedStorage:FindFirstChild("CharacterModels")
-	local island = root and root:FindFirstChild(character.island)
-	local template = island and island:FindFirstChild(characterId)
-	if template and template:IsA("Model") and template.PrimaryPart then
-		return template
-	end
-	return nil
+	return ModelLookup.find({
+		{
+			root = ReplicatedStorage:FindFirstChild("ImportedCharacters"),
+			name = "ReplicatedStorage.ImportedCharacters",
+		},
+		{ root = ReplicatedStorage:FindFirstChild("CharacterModels"), name = "ReplicatedStorage.CharacterModels" },
+	}, { character.island, characterId })
 end
 
 local function buildPlaceholder(characterId: string): Model
@@ -137,10 +141,20 @@ local function findWalkJoints(model: Model): WalkJoints?
 		local joint = model:FindFirstChild(name, true)
 		return if joint and joint:IsA("Motor6D") then joint else nil
 	end
-	local rightShoulder, leftShoulder = motor("Right Shoulder"), motor("Left Shoulder")
-	local rightHip, leftHip = motor("Right Hip"), motor("Left Hip")
-	if rightShoulder and leftShoulder and rightHip and leftHip then
-		return { rightShoulder = rightShoulder, leftShoulder = leftShoulder, rightHip = rightHip, leftHip = leftHip }
+	-- R15 joints first ("RightShoulder"), then the classic R6 names ("Right Shoulder").
+	for _, r15 in { true, false } do
+		local space = if r15 then "" else " "
+		local rightShoulder, leftShoulder = motor(`Right{space}Shoulder`), motor(`Left{space}Shoulder`)
+		local rightHip, leftHip = motor(`Right{space}Hip`), motor(`Left{space}Hip`)
+		if rightShoulder and leftShoulder and rightHip and leftHip then
+			return {
+				rightShoulder = rightShoulder,
+				leftShoulder = leftShoulder,
+				rightHip = rightHip,
+				leftHip = leftHip,
+				r15 = r15,
+			}
+		end
 	end
 	return nil
 end
@@ -383,18 +397,28 @@ local function step(dt: number)
 	end
 end
 
--- Swings arms and legs like the classic R6 walk. Joint transforms are set
--- before physics, as Roblox recommends for Motor6D.Transform.
+-- Swings arms and legs like the classic walk: arms and legs in opposite
+-- directions, each side opposite to the other. R15 joint frames are unrotated,
+-- so the swing is about their X axis; R6 frames are turned sideways (left and
+-- right mirrored), so it is about Z with the same sign on both sides. Joint
+-- transforms are set before physics, as Roblox recommends for Motor6D.Transform.
 local function animateWalk()
 	for _, team in teams do
 		for _, follower in team.followers do
 			local joints = follower.walkJoints
 			if joints then
 				local angle = FollowerMotion.walkSwing(follower.walkPhase, follower.walkAmount)
-				joints.rightShoulder.Transform = CFrame.Angles(0, 0, angle)
-				joints.leftShoulder.Transform = CFrame.Angles(0, 0, angle)
-				joints.rightHip.Transform = CFrame.Angles(0, 0, -angle)
-				joints.leftHip.Transform = CFrame.Angles(0, 0, -angle)
+				if joints.r15 then
+					joints.rightShoulder.Transform = CFrame.Angles(angle, 0, 0)
+					joints.leftShoulder.Transform = CFrame.Angles(-angle, 0, 0)
+					joints.rightHip.Transform = CFrame.Angles(-angle, 0, 0)
+					joints.leftHip.Transform = CFrame.Angles(angle, 0, 0)
+				else
+					joints.rightShoulder.Transform = CFrame.Angles(0, 0, angle)
+					joints.leftShoulder.Transform = CFrame.Angles(0, 0, angle)
+					joints.rightHip.Transform = CFrame.Angles(0, 0, -angle)
+					joints.leftHip.Transform = CFrame.Angles(0, 0, -angle)
+				end
 			end
 		end
 	end

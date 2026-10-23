@@ -1,4 +1,4 @@
-"""Generate the placeholder R6 rigs for every fighter and enemy as .rbxmx files.
+"""Generate the placeholder R15 rigs for every fighter and enemy as .rbxmx files.
 
 Usage: python tools/build_rigs.py [--force | --check]
 
@@ -7,9 +7,14 @@ and per enemy (assets/EnemyModels/<Island>/<Rank>.rbxmx and
 assets/EnemyModels/Raid/<Type>.rbxmx). Rojo syncs them into
 ReplicatedStorage.CharacterModels and ServerStorage.EnemyModels.
 
-Existing files (.rbxmx or .rbxm) are kept, so final models made in Blender are
-never overwritten; --force regenerates the .rbxmx placeholders. --check only
-lists missing models and fails if there are any.
+Existing files (.rbxmx or .rbxm) are kept, so final models (Blender, or avatars
+imported with tools/import_avatars.py) are never overwritten; --force
+regenerates the .rbxmx placeholders only (a model with MeshParts is always
+kept). --check only lists missing models and fails if there are any.
+
+The placeholders are block R15 rigs with the same parts, joints and
+proportions as the imported Roblox avatars: 5 studs tall, feet at y = 0,
+HumanoidRootPart centered at y = 3, unrotated joint frames.
 
 The lists of characters, islands, ranks and raid enemy types are read from the
 Luau sources, which stay the single source of truth.
@@ -20,36 +25,52 @@ import sys
 from xml.sax.saxutils import escape
 
 PROJECT = pathlib.Path(__file__).resolve().parent.parent
+MODELS = PROJECT / "models"  # imported avatars, loaded in Studio from file (not synced by Rojo)
 SHARED = PROJECT / "src" / "shared"
 CLIENT = PROJECT / "src" / "client"
 ASSETS = PROJECT / "assets"
 
-# Standard R6 proportions at scale 1: 5 studs tall, feet at y = 0.
-# name: (size, center)
-R6_PARTS = {
-    "HumanoidRootPart": ((2, 2, 1), (0, 3, 0)),
-    "Torso": ((2, 2, 1), (0, 3, 0)),
-    "Head": ((2, 1, 1), (0, 4.5, 0)),
-    "Left Arm": ((1, 2, 1), (-1.5, 3, 0)),
-    "Right Arm": ((1, 2, 1), (1.5, 3, 0)),
-    "Left Leg": ((1, 2, 1), (-0.5, 1, 0)),
-    "Right Leg": ((1, 2, 1), (0.5, 1, 0)),
+# Block R15 parts at scale 1: name -> (size, look). Looks: body, limb, leg, skin.
+R15_PARTS = {
+    "HumanoidRootPart": ((2, 2, 1), "body"),
+    "LowerTorso": ((2, 0.4, 1), "body"),
+    "UpperTorso": ((2, 1.6, 1), "body"),
+    "Head": ((1.2, 1.2, 1.2), "skin"),
+    "RightUpperArm": ((1, 1.17, 1), "limb"),
+    "RightLowerArm": ((1, 1.05, 1), "limb"),
+    "RightHand": ((1, 0.3, 1), "skin"),
+    "LeftUpperArm": ((1, 1.17, 1), "limb"),
+    "LeftLowerArm": ((1, 1.05, 1), "limb"),
+    "LeftHand": ((1, 0.3, 1), "skin"),
+    "RightUpperLeg": ((1, 1.217, 1), "leg"),
+    "RightLowerLeg": ((1, 1.193, 1), "leg"),
+    "RightFoot": ((1, 0.3, 1), "leg"),
+    "LeftUpperLeg": ((1, 1.217, 1), "leg"),
+    "LeftLowerLeg": ((1, 1.193, 1), "leg"),
+    "LeftFoot": ((1, 0.3, 1), "leg"),
 }
 
-# Rotation matrices (R00..R22) used by the standard R6 joints.
-ROT_ROOT = (-1, 0, 0, 0, 0, 1, 0, 1, 0)
-ROT_RIGHT = (0, 0, 1, 0, 1, 0, -1, 0, 0)
-ROT_LEFT = (0, 0, -1, 0, 1, 0, 1, 0, 0)
-
-# Standard R6 Motor6Ds: name, parent part (Part0), Part1, C0, C1 (position, rotation).
-R6_JOINTS = [
-    ("RootJoint", "HumanoidRootPart", "Torso", ((0, 0, 0), ROT_ROOT), ((0, 0, 0), ROT_ROOT)),
-    ("Neck", "Torso", "Head", ((0, 1, 0), ROT_ROOT), ((0, -0.5, 0), ROT_ROOT)),
-    ("Right Shoulder", "Torso", "Right Arm", ((1, 0.5, 0), ROT_RIGHT), ((-0.5, 0.5, 0), ROT_RIGHT)),
-    ("Left Shoulder", "Torso", "Left Arm", ((-1, 0.5, 0), ROT_LEFT), ((0.5, 0.5, 0), ROT_LEFT)),
-    ("Right Hip", "Torso", "Right Leg", ((1, -1, 0), ROT_RIGHT), ((0.5, 1, 0), ROT_RIGHT)),
-    ("Left Hip", "Torso", "Left Leg", ((-1, -1, 0), ROT_LEFT), ((-0.5, 1, 0), ROT_LEFT)),
+# Standard R15 Motor6Ds (in Part1): name, Part0, Part1, C0 position, C1 position.
+# Same rig attachments as the imported Roblox avatars; frames are unrotated.
+R15_JOINTS = [
+    ("Root", "HumanoidRootPart", "LowerTorso", (0, -1, 0), (0, -0.2, 0)),
+    ("Waist", "LowerTorso", "UpperTorso", (0, 0.2, 0), (0, -0.8, 0)),
+    ("Neck", "UpperTorso", "Head", (0, 0.8, 0), (0, -0.586, 0)),
+    ("RightShoulder", "UpperTorso", "RightUpperArm", (1, 0.563, 0), (-0.5, 0.394, 0)),
+    ("RightElbow", "RightUpperArm", "RightLowerArm", (0, -0.334, 0), (0, 0.259, 0)),
+    ("RightWrist", "RightLowerArm", "RightHand", (0, -0.501, 0), (0, 0.125, 0)),
+    ("LeftShoulder", "UpperTorso", "LeftUpperArm", (-1, 0.563, 0), (0.5, 0.394, 0)),
+    ("LeftElbow", "LeftUpperArm", "LeftLowerArm", (0, -0.334, 0), (0, 0.259, 0)),
+    ("LeftWrist", "LeftLowerArm", "LeftHand", (0, -0.501, 0), (0, 0.125, 0)),
+    ("RightHip", "LowerTorso", "RightUpperLeg", (0.5, -0.2, 0), (0, 0.421, 0)),
+    ("RightKnee", "RightUpperLeg", "RightLowerLeg", (0, -0.401, 0), (0, 0.379, 0)),
+    ("RightAnkle", "RightLowerLeg", "RightFoot", (0, -0.547, 0), (0, 0.102, 0)),
+    ("LeftHip", "LowerTorso", "LeftUpperLeg", (-0.5, -0.2, 0), (0, 0.421, 0)),
+    ("LeftKnee", "LeftUpperLeg", "LeftLowerLeg", (0, -0.401, 0), (0, 0.379, 0)),
+    ("LeftAnkle", "LeftLowerLeg", "LeftFoot", (0, -0.547, 0), (0, 0.102, 0)),
 ]
+ROOT_CENTER = (0, 3, 0)  # HumanoidRootPart; the feet end at y = 0
+HIP_HEIGHT = 2
 
 IDENTITY = (1, 0, 0, 0, 1, 0, 0, 0, 1)
 SKIN = (255, 205, 148)
@@ -116,35 +137,28 @@ def darker(color: tuple[int, int, int], factor: float = 0.75) -> tuple[int, int,
 
 
 def build_rig(name: str, body: tuple[int, int, int], scale: float) -> str:
-    """R6 rig: only HumanoidRootPart is anchored; limbs hang from Motor6Ds so
-    animations can move them."""
-    refs = {part: f"RBX{index + 1}" for index, part in enumerate(R6_PARTS)}
-    colors = {
-        "HumanoidRootPart": body,
-        "Torso": body,
-        "Head": SKIN,
-        "Left Arm": darker(body),
-        "Right Arm": darker(body),
-        "Left Leg": darker(body, 0.55),
-        "Right Leg": darker(body, 0.55),
-    }
-    joints_by_parent: dict[str, list[str]] = {}
-    for joint_name, part0, part1, c0, c1 in R6_JOINTS:
-        c0_pos = tuple(v * scale for v in c0[0])
-        c1_pos = tuple(v * scale for v in c1[0])
-        joints_by_parent.setdefault(part0, []).append(
+    """Block R15 rig: only HumanoidRootPart is anchored; limbs hang from
+    Motor6Ds so animations can move them."""
+    refs = {part: f"RBX{index + 1}" for index, part in enumerate(R15_PARTS)}
+    looks = {"body": body, "limb": darker(body), "leg": darker(body, 0.55), "skin": SKIN}
+    centers = {"HumanoidRootPart": ROOT_CENTER}
+    joints_by_part: dict[str, list[str]] = {}
+    for joint_name, part0, part1, c0, c1 in R15_JOINTS:
+        centers[part1] = tuple(centers[part0][i] + c0[i] - c1[i] for i in range(3))
+        joints_by_part.setdefault(part1, []).append(
             f'<Item class="Motor6D"><Properties>'
             f'<string name="Name">{escape(joint_name)}</string>'
             f'<Ref name="Part0">{refs[part0]}</Ref><Ref name="Part1">{refs[part1]}</Ref>'
-            f"{cframe_xml('C0', c0_pos, c0[1])}{cframe_xml('C1', c1_pos, c1[1])}"
+            f"{cframe_xml('C0', tuple(v * scale for v in c0), IDENTITY)}"
+            f"{cframe_xml('C1', tuple(v * scale for v in c1), IDENTITY)}"
             f"</Properties></Item>"
         )
 
     items = []
-    for part, (size, center) in R6_PARTS.items():
+    for part, (size, look) in R15_PARTS.items():
         is_root = part == "HumanoidRootPart"
         sx, sy, sz = (v * scale for v in size)
-        position = tuple(v * scale for v in center)
+        position = tuple(v * scale for v in centers[part])
         items.append(
             f'<Item class="Part" referent="{refs[part]}"><Properties>'
             f'<string name="Name">{escape(part)}</string>'
@@ -153,20 +167,20 @@ def build_rig(name: str, body: tuple[int, int, int], scale: float) -> str:
             f'<bool name="Massless">{"false" if is_root else "true"}</bool>'
             f"{cframe_xml('CFrame', position, IDENTITY)}"
             f'<Vector3 name="size"><X>{num(sx)}</X><Y>{num(sy)}</Y><Z>{num(sz)}</Z></Vector3>'
-            f"{color_xml(colors[part])}"
+            f"{color_xml(looks[look])}"
             f'<token name="Material">{MATERIAL_SMOOTH_PLASTIC}</token>'
             f'<token name="TopSurface">0</token><token name="BottomSurface">0</token>'
             f'<float name="Transparency">{"1" if is_root else "0"}</float>'
-            f"</Properties>{''.join(joints_by_parent.get(part, []))}</Item>"
+            f"</Properties>{''.join(joints_by_part.get(part, []))}</Item>"
         )
 
     humanoid = (
         '<Item class="Humanoid"><Properties>'
         '<string name="Name">Humanoid</string>'
-        '<token name="RigType">0</token>'  # R6
+        '<token name="RigType">1</token>'  # R15
         '<token name="DisplayDistanceType">2</token>'  # None: the game draws its own labels
         '<token name="HealthDisplayType">2</token>'  # AlwaysOff
-        f'<float name="HipHeight">0</float>'
+        f'<float name="HipHeight">{num(HIP_HEIGHT * scale)}</float>'
         '</Properties><Item class="Animator"><Properties><string name="Name">Animator</string></Properties></Item></Item>'
     )
     return (
@@ -179,12 +193,26 @@ def build_rig(name: str, body: tuple[int, int, int], scale: float) -> str:
     )
 
 
+def imported(path: pathlib.Path) -> pathlib.Path:
+    """Where an imported avatar for this asset path would be (models/...)."""
+    return MODELS / path.relative_to(ASSETS)
+
+
 def exists(path: pathlib.Path) -> bool:
-    return path.exists() or path.with_suffix(".rbxm").exists()
+    return path.exists() or path.with_suffix(".rbxm").exists() or imported(path).exists()
+
+
+def is_final(path: pathlib.Path) -> bool:
+    """A final model in assets/: Blender .rbxm, or a model with MeshParts. (An
+    imported avatar in models/ keeps its placeholder here as the fallback the
+    game uses until the avatar is inserted in Studio.)"""
+    if path.with_suffix(".rbxm").exists():
+        return True
+    return path.exists() and 'class="MeshPart"' in path.read_text(encoding="utf-8")
 
 
 def write(path: pathlib.Path, content: str, force: bool) -> bool:
-    if path.with_suffix(".rbxm").exists():
+    if is_final(path):
         return False  # a final model always wins over a placeholder
     if path.exists() and not force:
         return False

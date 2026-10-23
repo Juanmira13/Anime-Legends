@@ -75,7 +75,7 @@ El código no depende de posiciones: lee Parts etiquetadas (`IslandSpawn`, `Enem
 | 5 | Portales e isla de aparición | ✅ | `288bb92` |
 | 6 | Raids | ✅ | `2d3c102` |
 | 7 | Boosts y tienda de Gemas | ✅ | `d1afd9a` |
-| 8 | Personajes visibles (estilo AFS), rigs R6 | ✅ | `32d5076` |
+| 8 | Personajes visibles (estilo AFS), rigs R6 (pasados a R15 después) | ✅ | `32d5076` |
 | 9 | Islas de alta calidad, mar, ambientación, arena de Raid | ✅ | `7d85911`, `a582cd1`, `74b3aec`, `b5a0b0e` |
 | — | Herramientas: StyLua, selene, Rokit; Check-UI como estilo | ✅ | `304f8fb` |
 | — | Arreglos: oleadas de los Raids, portal de salida, monedas, intangibles | ✅ | `90e577c` |
@@ -92,12 +92,12 @@ El código no depende de posiciones: lee Parts etiquetadas (`IslandSpawn`, `Enem
 - `InventoryOps.activeTeam`: equipados en orden y limitados a las ranuras; el índice es la ranura. Lo usan el combate y la replicación.
 - Servidor: `InventoryService` replica el equipo como atributo `EquippedCharacters` (ids separados por comas, visible para todos). `CombatService` sigue siendo la única autoridad del daño y, en cada frame con golpes, envía `CharacterHit (dueño, enemyId, {ranura, daño})` a todos los clientes solo para animar.
 - Cliente: `Followers/FollowerMotion` (puro, probado en `followers.spec`) calcula formación, arco, embestida, velocidad de marcha, ciclo de caminar y giro; `FollowerController` dibuja los personajes de cada jugador caminando sobre el suelo (raycast hacia abajo que ignora personajes y piezas sin colisión), mueve hombros y caderas con `Motor6D.Transform` en `PreSimulation`, los oculta a más de 300 studs de la cámara y los teletransporta en saltos de más de 100 studs (portales, Raids).
-- Modelos en `ReplicatedStorage.CharacterModels.<Isla>.<IdPersonaje>` (rigs R6, ver abajo) con el nombre encima; bloque provisional si falta.
+- Modelos en `ReplicatedStorage.CharacterModels.<Isla>.<IdPersonaje>` (rigs R15, ver abajo) con el nombre encima; bloque provisional si falta.
 - El evento lleva el daño para que la Fase 10 dibuje los números sin cambiar el servidor.
 
 ### Modelos y Blender
 
-Cada luchador y enemigo tiene su modelo en `assets/` y Rojo lo sincroniza (`default.project.json`):
+Cada luchador y enemigo tiene su modelo en `assets/` y Rojo lo sincroniza (`default.project.json`). Además de Blender, los modelos pueden salir de avatares de Roblox: `tools/import_avatars.py` convierte una carpeta de avatares R15 exportada de Studio en estos mismos rigs R15, conservando el avatar completo (ver CLAUDE.md, Comandos). Nameku ya usa los avatares del usuario (los 7 luchadores y Freezer como jefe):
 
 | Carpeta | En Studio | Modelos |
 |---|---|---|
@@ -107,21 +107,32 @@ Cada luchador y enemigo tiene su modelo en `assets/` y Rojo lo sincroniza (`defa
 
 `tools/build_rigs.py` genera los provisionales a partir de `Characters`, `Islands`, `Balance` y `Raids`, y nunca sobrescribe un modelo existente.
 
-**Rig R6 (escala 1, pies en y = 0, mirando a −Z):**
+**Rig R15 (escala 1, pies en y = 0, mirando a −Z, marcos sin rotar):**
 
-| Pieza | Tamaño (studs) | Centro | Unión (Motor6D, en la pieza padre) | Punto de giro |
+| Pieza | Tamaño (studs) | Unión (Motor6D, en la pieza hija) | C0 (en la pieza padre) | C1 (en la pieza) |
 |---|---|---|---|---|
-| `HumanoidRootPart` | 2 × 2 × 1 | (0, 3, 0) | — (invisible, anclada) | — |
-| `Torso` | 2 × 2 × 1 | (0, 3, 0) | `RootJoint` en HumanoidRootPart | (0, 3, 0) |
-| `Head` | 2 × 1 × 1 | (0, 4.5, 0) | `Neck` en Torso | (0, 4, 0) |
-| `Right Arm` / `Left Arm` | 1 × 2 × 1 | (±1.5, 3, 0) | `Right/Left Shoulder` en Torso | (±1, 3.5, 0) |
-| `Right Leg` / `Left Leg` | 1 × 2 × 1 | (±0.5, 1, 0) | `Right/Left Hip` en Torso | (±1, 2, 0) |
+| `HumanoidRootPart` | 2 × 2 × 1, centro (0, 3, 0) | — (invisible, anclada) | — | — |
+| `LowerTorso` | 2 × 0.4 × 1 | `Root` desde HumanoidRootPart | (0, −1, 0) | (0, −0.2, 0) |
+| `UpperTorso` | 2 × 1.6 × 1 | `Waist` desde LowerTorso | (0, 0.2, 0) | (0, −0.8, 0) |
+| `Head` | 1.2 × 1.2 × 1.2 | `Neck` desde UpperTorso | (0, 0.8, 0) | (0, −0.586, 0) |
+| `Right/LeftUpperArm` | 1 × 1.17 × 1 | `Right/LeftShoulder` desde UpperTorso | (±1, 0.563, 0) | (∓0.5, 0.394, 0) |
+| `Right/LeftLowerArm` | 1 × 1.05 × 1 | `Right/LeftElbow` | (0, −0.334, 0) | (0, 0.259, 0) |
+| `Right/LeftHand` | 1 × 0.3 × 1 | `Right/LeftWrist` | (0, −0.501, 0) | (0, 0.125, 0) |
+| `Right/LeftUpperLeg` | 1 × 1.217 × 1 | `Right/LeftHip` desde LowerTorso | (±0.5, −0.2, 0) | (0, 0.421, 0) |
+| `Right/LeftLowerLeg` | 1 × 1.193 × 1 | `Right/LeftKnee` | (0, −0.401, 0) | (0, 0.379, 0) |
+| `Right/LeftFoot` | 1 × 0.3 × 1 | `Right/LeftAnkle` | (0, −0.547, 0) | (0, 0.102, 0) |
 
-Los enemigos escalados multiplican tamaños, centros y puntos de giro por su escala.
+Son las uniones de los avatares R15 de Roblox (sus rig attachments). Los enemigos escalados multiplican tamaños y uniones por su escala. Los personajes que siguen al jugador balancean `RightShoulder`, `LeftShoulder`, `RightHip` y `LeftHip` sobre su eje X.
 
-**Flujo:**
-1. **Exportar:** en Studio, seleccionar el modelo (p. ej. `ReplicatedStorage.CharacterModels.Nameku.Krilin`) → clic derecho → *Export Selection* (`.obj`). Sirve como referencia de proporciones; el `.obj` no lleva las uniones, que se definen con la tabla de arriba.
-2. **Modelar en Blender:** una malla por pieza del R6 con el mismo nombre, dentro de la caja de su pieza y con el origen en su centro, para que los puntos de giro coincidan.
+**Flujo con avatares de Roblox (el usado en Nameku y en Asta):**
+1. En Studio, guardar en `import/` la carpeta de avatares de una isla o un solo avatar (clic derecho → *Guardar en archivo…*).
+2. `python tools/import_avatars.py "import/<archivo>" --island <Isla> [--alias nombre=Id] [--boss Id]`: cada avatar, con sus articulaciones convertidas a Motor6D, va a `models/CharacterModels/<Isla>/<Id>.rbxmx` (el jefe ×2.5 a `models/EnemyModels/<Isla>/Boss.rbxmx`), y se rehacen `models/ImportedCharacters.rbxm` y `models/ImportedEnemies.rbxm` con todos los importados.
+3. **En Studio** (Rojo no sincroniza las mallas de los MeshParts): borrar `ReplicatedStorage.ImportedCharacters` y `ServerStorage.ImportedEnemies`; insertar desde archivo `models/ImportedCharacters.rbxm` en ReplicatedStorage y `models/ImportedEnemies.rbxm` en ServerStorage; guardar el lugar. Rojo no toca esas carpetas y `Shared/ModelLookup` las mira antes que los provisionales (si un modelo llega sin `PrimaryPart` usa su `HumanoidRootPart`; si no encuentra ninguno, avisa en la salida con el motivo).
+4. `python tools/build_rigs.py --check` y `rojo build`.
+
+**Flujo con Blender:**
+1. **Exportar:** en Studio, seleccionar el modelo → clic derecho → *Export Selection* (`.obj`) como referencia de proporciones; las uniones son las de la tabla.
+2. **Modelar en Blender:** una malla por pieza del R15 con el mismo nombre, con el origen en su centro, para que los puntos de giro coincidan.
 3. **Importar:** con el 3D Importer de Studio, sustituir cada `Part` del rig provisional por la `MeshPart` del mismo nombre, conservando `HumanoidRootPart`, los Motor6D (con su `Part0`/`Part1` apuntando a las nuevas piezas), `Humanoid` y `Animator`.
 4. **Guardar en el repositorio:** clic derecho en el modelo → *Save to File* como `<Id>.rbxm` en la misma carpeta de `assets/` y borrar el `.rbxmx` provisional. Rojo lo sincroniza y `build_rigs.py` ya no lo toca.
 
@@ -163,7 +174,7 @@ Todo en el cliente; el servidor ya envía lo necesario (`CharacterHit` con el da
   1. **Figma:** botones laterales y botón de Ataque (negro grisáceo, borde morado brillante), ventana Inventario (boosts del jugador), ventana Tienda del NPC y el NPC en el lobby. Esperar aprobación.
   2. **Botones laterales:** nuevo estilo en `CheckUI.sideButton`; nombres PERSONAJES (abre la ventana de personajes, retitulada PERSONAJES) e INVENTARIO (abre los boosts).
   3. **Inventario de boosts:** `BoostController` pasa a mostrar solo los boosts del jugador (unidades, ACTIVO, Activar); sin comprar.
-  4. **Tienda del NPC:** etiqueta `BoostShop` en el lobby (plugin `RaidLobby` y `Dev/TestArena`, con su rig R6 en `assets`), ProximityPrompt que abre la ventana Tienda (la ventana actual de la tienda, solo con Comprar), y `BoostService` acepta "Buy" solo a menos de una distancia del NPC (`Balance`); el cliente no decide. `MapCheck`/`MapValidator` comprueban que el lobby tenga su NPC.
+  4. **Tienda del NPC:** etiqueta `BoostShop` en el lobby (plugin `RaidLobby` y `Dev/TestArena`), ProximityPrompt que abre la ventana Tienda (la ventana actual de la tienda, solo con Comprar), y `BoostService` acepta "Buy" solo a menos de una distancia del NPC (`Balance`); el cliente no decide. `MapCheck`/`MapValidator` comprueban que el lobby tenga su NPC.
   5. **Botón de Ataque:** `Balance.Combat.clickDamageShare` y `maxClicksPerSecond`, `Formulas.teamDps`/`clickDamage` (puras, con pruebas en `balance.spec`, `combat.spec` y el criterio de `acceptance.spec`), remote `AttackClick` validado en `CombatService` como un golpe más (objetivo, rango, isla, tope por ventana de un segundo), botón en `HudController` con tecla F y `ButtonR2`, y número de daño propio en `HitEffectController`.
   6. Documentos y commit; prueba en Studio del usuario.
 - ✅ **Ajustes v3** (diseño aprobado en Figma, sección "Ajustes v3"): textos de los botones laterales y del área en negro con contorno blanco (`CheckUI.text` acepta `strokeColor`); ventana Inventario por categorías (`BoostController`: pestañas OBJETOS/BOOSTS/MONTURAS, cuadrícula de `CheckUI.itemCard` y detalle, mismas medidas que Personajes).

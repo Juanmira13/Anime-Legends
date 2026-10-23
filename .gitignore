@@ -6,6 +6,9 @@
 # Character and enemy models synced by Rojo
 !assets/**/*.rbxm
 !assets/**/*.rbxmx
+# Imported avatars, inserted into Studio from file (see tools/import_avatars.py)
+!models/**/*.rbxmx
+!models/*.rbxm
 sourcemap.json
 builder-sourcemap.json
 

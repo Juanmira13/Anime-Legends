@@ -150,6 +150,8 @@ Reglas del pity:
 
 ### Personajes visibles (estilo AFS)
 
+Modelos: los luchadores y el jefe de Nameku, y Asta en Clover Kingdom, son avatares de Roblox elegidos por el usuario, conservados completos como rigs R15 del juego (Freezor es a la vez el luchador Épico y el jefe). Las demás islas siguen con rigs provisionales hasta tener sus avatares o modelos de Blender.
+
 - Todos los jugadores ven los personajes equipados de todos.
 - Caminan por el suelo, nunca flotan. Todos van a la misma velocidad: la del dueño ×1.25, un poco más rápido para alcanzarlo cuando se detiene. Mientras caminan balancean brazos y piernas (un ciclo cada 6 studs) y miran hacia donde van; al llegar se quedan quietos.
 - Sin objetivo, caminan detrás de su dueño en filas de 3 (la primera a 6 studs, 5 studs entre personajes y entre filas) y miran hacia donde mira él.

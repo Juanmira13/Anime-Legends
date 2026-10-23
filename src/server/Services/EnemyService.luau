@@ -6,10 +6,11 @@
 -- spawns one, which respawns there after it dies. Other systems (raids) spawn
 -- one-off enemies with EnemyService.spawn.
 --
--- The model is ServerStorage.EnemyModels.<folder>.<name> if it exists (a Model
--- with a PrimaryPart; e.g. EnemyModels.Nameku.Easy or EnemyModels.Raid.Boss),
--- otherwise a placeholder block. Models are R6 rigs (assets/EnemyModels, made
--- by tools/build_rigs.py): only the PrimaryPart is anchored so the limbs can be
+-- The model is ServerStorage.ImportedEnemies.<folder>.<name> (an imported
+-- avatar, inserted in Studio) or else ServerStorage.EnemyModels.<folder>.<name>
+-- (e.g. EnemyModels.Nameku.Easy or EnemyModels.Raid.Boss), if it exists (a Model
+-- with a PrimaryPart), otherwise a placeholder block. Models are R15 rigs
+-- (placeholders from tools/build_rigs.py): only the PrimaryPart is anchored so the limbs can be
 -- animated, and the model stands with its lowest point on the spawn point.
 
 local CollectionService = game:GetService("CollectionService")
@@ -21,6 +22,7 @@ local Balance = require(Shared.Config.Balance)
 local Formulas = require(Shared.Formulas)
 local Intangible = require(Shared.Intangible)
 local Islands = require(Shared.Data.Islands)
+local ModelLookup = require(Shared.ModelLookup)
 
 local Signal = require(script.Parent.Parent.Signal)
 
@@ -89,15 +91,13 @@ EnemyService.Clicked = clickedSignal
 -- Fires (enemy) when an enemy's health reaches 0, before its model is removed.
 EnemyService.Died = diedSignal
 
+-- An imported avatar (ServerStorage.ImportedEnemies, inserted in Studio) wins
+-- over the Rojo placeholder (ServerStorage.EnemyModels).
 local function getTemplate(path: { string }): Model?
-	local node: Instance? = ServerStorage:FindFirstChild("EnemyModels")
-	for _, name in path do
-		node = node and node:FindFirstChild(name)
-	end
-	if node and node:IsA("Model") and node.PrimaryPart then
-		return node
-	end
-	return nil
+	return ModelLookup.find({
+		{ root = ServerStorage:FindFirstChild("ImportedEnemies"), name = "ServerStorage.ImportedEnemies" },
+		{ root = ServerStorage:FindFirstChild("EnemyModels"), name = "ServerStorage.EnemyModels" },
+	}, path)
 end
 
 local function buildModel(spec: SpawnSpec): Model
